@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\Core.csproj": {}
+    "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj": {}
   },
   "projects": {
-    "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\Core.csproj": {
+    "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\Core.csproj",
+        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\Core.csproj",
+        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\obj\\",
+        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\Visual components,tolls,SDK\\NuGetPackages"
@@ -60,6 +60,14 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[6.0.1, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[6.0.0, )"
             }
           },
           "imports": [

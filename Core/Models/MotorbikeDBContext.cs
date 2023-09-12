@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 
 namespace Core.Models
 {
@@ -16,6 +17,7 @@ namespace Core.Models
         {
         }
 
+        public virtual DbSet<BillConfirm> BillConfirms { get; set; } = null!;
         public virtual DbSet<Booking> Bookings { get; set; } = null!;
         public virtual DbSet<ConsignmentContract> ConsignmentContracts { get; set; } = null!;
         public virtual DbSet<ConsignmentContractImage> ConsignmentContractImages { get; set; } = null!;
@@ -39,24 +41,66 @@ namespace Core.Models
         public virtual DbSet<StoreDesciption> StoreDesciptions { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=(local);Uid=ntp;Pwd=123456;Database=MotorbikeDB");
-            }
-        }
+		//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		//        {
+		//            if (!optionsBuilder.IsConfigured)
+		//            {
+		//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+		//                optionsBuilder.UseSqlServer("Server=(local);Uid=ntp;Pwd=123456;Database=MotorbikeDB");
+		//            }
+		//        }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+			var d = Directory.GetCurrentDirectory();
+			IConfigurationRoot configuration = builder.Build();
+			string connectionString = configuration.GetConnectionString("DefaultConnection");
+			optionsBuilder.UseSqlServer(connectionString);
+		}
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<BillConfirm>(entity =>
+            {
+                entity.ToTable("BillConfirm");
+
+                entity.Property(e => e.BillConfirmId).HasColumnName("bill_confirm_id");
+
+                entity.Property(e => e.CreateAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("create_at");
+
+                entity.Property(e => e.MotorId).HasColumnName("motor_id");
+
+                entity.Property(e => e.Price)
+                    .HasColumnType("money")
+                    .HasColumnName("price");
+
+                entity.Property(e => e.RequestId).HasColumnName("request_id");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(10)
+                    .HasColumnName("status");
+
+                entity.Property(e => e.StoreId).HasColumnName("store_id");
+
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+
+                entity.HasOne(d => d.Request)
+                    .WithMany(p => p.BillConfirms)
+                    .HasForeignKey(d => d.RequestId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_BillConfirm_Request");
+            });
+
             modelBuilder.Entity<Booking>(entity =>
             {
                 entity.ToTable("Booking");
 
-                entity.Property(e => e.BookingId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("booking_id");
+                entity.Property(e => e.BookingId).HasColumnName("booking_id");
 
                 entity.Property(e => e.BookingDate)
                     .HasColumnType("datetime")
@@ -89,9 +133,7 @@ namespace Core.Models
 
                 entity.ToTable("Consignment_Contract");
 
-                entity.Property(e => e.ContractId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("contract_id");
+                entity.Property(e => e.ContractId).HasColumnName("contract_id");
 
                 entity.Property(e => e.Content)
                     .HasMaxLength(100)
@@ -129,9 +171,7 @@ namespace Core.Models
 
                 entity.ToTable("Consignment_ContractImage");
 
-                entity.Property(e => e.ContractImageId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("contract_image_id");
+                entity.Property(e => e.ContractImageId).HasColumnName("contract_image_id");
 
                 entity.Property(e => e.ContractId).HasColumnName("contract_id");
 
@@ -156,9 +196,7 @@ namespace Core.Models
 
                 entity.ToTable("EarnALiving_Contract");
 
-                entity.Property(e => e.ContractId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("contract_id");
+                entity.Property(e => e.ContractId).HasColumnName("contract_id");
 
                 entity.Property(e => e.BookingId).HasColumnName("booking_id");
 
@@ -203,9 +241,7 @@ namespace Core.Models
 
                 entity.ToTable("EarnALiving_ContractImage");
 
-                entity.Property(e => e.ContractImageId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("contract_image_id");
+                entity.Property(e => e.ContractImageId).HasColumnName("contract_image_id");
 
                 entity.Property(e => e.ContractId).HasColumnName("contract_id");
 
@@ -228,9 +264,7 @@ namespace Core.Models
             {
                 entity.ToTable("Facility");
 
-                entity.Property(e => e.FacilityId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("facility_id");
+                entity.Property(e => e.FacilityId).HasColumnName("facility_id");
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)
@@ -256,7 +290,7 @@ namespace Core.Models
 
                             j.ToTable("MotorbikeFacility");
 
-                            j.IndexerProperty<int>("FacilityId").HasColumnName("facility_id");
+                            j.IndexerProperty<int>("FacilityId").ValueGeneratedOnAdd().HasColumnName("facility_id");
 
                             j.IndexerProperty<int>("MotorId").HasColumnName("motor_id");
                         });
@@ -291,9 +325,7 @@ namespace Core.Models
 
                 entity.ToTable("Motorbike");
 
-                entity.Property(e => e.MotorId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("motor_id");
+                entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
                 entity.Property(e => e.Brand)
                     .HasMaxLength(50)
@@ -348,9 +380,7 @@ namespace Core.Models
 
                 entity.ToTable("MotorbikeImage");
 
-                entity.Property(e => e.ImageId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("image_id");
+                entity.Property(e => e.ImageId).HasColumnName("image_id");
 
                 entity.Property(e => e.ImageLink)
                     .HasMaxLength(100)
@@ -371,9 +401,7 @@ namespace Core.Models
 
                 entity.ToTable("MotorbikeStatus");
 
-                entity.Property(e => e.MotorStatusId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("motorStatus_id");
+                entity.Property(e => e.MotorStatusId).HasColumnName("motorStatus_id");
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)
@@ -391,9 +419,7 @@ namespace Core.Models
 
                 entity.ToTable("MotorbikeType");
 
-                entity.Property(e => e.MotorTypeId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("motorType_id");
+                entity.Property(e => e.MotorTypeId).HasColumnName("motorType_id");
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)
@@ -408,9 +434,7 @@ namespace Core.Models
             {
                 entity.ToTable("Negotiation");
 
-                entity.Property(e => e.NegotiationId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("negotiation_id");
+                entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)
@@ -447,9 +471,7 @@ namespace Core.Models
             {
                 entity.ToTable("Notification");
 
-                entity.Property(e => e.NotificationId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("notification_id");
+                entity.Property(e => e.NotificationId).HasColumnName("notification_id");
 
                 entity.Property(e => e.BookingId).HasColumnName("booking_id");
 
@@ -487,9 +509,7 @@ namespace Core.Models
             {
                 entity.ToTable("NotificationType");
 
-                entity.Property(e => e.NotificationTypeId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("notification_type_id");
+                entity.Property(e => e.NotificationTypeId).HasColumnName("notification_type_id");
 
                 entity.Property(e => e.Status).HasColumnName("status");
 
@@ -502,9 +522,7 @@ namespace Core.Models
             {
                 entity.ToTable("Payment");
 
-                entity.Property(e => e.PaymentId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("payment_id");
+                entity.Property(e => e.PaymentId).HasColumnName("payment_id");
 
                 entity.Property(e => e.Content)
                     .HasMaxLength(200)
@@ -537,9 +555,7 @@ namespace Core.Models
 
                 entity.ToTable("PointHistory");
 
-                entity.Property(e => e.PHistoryId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("pHistory_id");
+                entity.Property(e => e.PHistoryId).HasColumnName("pHistory_id");
 
                 entity.Property(e => e.Action)
                     .HasMaxLength(50)
@@ -578,9 +594,7 @@ namespace Core.Models
 
                 entity.ToTable("PostBoosting");
 
-                entity.Property(e => e.BoostId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("boost_id");
+                entity.Property(e => e.BoostId).HasColumnName("boost_id");
 
                 entity.Property(e => e.EndTime)
                     .HasColumnType("datetime")
@@ -610,9 +624,7 @@ namespace Core.Models
             {
                 entity.ToTable("Request");
 
-                entity.Property(e => e.RequestId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("request_id");
+                entity.Property(e => e.RequestId).HasColumnName("request_id");
 
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
@@ -655,9 +667,7 @@ namespace Core.Models
             {
                 entity.ToTable("RequestType");
 
-                entity.Property(e => e.RequestTypeId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("request_type_id");
+                entity.Property(e => e.RequestTypeId).HasColumnName("request_type_id");
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)
@@ -672,9 +682,7 @@ namespace Core.Models
             {
                 entity.ToTable("Role");
 
-                entity.Property(e => e.RoleId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("role_id");
+                entity.Property(e => e.RoleId).HasColumnName("role_id");
 
                 entity.Property(e => e.Title)
                     .HasMaxLength(100)
@@ -687,16 +695,14 @@ namespace Core.Models
 
                 entity.ToTable("StoreDesciption");
 
-                entity.Property(e => e.StoreId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("store_id");
+                entity.Property(e => e.StoreId).HasColumnName("store_id");
 
                 entity.Property(e => e.Address)
                     .HasMaxLength(100)
                     .HasColumnName("address");
 
                 entity.Property(e => e.Description)
-                    .HasMaxLength(200)
+                    .HasMaxLength(1000)
                     .HasColumnName("description");
 
                 entity.Property(e => e.LocalId).HasColumnName("local_id");
@@ -750,9 +756,7 @@ namespace Core.Models
             {
                 entity.ToTable("User");
 
-                entity.Property(e => e.UserId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("user_id");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
 
                 entity.Property(e => e.Address)
                     .HasMaxLength(100)

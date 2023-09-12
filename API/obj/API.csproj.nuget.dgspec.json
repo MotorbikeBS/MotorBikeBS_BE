@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\API\\API.csproj": {}
+    "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\API\\API.csproj": {}
   },
   "projects": {
-    "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\API\\API.csproj": {
+    "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\API\\API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\API\\API.csproj",
+        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\API\\API.csproj",
         "projectName": "API",
-        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\API\\API.csproj",
+        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\API\\API.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\API\\obj\\",
+        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\Visual components,tolls,SDK\\NuGetPackages"
@@ -33,8 +33,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Service\\Service.csproj": {
-                "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Service\\Service.csproj"
+              "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj": {
+                "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj"
               }
             }
           }
@@ -49,6 +49,22 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[12.0.1, )"
+            },
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": {
+              "target": "Package",
+              "version": "[12.0.1, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[6.0.10, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.2.3, )"
@@ -77,14 +93,14 @@
         }
       }
     },
-    "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\Core.csproj": {
+    "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\Core.csproj",
+        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\Core.csproj",
+        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\obj\\",
+        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\Visual components,tolls,SDK\\NuGetPackages"
@@ -133,6 +149,14 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[6.0.1, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[6.0.0, )"
             }
           },
           "imports": [
@@ -155,14 +179,14 @@
         }
       }
     },
-    "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Service\\Service.csproj": {
+    "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Service\\Service.csproj",
+        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj",
         "projectName": "Service",
-        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Service\\Service.csproj",
+        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Service\\obj\\",
+        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\Visual components,tolls,SDK\\NuGetPackages"
@@ -184,8 +208,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\Core.csproj": {
-                "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\MotorBikeBS\\Core\\Core.csproj"
+              "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj": {
+                "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj"
               }
             }
           }

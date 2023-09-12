@@ -10,5 +10,7 @@ namespace Service.UnitOfWork
 	public interface IUnitOfWork
 	{
 		public IMotorBikeService MotorBikeService { get; }
+		public IUserService UserService { get; }
+		public IRoleService RoleService { get; }
 	}
 }
