@@ -1,4 +1,5 @@
 ﻿using API.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
@@ -19,7 +20,7 @@ namespace API.Controllers
 			_unitOfWork = unitOfWork;
 			_response = new ApiResponse();
 		}
-
+		//[Authorize(Roles ="Admin")]
 		[HttpGet]
 		public async Task<ApiResponse>Get()
 		{

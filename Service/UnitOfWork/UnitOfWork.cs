@@ -12,6 +12,8 @@ namespace Service.UnitOfWork
 	public class UnitOfWork : IUnitOfWork
 	{
 		public IMotorBikeService MotorBikeService { get; private set; } = null!;
+		public IUserService UserService { get; private set; } = null!;
+		public IRoleService RoleService { get; private set; } = null!;
 
 		private readonly MotorbikeDBContext _context;
 
@@ -24,6 +26,8 @@ namespace Service.UnitOfWork
 		private void InitRepositories()
 		{
 			MotorBikeService = new MotorBikeRepository(_context, this);
+			UserService = new UserRepository(_context, this);
+			RoleService = new RoleRepository(_context, this);
 		}
 	}
 }
