@@ -18,7 +18,6 @@ namespace Core.Models
         public int UserId { get; set; }
         public string? UserName { get; set; }
         public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
         public string? Phone { get; set; }
         public int? Gender { get; set; }
         public DateTime? Dob { get; set; }
@@ -26,9 +25,14 @@ namespace Core.Models
         public string? Address { get; set; }
         public int? LocalId { get; set; }
         public int? RoleId { get; set; }
-        public DateTime UserCreatedAt { get; set; }
-        public DateTime UserUpdatedAt { get; set; }
+        public DateTime? UserVerifyAt { get; set; }
+        public DateTime? UserUpdatedAt { get; set; }
         public string Status { get; set; } = null!;
+        public byte[]? PasswordHash { get; set; }
+        public byte[]? PasswordSalt { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? ResetTokenExpires { get; set; }
+        public string? VerifycationToken { get; set; }
 
         public virtual LocalAddress? Local { get; set; }
         public virtual Role? Role { get; set; }

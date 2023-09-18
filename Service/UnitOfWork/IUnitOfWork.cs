@@ -12,5 +12,6 @@ namespace Service.UnitOfWork
 		public IMotorBikeService MotorBikeService { get; }
 		public IUserService UserService { get; }
 		public IRoleService RoleService { get; }
+		public IStoreDescriptionService StoreDescriptionService { get; }
 	}
 }

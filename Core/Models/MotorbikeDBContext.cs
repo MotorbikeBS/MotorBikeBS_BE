@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 namespace Core.Models
 {
@@ -41,27 +40,16 @@ namespace Core.Models
         public virtual DbSet<StoreDesciption> StoreDesciptions { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
-		//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		//        {
-		//            if (!optionsBuilder.IsConfigured)
-		//            {
-		//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-		//                optionsBuilder.UseSqlServer("Server=(local);Uid=ntp;Pwd=123456;Database=MotorbikeDB");
-		//            }
-		//        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=(local);Uid=ntp;Pwd=123456;Database=MotorbikeDB");
+            }
+        }
 
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-			var d = Directory.GetCurrentDirectory();
-			IConfigurationRoot configuration = builder.Build();
-			string connectionString = configuration.GetConnectionString("DefaultConnection");
-			optionsBuilder.UseSqlServer(connectionString);
-		}
-
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -779,24 +767,26 @@ namespace Core.Models
 
                 entity.Property(e => e.LocalId).HasColumnName("local_id");
 
-                entity.Property(e => e.Password)
-                    .HasMaxLength(100)
-                    .HasColumnName("password");
+                entity.Property(e => e.PasswordHash).HasColumnName("password_hash");
+
+                entity.Property(e => e.PasswordResetToken).HasColumnName("password_reset_token");
+
+                entity.Property(e => e.PasswordSalt).HasColumnName("password_salt");
 
                 entity.Property(e => e.Phone)
                     .HasMaxLength(10)
                     .HasColumnName("phone")
                     .IsFixedLength();
 
+                entity.Property(e => e.ResetTokenExpires)
+                    .HasColumnType("datetime")
+                    .HasColumnName("reset_token_expires");
+
                 entity.Property(e => e.RoleId).HasColumnName("role_id");
 
                 entity.Property(e => e.Status)
                     .HasMaxLength(10)
                     .HasColumnName("status");
-
-                entity.Property(e => e.UserCreatedAt)
-                    .HasColumnType("date")
-                    .HasColumnName("user_created_at");
 
                 entity.Property(e => e.UserName)
                     .HasMaxLength(100)
@@ -805,6 +795,12 @@ namespace Core.Models
                 entity.Property(e => e.UserUpdatedAt)
                     .HasColumnType("date")
                     .HasColumnName("user_updated_at");
+
+                entity.Property(e => e.UserVerifyAt)
+                    .HasColumnType("date")
+                    .HasColumnName("user_verify_at");
+
+                entity.Property(e => e.VerifycationToken).HasColumnName("verifycation_token");
 
                 entity.HasOne(d => d.Local)
                     .WithMany(p => p.Users)

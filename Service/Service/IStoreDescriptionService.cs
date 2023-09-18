@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 
 namespace Service.Service
 {
-	public interface IUserService : IGenericRepository<User>
+	public interface IStoreDescriptionService : IGenericRepository<StoreDesciption>
 	{
-		Task<User> Register(User user);
 	}
 }

@@ -2,6 +2,7 @@ using API.AutoMapper;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Service.Repository;
 using Service.Service;
 using Service.UnitOfWork;
 using System.Text;
@@ -17,6 +18,9 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 //UnitOfWork
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
+//Email Sender
+builder.Services.AddTransient<IEmailSender, EmailSenderRepository>();
 
 //Cors
 builder.Services.AddCors();
