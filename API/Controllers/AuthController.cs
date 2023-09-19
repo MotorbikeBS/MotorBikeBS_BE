@@ -278,7 +278,7 @@ namespace API.Controllers
 
 					var subject = "Reset Password";
 					//var message = $"{newUser.VerifycationToken}";
-					var htmlMessage = $"<p>Hello {user.UserName},<br>Please click <a href=\"http://localhost:3000/users/reset-password?token=${user.VerifycationToken}\">here</a> to reset your password.</p>";
+					var htmlMessage = $"<p>Hello {user.UserName},<br>Please click <a href=\"http://localhost:3000/users/reset-password?token={user.PasswordResetToken}\">here</a> to reset your password.</p>";
 
 					await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 					_response.IsSuccess = true;
@@ -297,11 +297,11 @@ namespace API.Controllers
 
 		[HttpPost]
 		[Route("ResetPassword")]
-		public async Task<ApiResponse> ResetPassword(ResetPasswordDTO request)
+		public async Task<ApiResponse> ResetPassword([FromQuery] string token,ResetPasswordDTO request)
 		{
 			try
 			{
-				var user = await _unitOfWork.UserService.GetFirst(x => x.PasswordResetToken == request.Token);
+				var user = await _unitOfWork.UserService.GetFirst(x => x.PasswordResetToken == token);
 				if (user == null)
 				{
 					_response.IsSuccess = false;
@@ -357,7 +357,7 @@ namespace API.Controllers
 
 		private string CreateRandomToken()
 		{
-			return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+			return Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
 		}
 
 	}
