@@ -333,6 +333,8 @@ namespace Core.Models
 
                 entity.Property(e => e.MotorTypeId).HasColumnName("motor_type_id");
 
+                entity.Property(e => e.Odo).HasColumnName("odo");
+
                 entity.Property(e => e.OwnerId).HasColumnName("owner_id");
 
                 entity.Property(e => e.Price)
@@ -696,6 +698,10 @@ namespace Core.Models
                 entity.Property(e => e.LocalId).HasColumnName("local_id");
 
                 entity.Property(e => e.Point).HasColumnName("point");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(15)
+                    .HasColumnName("status");
 
                 entity.Property(e => e.StoreCreatedAt)
                     .HasColumnType("datetime")

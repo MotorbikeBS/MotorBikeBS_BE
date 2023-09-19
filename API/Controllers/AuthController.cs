@@ -129,6 +129,7 @@ namespace API.Controllers
 				if (userInDb != null)
 				{
 					var newStore = _mapper.Map<StoreDesciption>(store);
+					newStore.Status = "NOT VERIFY";
 					await _unitOfWork.StoreDescriptionService.Add(newStore);
 					//userInDb.Status = "STORE NOT VERIFY";
 					//await _unitOfWork.UserService.Update(userInDb);

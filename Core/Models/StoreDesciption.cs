@@ -16,6 +16,7 @@ namespace Core.Models
         public int? Point { get; set; }
         public string? Address { get; set; }
         public int? LocalId { get; set; }
+        public string? Status { get; set; }
 
         public virtual LocalAddress? Local { get; set; }
         public virtual User User { get; set; } = null!;
