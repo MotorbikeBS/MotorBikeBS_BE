@@ -71,8 +71,7 @@ namespace API.Controllers
 					await _unitOfWork.UserService.Add(newUser);
 
 					var subject = "Verify Token";
-					//var message = $"{newUser.VerifycationToken}";
-					var htmlMessage = $"<p>Hello {newUser.UserName},<br>Please click <a href=\"http://localhost:3000/users/reset-password?token=${newUser.VerifycationToken}\">here</a> to verify your password.</p>";
+					var htmlMessage = $"<p>Hello {newUser.UserName},<br>Please click <a href=\"http://localhost:3000/users/reset-password?token={newUser.VerifycationToken}\">here</a> to verify your password.</p>";
 
 					await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 
@@ -82,9 +81,29 @@ namespace API.Controllers
 				}
 				else
 				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Email is already exist!");
+					if(userInDb.Status.Equals("NOT VERIFY"))
+					{
+						CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
+						userInDb.PasswordHash = passwordHash;
+						userInDb.PasswordSalt = passwordSalt;
+						userInDb.UserName = user.UserName;
+						userInDb.VerifycationToken = CreateRandomToken();
+						await _unitOfWork.UserService.Update(userInDb);
+
+						var subject = "Verify Token";
+						var htmlMessage = $"<p>Hello {userInDb.UserName},<br>Please click <a href=\"http://localhost:3000/users/reset-password?token={userInDb.VerifycationToken}\">here</a> to verify your password.</p>";
+
+						await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
+						_response.IsSuccess = true;
+						_response.StatusCode = HttpStatusCode.OK;
+						_response.Result = userInDb;
+					}
+					else
+					{
+						_response.IsSuccess = false;
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.ErrorMessages.Add("Email is already exist!");
+					}
 				}
 				return _response;
 			}
@@ -111,8 +130,8 @@ namespace API.Controllers
 				{
 					var newStore = _mapper.Map<StoreDesciption>(store);
 					await _unitOfWork.StoreDescriptionService.Add(newStore);
-					userInDb.Status = "STORE NOT VERIFY";
-					await _unitOfWork.UserService.Update(userInDb);
+					//userInDb.Status = "STORE NOT VERIFY";
+					//await _unitOfWork.UserService.Update(userInDb);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Result = newStore;

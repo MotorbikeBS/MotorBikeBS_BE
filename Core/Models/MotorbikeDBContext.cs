@@ -705,8 +705,6 @@ namespace Core.Models
                     .HasMaxLength(50)
                     .HasColumnName("store_email");
 
-                entity.Property(e => e.StoreManagerId).HasColumnName("store_manager_id");
-
                 entity.Property(e => e.StoreName)
                     .HasMaxLength(50)
                     .HasColumnName("store_name");
@@ -727,14 +725,8 @@ namespace Core.Models
                     .HasForeignKey(d => d.LocalId)
                     .HasConstraintName("FK_StoreDesciption_LocalAddress");
 
-                entity.HasOne(d => d.StoreManager)
-                    .WithMany(p => p.StoreDesciptionStoreManagers)
-                    .HasForeignKey(d => d.StoreManagerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_StoreDesciption_User1");
-
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.StoreDesciptionUsers)
+                    .WithMany(p => p.StoreDesciptions)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_StoreDesciption_User");
