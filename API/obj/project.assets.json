@@ -2792,11 +2792,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\API\\API.csproj",
+      "projectUniqueName": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\API\\API.csproj",
       "projectName": "API",
-      "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\API\\API.csproj",
+      "projectPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\API\\API.csproj",
       "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-      "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\API\\obj\\",
+      "outputPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "E:\\Visual components,tolls,SDK\\NuGetPackages"
@@ -2818,8 +2818,8 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj": {
-              "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj"
+            "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Service\\Service.csproj": {
+              "projectPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Service\\Service.csproj"
             }
           }
         }

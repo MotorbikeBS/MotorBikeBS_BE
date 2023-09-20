@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj": {}
+    "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Service\\Service.csproj": {}
   },
   "projects": {
-    "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj": {
+    "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj",
+        "projectUniqueName": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj",
+        "projectPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Core\\Core.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\obj\\",
+        "outputPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\Visual components,tolls,SDK\\NuGetPackages"
@@ -90,14 +90,14 @@
         }
       }
     },
-    "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj": {
+    "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Service\\Service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj",
+        "projectUniqueName": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Service\\Service.csproj",
         "projectName": "Service",
-        "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\Service.csproj",
+        "projectPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Service\\Service.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Service\\obj\\",
+        "outputPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Service\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\Visual components,tolls,SDK\\NuGetPackages"
@@ -119,8 +119,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj": {
-                "projectPath": "E:\\FPT University\\Semester 9\\Capstone Project\\Clone\\MotorBikeBS_BE\\Core\\Core.csproj"
+              "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Core\\Core.csproj": {
+                "projectPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Core\\Core.csproj"
               }
             }
           }
