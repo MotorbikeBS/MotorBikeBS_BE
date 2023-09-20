@@ -45,7 +45,7 @@ namespace Core.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=(local);Uid=ntp;Pwd=123456;Database=MotorbikeDB");
+                optionsBuilder.UseSqlServer("Server=(local);Uid=sa;Pwd=1234567890;Database=MotorbikeDB");
             }
         }
 
@@ -319,11 +319,15 @@ namespace Core.Models
                     .HasMaxLength(50)
                     .HasColumnName("brand");
 
+                entity.Property(e => e.CertificateNumber)
+                    .HasMaxLength(6)
+                    .HasColumnName("certificate_number")
+                    .IsFixedLength();
+
                 entity.Property(e => e.Description)
                     .HasMaxLength(255)
                     .HasColumnName("description");
 
-                entity.Property(e => e.ImageId).HasColumnName("image_id");
 
                 entity.Property(e => e.Model)
                     .HasMaxLength(50)
@@ -808,7 +812,7 @@ namespace Core.Models
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Users)
                     .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("FK_User_Role");
+                    .HasConstraintName("FK_User_Role1");
 
                 entity.HasMany(d => d.Motors)
                     .WithMany(p => p.Users)
