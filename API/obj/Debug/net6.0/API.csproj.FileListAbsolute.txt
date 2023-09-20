@@ -80,6 +80,8 @@ E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\AutoMapper.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Microsoft.AspNetCore.JsonPatch.dll
+E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Microsoft.Data.SqlClient.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Abstractions.dll
@@ -95,6 +97,7 @@ E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Microsoft.OpenApi.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Microsoft.Win32.SystemEvents.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Newtonsoft.Json.dll
+E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Swashbuckle.AspNetCore.Swagger.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 E:\FPT University\Semester 9\Capstone Project\Clone\MotorBikeBS_BE\API\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerUI.dll

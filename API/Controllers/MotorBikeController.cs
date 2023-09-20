@@ -24,39 +24,65 @@ namespace API.Controllers
 		[HttpGet]
 		public async Task<ApiResponse>Get()
 		{
-			var list = await _unitOfWork.MotorBikeService.Get();
-			if(list == null || list.Count() <=0)
+			try
 			{
-				_response.ErrorMessages.Add("Can not found any motor bike!");
+				var list = await _unitOfWork.MotorBikeService.Get();
+				if (list == null || list.Count() <= 0)
+				{
+					_response.ErrorMessages.Add("Can not found any motor bike!");
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.NotFound;
+				}
+				else
+				{
+					_response.IsSuccess = true;
+					_response.StatusCode = HttpStatusCode.OK;
+					_response.Result = list;
+				}
+				return _response;
+			}
+			catch (Exception ex)
+			{
 				_response.IsSuccess = false;
-				_response.StatusCode = HttpStatusCode.NotFound;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return _response;
 			}
-			else
-			{
-				_response.IsSuccess = true;
-				_response.StatusCode = HttpStatusCode.OK;
-				_response.Result = list;
-			}
-			return _response;
 		}
 
 		[HttpGet("{id:int}")]
 		public async Task<ApiResponse> GetById(int id)
 		{
-			var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id);
-			if(obj == null)
+			try
 			{
-				_response.ErrorMessages.Add("Can not found any motor bike!");
+				var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id);
+				if (obj == null)
+				{
+					_response.ErrorMessages.Add("Can not found any motor bike!");
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.NotFound;
+				}
+				else
+				{
+					_response.IsSuccess = true;
+					_response.StatusCode = HttpStatusCode.OK;
+					_response.Result = obj;
+				}
+				return _response;
+			}
+			catch (Exception ex)
+			{
 				_response.IsSuccess = false;
-				_response.StatusCode = HttpStatusCode.NotFound;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return _response;
 			}
-			else
-			{
-				_response.IsSuccess = true;
-				_response.StatusCode = HttpStatusCode.OK;
-				_response.Result = obj;
-			}
-			return _response;
 		}
 	}
 }

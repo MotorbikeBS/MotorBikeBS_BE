@@ -24,6 +24,7 @@ namespace Core.Models
         public int? ImageId { get; set; }
         public int? StoreId { get; set; }
         public int OwnerId { get; set; }
+        public int? Odo { get; set; }
 
         public virtual MotorbikeStatus? MotorStatus { get; set; }
         public virtual MotorbikeType? MotorType { get; set; }

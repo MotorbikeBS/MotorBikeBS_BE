@@ -10,7 +10,6 @@ namespace Service.Service
 {
 	public interface IUserService : IGenericRepository<User>
 	{
-		Task<User> Login(User user);
 		Task<User> Register(User user);
 	}
 }

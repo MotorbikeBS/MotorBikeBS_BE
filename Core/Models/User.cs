@@ -10,15 +10,13 @@ namespace Core.Models
             Motorbikes = new HashSet<Motorbike>();
             RequestReceivers = new HashSet<Request>();
             RequestSenders = new HashSet<Request>();
-            StoreDesciptionStoreManagers = new HashSet<StoreDesciption>();
-            StoreDesciptionUsers = new HashSet<StoreDesciption>();
+            StoreDesciptions = new HashSet<StoreDesciption>();
             Motors = new HashSet<Motorbike>();
         }
 
         public int UserId { get; set; }
         public string? UserName { get; set; }
         public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
         public string? Phone { get; set; }
         public int? Gender { get; set; }
         public DateTime? Dob { get; set; }
@@ -26,17 +24,21 @@ namespace Core.Models
         public string? Address { get; set; }
         public int? LocalId { get; set; }
         public int? RoleId { get; set; }
-        public DateTime UserCreatedAt { get; set; }
-        public DateTime UserUpdatedAt { get; set; }
+        public DateTime? UserVerifyAt { get; set; }
+        public DateTime? UserUpdatedAt { get; set; }
         public string Status { get; set; } = null!;
+        public byte[]? PasswordHash { get; set; }
+        public byte[]? PasswordSalt { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? ResetTokenExpires { get; set; }
+        public string? VerifycationToken { get; set; }
 
         public virtual LocalAddress? Local { get; set; }
         public virtual Role? Role { get; set; }
         public virtual ICollection<Motorbike> Motorbikes { get; set; }
         public virtual ICollection<Request> RequestReceivers { get; set; }
         public virtual ICollection<Request> RequestSenders { get; set; }
-        public virtual ICollection<StoreDesciption> StoreDesciptionStoreManagers { get; set; }
-        public virtual ICollection<StoreDesciption> StoreDesciptionUsers { get; set; }
+        public virtual ICollection<StoreDesciption> StoreDesciptions { get; set; }
 
         public virtual ICollection<Motorbike> Motors { get; set; }
     }
