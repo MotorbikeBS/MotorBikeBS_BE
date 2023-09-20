@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "veEHxlTz3DBWnD3DbsRRdIHGr1EamFwQZpemDeSIpnW4MxqoCQqgp2ClcRmE2OSQe+S4+39d82HZm5VFnSffnA==",
+  "dgSpecHash": "aPgcOnUMU9+t1j5pS46YU/L49MAdLoOPWXxOj7P/jENPsRVdSWuwfOaZCVE1t+bG2uV2h5FVxIoLPG6RtQEn3g==",
   "success": true,
-  "projectFilePath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\API\\API.csproj",
+  "projectFilePath": "C:\\Users\\user\\Desktop\\Pull\\MotorBikeBS_BE\\API\\API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\user\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\user\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

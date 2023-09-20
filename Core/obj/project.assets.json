@@ -2383,11 +2383,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Core\\Core.csproj",
+      "projectUniqueName": "C:\\Users\\user\\Desktop\\Pull\\MotorBikeBS_BE\\Core\\Core.csproj",
       "projectName": "Core",
-      "projectPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Core\\Core.csproj",
+      "projectPath": "C:\\Users\\user\\Desktop\\Pull\\MotorBikeBS_BE\\Core\\Core.csproj",
       "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-      "outputPath": "E:\\FPT University\\Semester 9\\Pull\\MotorBikeBS_BE\\Core\\obj\\",
+      "outputPath": "C:\\Users\\user\\Desktop\\Pull\\MotorBikeBS_BE\\Core\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "E:\\Visual components,tolls,SDK\\NuGetPackages"
