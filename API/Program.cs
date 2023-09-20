@@ -2,6 +2,7 @@ using API.AutoMapper;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Service.Repository;
 using Service.Service;
 using Service.UnitOfWork;
 using System.Text;
@@ -17,6 +18,9 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 //UnitOfWork
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
+//Email Sender
+builder.Services.AddTransient<IEmailSender, EmailSenderRepository>();
 
 //Cors
 builder.Services.AddCors();
@@ -36,7 +40,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 	};
 });
 
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
+
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+	options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+); ;
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
