@@ -17,16 +17,16 @@ namespace API.Controllers
 	{
 		private readonly IUnitOfWork _unitOfWork;
 		private ApiResponse _response;
-        private readonly IMapper _mapper;
+		private readonly IMapper _mapper;
 
-        public MotorBikeController(IUnitOfWork unitOfWork, IMapper mapper)
+		public MotorBikeController(IUnitOfWork unitOfWork, IMapper mapper)
 		{
 			_unitOfWork = unitOfWork;
 			_response = new ApiResponse();
-            _mapper = mapper;
-        }
+			_mapper = mapper;
+		}
 		[HttpGet]
-		public async Task<ApiResponse>Get()
+		public async Task<ApiResponse> Get()
 		{
 			try
 			{
@@ -57,8 +57,72 @@ namespace API.Controllers
 			}
 		}
 
-		[HttpGet("{id:int}")]
-		public async Task<ApiResponse> GetById(int id)
+        [HttpGet("GetMotorByStore")]
+        public async Task<ApiResponse> GetByStoreId(int StoreID)
+        {
+            try
+            {
+                var list = await _unitOfWork.MotorBikeService.Get(e => e.StoreId == StoreID);
+                if (list == null || list.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = list;
+                }
+                return _response;
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return _response;
+            }
+        }
+
+        [HttpGet("GetMotorByOwner")]
+        public async Task<ApiResponse> GetByOwnerId(int OwnerID)
+        {
+            try
+            {
+                var list = await _unitOfWork.MotorBikeService.Get(e => e.OwnerId == OwnerID);
+                if (list == null || list.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = list;
+                }
+                return _response;
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return _response;
+            }
+        }
+
+        [HttpGet("{id:int}")]
+		public async Task<ApiResponse> GetByMotorId(int id)
 		{
 			try
 			{
@@ -88,40 +152,42 @@ namespace API.Controllers
 				return _response;
 			}
 		}
-		[HttpPost]
-		[Route("MotorRegister")]
-		public async Task<ApiResponse> MotorRegister(RegisterDTO motor)
-		{
-			try
-			{
-                var CertNum = await _unitOfWork.MotorBikeService.GetFirst(c => c.CertificateNumber == motor.CertificateNumber);
-                if (CertNum != null)
-                {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Certificate Number already exist!");
-                    return _response;
-                }
-				else
-				{
-                    var newMotor = _mapper.Map<Motorbike>(motor);
-					await _unitOfWork.MotorBikeService.Add(newMotor);
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = newMotor;
-                }
-                return _response;
-            }
-			catch (Exception ex)
-			{
-				_response.IsSuccess = false;
-				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages = new List<string>()
-				{
-					ex.ToString()
-				};
-				return _response;
-			}
-        }
-        }
+
+		//[HttpPost]
+		//[Route("MotorRegister")]
+		//public async Task<ApiResponse> MotorRegister(MotorRegisterDTO motor)
+		//{
+		//	try
+		//	{
+		//		var CertNum = await _unitOfWork.MotorBikeService.GetFirst(c => c.CertificateNumber == motor.CertificateNumber);
+		//		if (CertNum != null)
+		//		{
+		//			_response.IsSuccess = false;
+		//			_response.StatusCode = HttpStatusCode.BadRequest;
+		//			_response.ErrorMessages.Add("Certificate Number already exist!");
+		//		}
+		//		else
+		//		{
+		//			var newMotor = _mapper.Map<Motorbike>(motor);
+		//			await _unitOfWork.MotorBikeService.Add(newMotor);
+
+		//			_response.IsSuccess = true;
+		//			_response.StatusCode = HttpStatusCode.OK;
+		//			_response.Result = newMotor;
+		//		}
+		//		return _response;
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		_response.IsSuccess = false;
+		//		_response.StatusCode = HttpStatusCode.BadRequest;
+		//		_response.ErrorMessages = new List<string>()
+		//		{
+		//			ex.ToString()
+		//		};
+		//		return _response;
+		//	}
+		//}
+	}
+
 }

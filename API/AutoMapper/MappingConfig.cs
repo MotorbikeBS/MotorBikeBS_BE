@@ -15,7 +15,7 @@ namespace API.AutoMapper
 				config.CreateMap<User, DTO.UserDTO.RegisterDTO>().ReverseMap().ForSourceMember(source => source.PasswordConfirmed, opt => opt.DoNotValidate());
 				config.CreateMap<User, ResetPasswordDTO>().ReverseMap().ForSourceMember(source => source.PasswordConfirmed, opt => opt.DoNotValidate()); ;
 				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap();
-                config.CreateMap<Motorbike, DTO.MotorbikeDTO.RegisterDTO> ().ReverseMap();
+                config.CreateMap<Motorbike, DTO.MotorbikeDTO.MotorRegisterDTO> ().ReverseMap();
             });
 			return mappingConfig;
 		}

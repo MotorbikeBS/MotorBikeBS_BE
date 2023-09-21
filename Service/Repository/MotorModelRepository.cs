@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Service.Repository
 {
-	public class FacilityRepository : GenericRepository<Facility>, IFacilityService
+	public class MotorModelRepository : GenericRepository<MotorbikeModel>, IMotorModelService
     {
-		public FacilityRepository(MotorbikeDBContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
+		public MotorModelRepository(MotorbikeDBContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
 		{
 		}
 	}

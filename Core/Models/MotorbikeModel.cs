@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace Core.Models
 {
-    public partial class MotorbikeType
+    public partial class MotorbikeModel
     {
-        public MotorbikeType()
+        public MotorbikeModel()
         {
             Motorbikes = new HashSet<Motorbike>();
         }
 
-        public int MotorTypeId { get; set; }
-        public string? Title { get; set; }
+        public int ModelId { get; set; }
+        public string? ModelName { get; set; }
         public string? Description { get; set; }
-        public string? Status { get; set; }
+        public string Status { get; set; } = null!;
 
         public virtual ICollection<Motorbike> Motorbikes { get; set; }
     }
