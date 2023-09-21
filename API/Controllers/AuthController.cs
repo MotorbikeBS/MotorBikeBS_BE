@@ -91,7 +91,7 @@ namespace API.Controllers
 						await _unitOfWork.UserService.Update(userInDb);
 
 						var subject = "Verify Token";
-						var htmlMessage = $"<p>Hello {userInDb.UserName},<br>Please click <a href=\"http://localhost:3000/users/reset-password?token={userInDb.VerifycationToken}\">here</a> to verify your password.</p>";
+						var htmlMessage = $"<p>Hello {userInDb.UserName},<br>Please click <a href=\"http://localhost:3000/users/verify?token={userInDb.VerifycationToken}\">here</a> to verify your account.</p>";
 
 						await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 						_response.IsSuccess = true;
