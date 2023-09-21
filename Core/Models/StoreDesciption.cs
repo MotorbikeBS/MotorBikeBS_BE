@@ -5,6 +5,11 @@ namespace Core.Models
 {
     public partial class StoreDesciption
     {
+        public StoreDesciption()
+        {
+            StoreImages = new HashSet<StoreImage>();
+        }
+
         public int StoreId { get; set; }
         public int UserId { get; set; }
         public string StoreName { get; set; } = null!;
@@ -20,5 +25,6 @@ namespace Core.Models
 
         public virtual LocalAddress? Local { get; set; }
         public virtual User User { get; set; } = null!;
+        public virtual ICollection<StoreImage> StoreImages { get; set; }
     }
 }

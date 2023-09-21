@@ -25,7 +25,9 @@ namespace Core.Models
         public virtual DbSet<EarnAlivingContractImage> EarnAlivingContractImages { get; set; } = null!;
         public virtual DbSet<LocalAddress> LocalAddresses { get; set; } = null!;
         public virtual DbSet<Motorbike> Motorbikes { get; set; } = null!;
+        public virtual DbSet<MotorbikeBrand> MotorbikeBrands { get; set; } = null!;
         public virtual DbSet<MotorbikeImage> MotorbikeImages { get; set; } = null!;
+        public virtual DbSet<MotorbikeModel> MotorbikeModels { get; set; } = null!;
         public virtual DbSet<MotorbikeStatus> MotorbikeStatuses { get; set; } = null!;
         public virtual DbSet<MotorbikeType> MotorbikeTypes { get; set; } = null!;
         public virtual DbSet<Negotiation> Negotiations { get; set; } = null!;
@@ -38,16 +40,8 @@ namespace Core.Models
         public virtual DbSet<RequestType> RequestTypes { get; set; } = null!;
         public virtual DbSet<Role> Roles { get; set; } = null!;
         public virtual DbSet<StoreDesciption> StoreDesciptions { get; set; } = null!;
+        public virtual DbSet<StoreImage> StoreImages { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
-
-		//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		//        {
-		//            if (!optionsBuilder.IsConfigured)
-		//            {
-		//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-		//                optionsBuilder.UseSqlServer("Server=(local);Uid=ntp;Pwd=123456;Database=MotorbikeDB");
-		//            }
-		//        }
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
@@ -282,17 +276,18 @@ namespace Core.Models
 
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
-                entity.Property(e => e.Brand)
-                    .HasMaxLength(50)
-                    .HasColumnName("brand");
+                entity.Property(e => e.BrandId).HasColumnName("brand_id");
+
+                entity.Property(e => e.CertificateNumber)
+                    .HasMaxLength(6)
+                    .HasColumnName("certificate_number")
+                    .IsFixedLength();
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(255)
                     .HasColumnName("description");
 
-                entity.Property(e => e.Model)
-                    .HasMaxLength(50)
-                    .HasColumnName("model");
+                entity.Property(e => e.ModelId).HasColumnName("model_id");
 
                 entity.Property(e => e.MotorStatusId).HasColumnName("motor_status_id");
 
@@ -311,6 +306,47 @@ namespace Core.Models
                 entity.Property(e => e.Year)
                     .HasColumnType("date")
                     .HasColumnName("year");
+
+                entity.HasOne(d => d.Brand)
+                    .WithMany(p => p.Motorbikes)
+                    .HasForeignKey(d => d.BrandId)
+                    .HasConstraintName("FK_Motorbike_MotorbikeBrand");
+
+                entity.HasOne(d => d.Model)
+                    .WithMany(p => p.Motorbikes)
+                    .HasForeignKey(d => d.ModelId)
+                    .HasConstraintName("FK_Motorbike_MotorbikeModel");
+
+                entity.HasOne(d => d.MotorStatus)
+                    .WithMany(p => p.Motorbikes)
+                    .HasForeignKey(d => d.MotorStatusId)
+                    .HasConstraintName("FK_Motorbike_MotorbikeStatus");
+
+                entity.HasOne(d => d.MotorType)
+                    .WithMany(p => p.Motorbikes)
+                    .HasForeignKey(d => d.MotorTypeId)
+                    .HasConstraintName("FK_Motorbike_MotorbikeType");
+            });
+
+            modelBuilder.Entity<MotorbikeBrand>(entity =>
+            {
+                entity.HasKey(e => e.BrandId);
+
+                entity.ToTable("MotorbikeBrand");
+
+                entity.Property(e => e.BrandId).HasColumnName("brand_id");
+
+                entity.Property(e => e.BrandName)
+                    .HasMaxLength(50)
+                    .HasColumnName("brand_name");
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(200)
+                    .HasColumnName("description");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(10)
+                    .HasColumnName("status");
             });
 
             modelBuilder.Entity<MotorbikeImage>(entity =>
@@ -330,8 +366,28 @@ namespace Core.Models
                 entity.HasOne(d => d.Motor)
                     .WithMany(p => p.MotorbikeImages)
                     .HasForeignKey(d => d.MotorId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_MotorbikeImage_Motorbike");
+            });
+
+            modelBuilder.Entity<MotorbikeModel>(entity =>
+            {
+                entity.HasKey(e => e.ModelId);
+
+                entity.ToTable("MotorbikeModel");
+
+                entity.Property(e => e.ModelId).HasColumnName("model_id");
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(200)
+                    .HasColumnName("description");
+
+                entity.Property(e => e.ModelName)
+                    .HasMaxLength(50)
+                    .HasColumnName("model_name");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(10)
+                    .HasColumnName("status");
             });
 
             modelBuilder.Entity<MotorbikeStatus>(entity =>
@@ -363,6 +419,10 @@ namespace Core.Models
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)
                     .HasColumnName("description");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(10)
+                    .HasColumnName("status");
 
                 entity.Property(e => e.Title)
                     .HasMaxLength(100)
@@ -685,6 +745,25 @@ namespace Core.Models
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_StoreDesciption_User");
+            });
+
+            modelBuilder.Entity<StoreImage>(entity =>
+            {
+                entity.ToTable("StoreImage");
+
+                entity.Property(e => e.StoreImageId).HasColumnName("store_image_id");
+
+                entity.Property(e => e.ImageLink)
+                    .HasMaxLength(200)
+                    .HasColumnName("image_link");
+
+                entity.Property(e => e.StoreId).HasColumnName("store_id");
+
+                entity.HasOne(d => d.Store)
+                    .WithMany(p => p.StoreImages)
+                    .HasForeignKey(d => d.StoreId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_StoreImage_StoreDesciption");
             });
 
             modelBuilder.Entity<User>(entity =>
