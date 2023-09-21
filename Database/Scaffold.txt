@@ -1,0 +1,2 @@
+dotnet ef dbcontext scaffold "Server=(local);Uid=sa;Pwd=1234567890;Database=MotorbikeDB" 
+Microsoft.EntityFrameworkCore.SqlServer --output-dir Models

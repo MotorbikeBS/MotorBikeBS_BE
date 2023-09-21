@@ -1,4 +1,7 @@
 ﻿using API.DTO;
+using API.DTO.MotorbikeDTO;
+using Core.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,13 +17,14 @@ namespace API.Controllers
 	{
 		private readonly IUnitOfWork _unitOfWork;
 		private ApiResponse _response;
+        private readonly IMapper _mapper;
 
-		public MotorBikeController(IUnitOfWork unitOfWork)
+        public MotorBikeController(IUnitOfWork unitOfWork, IMapper mapper)
 		{
 			_unitOfWork = unitOfWork;
 			_response = new ApiResponse();
-		}
-		//[Authorize(Roles ="Admin")]
+            _mapper = mapper;
+        }
 		[HttpGet]
 		public async Task<ApiResponse>Get()
 		{
@@ -84,5 +88,40 @@ namespace API.Controllers
 				return _response;
 			}
 		}
-	}
+		[HttpPost]
+		[Route("MotorRegister")]
+		public async Task<ApiResponse> MotorRegister(RegisterDTO motor)
+		{
+			try
+			{
+                var CertNum = await _unitOfWork.MotorBikeService.GetFirst(c => c.CertificateNumber == motor.CertificateNumber);
+                if (CertNum != null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Certificate Number already exist!");
+                    return _response;
+                }
+				else
+				{
+                    var newMotor = _mapper.Map<Motorbike>(motor);
+					await _unitOfWork.MotorBikeService.Add(newMotor);
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = newMotor;
+                }
+                return _response;
+            }
+			catch (Exception ex)
+			{
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return _response;
+			}
+        }
+        }
 }

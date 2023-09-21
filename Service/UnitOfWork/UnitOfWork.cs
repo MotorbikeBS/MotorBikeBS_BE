@@ -12,11 +12,17 @@ namespace Service.UnitOfWork
 	public class UnitOfWork : IUnitOfWork
 	{
 		public IMotorBikeService MotorBikeService { get; private set; } = null!;
-		public IUserService UserService { get; private set; } = null!;
+        public IMotorImageService MotorImageService { get; private set; } = null!;
+        public IMotorStatusService MotorStatusService { get; private set; } = null!;
+        public IMotorTypeService MotorTypeService { get; private set; } = null!;
+        public IFacilityService FacilityService { get; private set; } = null!;
+        public IUserService UserService { get; private set; } = null!;
 		public IRoleService RoleService { get; private set; } = null!;
 		public IStoreDescriptionService StoreDescriptionService { get; private set; } = null!;
 
-		private readonly MotorbikeDBContext _context;
+        
+
+        private readonly MotorbikeDBContext _context;
 
 		public UnitOfWork()
 		{
