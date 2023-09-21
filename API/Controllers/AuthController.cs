@@ -39,27 +39,13 @@ namespace API.Controllers
 		}
 
 		[HttpPost]
-		[Route("CustomerRegister")]
+		[Route("user-register")]
 		public async Task<ApiResponse> UserRegister(RegisterDTO user)
 		{
 			try
 			{
-				//if (!SingleSpaceBetweenNamesAttribute.SpaceValidation(user.UserName))
-				//{
-				//	_response.IsSuccess = false;
-				//	_response.StatusCode = HttpStatusCode.BadRequest;
-				//	_response.ErrorMessages.Add("User name is not valid!");
-				//	return _response;
-				//}
 				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.Email == user.Email);
-				var role = await _unitOfWork.RoleService.GetFirst(x => x.RoleId == user.RoleId);
-				if(role == null)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Vai trò người dùng không tồn tại!");
-					return _response;
-				}
+
 				if (userInDb == null)
 				{
 					CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -67,6 +53,7 @@ namespace API.Controllers
 					newUser.Status = "NOT VERIFY";
 					newUser.PasswordHash = passwordHash;
 					newUser.PasswordSalt = passwordSalt;
+					newUser.RoleId = 4;
 					newUser.VerifycationToken = CreateRandomToken();
 					await _unitOfWork.UserService.Add(newUser);
 
@@ -120,7 +107,7 @@ namespace API.Controllers
 		}
 
 		[HttpPost]
-		[Route("StoreRegister")]
+		[Route("store-register")]
 		public async Task<ApiResponse> StoreRegister(StoreRegisterDTO store)
 		{
 			try
@@ -156,7 +143,7 @@ namespace API.Controllers
 		}
 
 		[HttpPost]
-		[Route("Login")]
+		[Route("login")]
 		public async Task<ApiResponse> Login(LoginDTO obj)
 		{
 			try
@@ -223,7 +210,7 @@ namespace API.Controllers
 		}
 
 		[HttpPost]
-		[Route("VerifyAccount")]
+		[Route("verify-account")]
 		public async Task<ApiResponse> VerifyAccount(int id, string token)
 		{
 			try
@@ -256,7 +243,7 @@ namespace API.Controllers
 		}
 
 		[HttpPost]
-		[Route("ForgotPassword")]
+		[Route("forgot-password")]
 		public async Task<ApiResponse> ForgotPassword(string email)
 		{
 			try
@@ -294,7 +281,7 @@ namespace API.Controllers
 		}
 
 		[HttpPost]
-		[Route("ResetPassword")]
+		[Route("reset-password")]
 		public async Task<ApiResponse> ResetPassword([FromQuery] string token,ResetPasswordDTO request)
 		{
 			try

@@ -18,6 +18,5 @@ namespace API.DTO.UserDTO
             MinLength(10, ErrorMessage = "Phone number is not valid!"),
             MaxLength(11, ErrorMessage = "Phone number is not valid!")]
         public string? Phone { get; set; }
-		public int? RoleId { get; set; }
 	}
 }
