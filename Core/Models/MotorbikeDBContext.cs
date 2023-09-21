@@ -57,6 +57,26 @@ namespace Core.Models
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 
+        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //        {
+        //            if (!optionsBuilder.IsConfigured)
+        //            {
+        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        //                optionsBuilder.UseSqlServer("Server=(local);Uid=sa;Pwd=1234567890;Database=MotorbikeDB");
+        //            }
+        //        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            var d = Directory.GetCurrentDirectory();
+            IConfigurationRoot configuration = builder.Build();
+            string connectionString = configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseSqlServer(connectionString);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -279,12 +299,7 @@ namespace Core.Models
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
                 entity.Property(e => e.BrandId).HasColumnName("brand_id");
-
-                entity.Property(e => e.CertificateNumber)
-                    .HasMaxLength(6)
-                    .HasColumnName("certificate_number")
-                    .IsFixedLength();
-
+                
                 entity.Property(e => e.CertificateNumber)
                     .HasMaxLength(6)
                     .HasColumnName("certificate_number")
@@ -293,10 +308,7 @@ namespace Core.Models
                 entity.Property(e => e.Description)
                     .HasMaxLength(255)
                     .HasColumnName("description");
-
-
                 entity.Property(e => e.ModelId).HasColumnName("model_id");
-            
 
                 entity.Property(e => e.MotorStatusId).HasColumnName("motor_status_id");
 
@@ -845,7 +857,7 @@ namespace Core.Models
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Users)
                     .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("FK_User_Role1");
+                    .HasConstraintName("FK_User_Role");
 
                 entity.HasMany(d => d.Motors)
                     .WithMany(p => p.Users)

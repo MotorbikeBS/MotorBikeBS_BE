@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Service.Service
 {
-	public interface IFacilityService : IGenericRepository<Facility>
+	public interface IMotorModelService : IGenericRepository<MotorbikeModel>
 	{
 	}
 }
