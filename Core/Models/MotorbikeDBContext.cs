@@ -43,6 +43,20 @@ namespace Core.Models
         public virtual DbSet<StoreImage> StoreImages { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
+
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+			var d = Directory.GetCurrentDirectory();
+			IConfigurationRoot configuration = builder.Build();
+			string connectionString = configuration.GetConnectionString("DefaultConnection");
+			optionsBuilder.UseSqlServer(connectionString);
+		}
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+
         //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //        {
         //            if (!optionsBuilder.IsConfigured)
@@ -285,7 +299,7 @@ namespace Core.Models
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
                 entity.Property(e => e.BrandId).HasColumnName("brand_id");
-
+                
                 entity.Property(e => e.CertificateNumber)
                     .HasMaxLength(6)
                     .HasColumnName("certificate_number")
@@ -294,7 +308,6 @@ namespace Core.Models
                 entity.Property(e => e.Description)
                     .HasMaxLength(255)
                     .HasColumnName("description");
-
                 entity.Property(e => e.ModelId).HasColumnName("model_id");
 
                 entity.Property(e => e.MotorStatusId).HasColumnName("motor_status_id");
