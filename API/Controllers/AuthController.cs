@@ -57,7 +57,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Role not exist!");
+					_response.ErrorMessages.Add("Vai trò người dùng không tồn tại!");
 					return _response;
 				}
 				if (userInDb == null)
@@ -91,7 +91,7 @@ namespace API.Controllers
 						await _unitOfWork.UserService.Update(userInDb);
 
 						var subject = "Verify Token";
-						var htmlMessage = $"<p>Hello {userInDb.UserName},<br>Please click <a href=\"http://localhost:3000/users/reset-password?token={userInDb.VerifycationToken}\">here</a> to verify your password.</p>";
+						var htmlMessage = $"<p>Hello {userInDb.UserName},<br>Please click <a href=\"http://localhost:3000/users/verify?token={userInDb.VerifycationToken}\">here</a> to verify your account.</p>";
 
 						await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 						_response.IsSuccess = true;
@@ -102,7 +102,7 @@ namespace API.Controllers
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
-						_response.ErrorMessages.Add("Email is already exist!");
+						_response.ErrorMessages.Add("Email này đã được đăng ký!");
 					}
 				}
 				return _response;
@@ -131,8 +131,6 @@ namespace API.Controllers
 					var newStore = _mapper.Map<StoreDesciption>(store);
 					newStore.Status = "NOT VERIFY";
 					await _unitOfWork.StoreDescriptionService.Add(newStore);
-					//userInDb.Status = "STORE NOT VERIFY";
-					//await _unitOfWork.UserService.Update(userInDb);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Result = newStore;
@@ -141,7 +139,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("User not exist!");
+					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
 				}
 				return _response;
 			}
@@ -169,19 +167,19 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("User not found!");
+					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
 				}
 				else if (user.UserVerifyAt == null)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Not Verify!");
+					_response.ErrorMessages.Add("Người dùng chưa xác minh!");
 				}
 				else if (!VerifyPasswordHash(obj.Password, user.PasswordHash, user.PasswordSalt))
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Password is incorrect!");
+					_response.ErrorMessages.Add("Sai mật khẩu!");
 				}
 				else
 				{
@@ -210,7 +208,7 @@ namespace API.Controllers
 					var tokenJson = JsonConvert.SerializeObject(tokenObject);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
-					_response.Message = $"Welcome back {user.UserName}";
+					_response.Message = $"Chào mừng trở lại {user.UserName}";
 					_response.Result = tokenObject;
 				}
 				return _response;
@@ -219,23 +217,23 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages.Add("Something wrong!");
+				_response.ErrorMessages.Add("Lỗi hệ thống!");
 				return _response;
 			}
 		}
 
 		[HttpPost]
 		[Route("VerifyAccount")]
-		public async Task<ApiResponse> VerifyAccount(string token)
+		public async Task<ApiResponse> VerifyAccount(int id, string token)
 		{
 			try
 			{
 				var user = await _unitOfWork.UserService.GetFirst(x => x.VerifycationToken == token);
-				if (user == null)
+				if (user == null || user.UserId != id)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Invalid Token!");
+					_response.ErrorMessages.Add("Mã xác minh không hợp lệ!");
 				}
 				else
 				{
@@ -244,7 +242,7 @@ namespace API.Controllers
 					await _unitOfWork.UserService.Update(user);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
-					_response.Message = "Verify successfully";
+					_response.Message = "Xác minh thành công";
 				}
 				return _response;
 			}
@@ -252,7 +250,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages.Add("Something wrong!");
+				_response.ErrorMessages.Add("Lỗi hệ thống!");
 				return _response;
 			}
 		}
@@ -268,7 +266,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Invalid email address!");
+					_response.ErrorMessages.Add("Không tìm thấy email này!");
 				}
 				else
 				{
@@ -277,12 +275,12 @@ namespace API.Controllers
 					await _unitOfWork.UserService.Update(user);
 
 					var subject = "Reset Password";
-					//var message = $"{newUser.VerifycationToken}";
-					var htmlMessage = $"<p>Hello {user.UserName},<br>Please click <a href=\"http://localhost:3000/users/reset-password?token={user.PasswordResetToken}\">here</a> to reset your password.</p>";
+					var htmlMessage = $"<p>Hello {user.UserName},<br>Please click <a href=\"https://motorbikebs.azurewebsites.net/user/{user.UserId}/verify/?token={user.PasswordResetToken}\">here</a> to reset your password.</p>";
 
 					await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
+					_response.Message = "Vui lòng xác minh trong email!";
 				}
 				return _response;
 			}
@@ -290,7 +288,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages.Add("Something wrong!");
+				_response.ErrorMessages.Add("Lỗi hệ thống!");
 				return _response;
 			}
 		}
@@ -306,13 +304,13 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Invalid token!");
+					_response.ErrorMessages.Add("Mã xác minh không lợp lệ!");
 				}
 				else if (user.ResetTokenExpires < DateTime.Now)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Your token has expired!");
+					_response.ErrorMessages.Add("Mã xác minh đã hết hạn!");
 				}
 				else
 				{
@@ -324,7 +322,7 @@ namespace API.Controllers
 					await _unitOfWork.UserService.Update(user);
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.OK;
-					_response.Message = "Password changed!";
+					_response.Message = "Mật khẩu đã được thay đổi!";
 				}
 				return _response;
 			}
@@ -332,7 +330,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages.Add("Something wrong!");
+				_response.ErrorMessages.Add("Lỗi hệ thống!");
 				return _response;
 			}
 		}

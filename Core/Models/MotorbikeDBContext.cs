@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 
 namespace Core.Models
 {
@@ -22,7 +23,6 @@ namespace Core.Models
         public virtual DbSet<ConsignmentContractImage> ConsignmentContractImages { get; set; } = null!;
         public virtual DbSet<EarnAlivingContract> EarnAlivingContracts { get; set; } = null!;
         public virtual DbSet<EarnAlivingContractImage> EarnAlivingContractImages { get; set; } = null!;
-        public virtual DbSet<Facility> Facilities { get; set; } = null!;
         public virtual DbSet<LocalAddress> LocalAddresses { get; set; } = null!;
         public virtual DbSet<Motorbike> Motorbikes { get; set; } = null!;
         public virtual DbSet<MotorbikeImage> MotorbikeImages { get; set; } = null!;
@@ -39,17 +39,28 @@ namespace Core.Models
         public virtual DbSet<Role> Roles { get; set; } = null!;
         public virtual DbSet<StoreDesciption> StoreDesciptions { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
+		//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		//        {
+		//            if (!optionsBuilder.IsConfigured)
+		//            {
+		//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+		//                optionsBuilder.UseSqlServer("Server=(local);Uid=ntp;Pwd=123456;Database=MotorbikeDB");
+		//            }
+		//        }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=(local);Uid=sa;Pwd=1234567890;Database=MotorbikeDB");
-            }
-        }
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+			var d = Directory.GetCurrentDirectory();
+			IConfigurationRoot configuration = builder.Build();
+			string connectionString = configuration.GetConnectionString("DefaultConnection");
+			optionsBuilder.UseSqlServer(connectionString);
+		}
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -248,42 +259,6 @@ namespace Core.Models
                     .HasConstraintName("FK_EarnALiving_ContractImage_EarnALiving_Contract");
             });
 
-            modelBuilder.Entity<Facility>(entity =>
-            {
-                entity.ToTable("Facility");
-
-                entity.Property(e => e.FacilityId).HasColumnName("facility_id");
-
-                entity.Property(e => e.Description)
-                    .HasMaxLength(200)
-                    .HasColumnName("description");
-
-                entity.Property(e => e.Status)
-                    .HasMaxLength(50)
-                    .HasColumnName("status");
-
-                entity.Property(e => e.Title)
-                    .HasMaxLength(100)
-                    .HasColumnName("title");
-
-                entity.HasMany(d => d.Motors)
-                    .WithMany(p => p.Facilities)
-                    .UsingEntity<Dictionary<string, object>>(
-                        "MotorbikeFacility",
-                        l => l.HasOne<Motorbike>().WithMany().HasForeignKey("MotorId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_MotorbikeFacility_Motorbike"),
-                        r => r.HasOne<Facility>().WithMany().HasForeignKey("FacilityId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_MotorbikeFacility_Facility"),
-                        j =>
-                        {
-                            j.HasKey("FacilityId", "MotorId");
-
-                            j.ToTable("MotorbikeFacility");
-
-                            j.IndexerProperty<int>("FacilityId").ValueGeneratedOnAdd().HasColumnName("facility_id");
-
-                            j.IndexerProperty<int>("MotorId").HasColumnName("motor_id");
-                        });
-            });
-
             modelBuilder.Entity<LocalAddress>(entity =>
             {
                 entity.HasKey(e => e.LocalId);
@@ -293,14 +268,6 @@ namespace Core.Models
                 entity.Property(e => e.LocalId)
                     .ValueGeneratedNever()
                     .HasColumnName("local_id");
-
-                entity.Property(e => e.CityName)
-                    .HasMaxLength(50)
-                    .HasColumnName("city_name");
-
-                entity.Property(e => e.DistrictName)
-                    .HasMaxLength(50)
-                    .HasColumnName("district_name");
 
                 entity.Property(e => e.WardName)
                     .HasMaxLength(50)
@@ -327,8 +294,6 @@ namespace Core.Models
                 entity.Property(e => e.Description)
                     .HasMaxLength(255)
                     .HasColumnName("description");
-
-
                 entity.Property(e => e.Model)
                     .HasMaxLength(50)
                     .HasColumnName("model");
@@ -350,22 +315,6 @@ namespace Core.Models
                 entity.Property(e => e.Year)
                     .HasColumnType("date")
                     .HasColumnName("year");
-
-                entity.HasOne(d => d.MotorStatus)
-                    .WithMany(p => p.Motorbikes)
-                    .HasForeignKey(d => d.MotorStatusId)
-                    .HasConstraintName("FK_Motorbike_MotorbikeStatus");
-
-                entity.HasOne(d => d.MotorType)
-                    .WithMany(p => p.Motorbikes)
-                    .HasForeignKey(d => d.MotorTypeId)
-                    .HasConstraintName("FK_Motorbike_MotorbikeType");
-
-                entity.HasOne(d => d.Owner)
-                    .WithMany(p => p.Motorbikes)
-                    .HasForeignKey(d => d.OwnerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Motorbike_User");
             });
 
             modelBuilder.Entity<MotorbikeImage>(entity =>
