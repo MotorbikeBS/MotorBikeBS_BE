@@ -14,9 +14,5 @@ namespace API.DTO.UserDTO
         public string Password { get; set; } = null!;
         [Required, Compare("Password")]
         public string PasswordConfirmed { get; set; }
-        [Required, Phone(ErrorMessage ="Phone number is not valid!"),
-            MinLength(10, ErrorMessage = "Phone number is not valid!"),
-            MaxLength(11, ErrorMessage = "Phone number is not valid!")]
-        public string? Phone { get; set; }
 	}
 }
