@@ -39,7 +39,6 @@ namespace Core.Models
         public virtual DbSet<Role> Roles { get; set; } = null!;
         public virtual DbSet<StoreDesciption> StoreDesciptions { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
-
 		//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		//        {
 		//            if (!optionsBuilder.IsConfigured)
@@ -61,6 +60,7 @@ namespace Core.Models
 		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
+
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -286,10 +286,14 @@ namespace Core.Models
                     .HasMaxLength(50)
                     .HasColumnName("brand");
 
+                entity.Property(e => e.CertificateNumber)
+                    .HasMaxLength(6)
+                    .HasColumnName("certificate_number")
+                    .IsFixedLength();
+
                 entity.Property(e => e.Description)
                     .HasMaxLength(255)
                     .HasColumnName("description");
-
                 entity.Property(e => e.Model)
                     .HasMaxLength(50)
                     .HasColumnName("model");
@@ -757,7 +761,7 @@ namespace Core.Models
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Users)
                     .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("FK_User_Role");
+                    .HasConstraintName("FK_User_Role1");
 
                 entity.HasMany(d => d.Motors)
                     .WithMany(p => p.Users)
