@@ -9,27 +9,27 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MotorStatusController : ControllerBase
+    public class MotorImageController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
         private readonly IMapper _mapper;
 
-        public MotorStatusController(IUnitOfWork unitOfWork, IMapper mapper)
+        public MotorImageController(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _response = new ApiResponse();
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetByMotorId(int id)
         {
             try
             {
-                var list = await _unitOfWork.MotorStatusService.Get();
+                var list = await _unitOfWork.MotorImageService.Get(e => e.MotorId == id);
                 if (list == null || list.Count() <= 0)
                 {
-                    _response.ErrorMessages.Add("Can not found any Status!");
+                    _response.ErrorMessages.Add("Can not found any Image!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -51,11 +51,11 @@ namespace API.Controllers
             }
         }
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetByStatusId(int id)
+        public async Task<IActionResult> GetByImageId(int id)
         {
             try
             {
-                var obj = await _unitOfWork.MotorStatusService.GetFirst(e => e.MotorStatusId == id);
+                var obj = await _unitOfWork.MotorImageService.GetFirst(e => e.ImageId == id);
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Can not found any motor bike!");
@@ -65,7 +65,6 @@ namespace API.Controllers
                 else
                 {
                     _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -81,21 +80,21 @@ namespace API.Controllers
             }
         }
         [HttpPut]
-        public async Task<IActionResult> UpdateStatus([FromQuery] int id, StatusRegisterDTO p)
+        public async Task<IActionResult> UpdateImage([FromQuery] int id, ImageRegisterDTO p)
         {
             try
             {
-                var obj = await _unitOfWork.MotorStatusService.GetFirst(e => e.MotorStatusId == id);
-                if (obj == null || id != p.MotorStatusId)
+                var obj = await _unitOfWork.MotorImageService.GetFirst(e => e.ImageId == id);
+                if (obj == null || id != p.ImageId)
                 {
-                    _response.ErrorMessages.Add("Can not found any Status!");
+                    _response.ErrorMessages.Add("Can not found any image!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
                 else
                 {
-                    obj = _mapper.Map<MotorbikeStatus>(p);
-                    await _unitOfWork.MotorStatusService.Update(obj);
+                    obj = _mapper.Map<MotorbikeImage>(p);
+                    await _unitOfWork.MotorImageService.Update(obj);
                     _response.IsSuccess = true;
                     _response.Result = obj;
                 }

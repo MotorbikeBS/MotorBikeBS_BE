@@ -22,6 +22,14 @@ namespace API.DTO.UserDTO
         public string Password { get; set; } = null!;
         [Required, Compare("Password", ErrorMessage ="Không trùng so với mật khẩu")]
         public string PasswordConfirmed { get; set; }
+<<<<<<< HEAD
+        [Required, Phone(ErrorMessage = "Phone number is not valid!"),
+            MinLength(10, ErrorMessage = "Phone number is not valid!"),
+            MaxLength(11, ErrorMessage = "Phone number is not valid!")]
+        public string? Phone { get; set; }
+        public int? RoleId { get; set; }
+    }
+=======
 
 		private static string CleanAndFormatUserName(string? value)
 		{
@@ -34,4 +42,5 @@ namespace API.DTO.UserDTO
 			return Regex.Replace(value.Trim(), @"\s+", " ");
 		}
 	}
+>>>>>>> 7c8e4723d3f076b00636f75946bbabdf4633d694
 }

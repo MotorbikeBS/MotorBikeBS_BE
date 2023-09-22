@@ -1,12 +1,8 @@
 ﻿using API.DTO;
-using API.DTO.MotorbikeDTO;
-using Core.Models;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
-using System.Collections.Generic;
 using System.Net;
 
 namespace API.Controllers
@@ -26,7 +22,7 @@ namespace API.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<ApiResponse> Get()
+        public async Task<IActionResult> Get()
         {
             try
             {
@@ -35,56 +31,84 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Can not found any brand!");
                     _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = list;
                 }
-                return _response;
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
                 };
-                return _response;
+                return BadRequest(_response);
             }
         }
         [HttpGet("{id:int}")]
-        public async Task<ApiResponse> GetByBrandId(int id)
+        public async Task<IActionResult> GetByBrandId(int id)
         {
             try
             {
                 var obj = await _unitOfWork.MotorBrandService.GetFirst(e => e.BrandId == id);
                 if (obj == null)
                 {
-                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.ErrorMessages.Add("Can not found any brand!");
                     _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
-                return _response;
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
                 };
-                return _response;
+                return BadRequest(_response);
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateBrand([FromQuery] int id, BrandRegisterDTO p)
+        {
+            try
+            {
+                var obj = await _unitOfWork.MotorBrandService.GetFirst(e => e.BrandId == id);
+                if (obj == null || id != p.BrandId)
+                {
+                    _response.ErrorMessages.Add("Can not found any brand!");
+                    _response.IsSuccess = false;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    obj = _mapper.Map<MotorbikeBrand>(p);
+                    await _unitOfWork.MotorBrandService.Update(obj);
+                    _response.IsSuccess = true;
+                    _response.Result = obj;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
             }
         }
     }

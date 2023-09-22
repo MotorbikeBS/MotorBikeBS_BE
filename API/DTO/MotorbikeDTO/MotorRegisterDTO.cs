@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Core.Models;
-
-namespace API.DTO.MotorbikeDTO
+﻿namespace API.DTO.MotorbikeDTO
 {
     public partial class MotorRegisterDTO
     {
