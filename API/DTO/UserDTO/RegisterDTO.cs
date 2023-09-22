@@ -16,7 +16,7 @@ namespace API.DTO.UserDTO
 			get => _userName;
 			set => _userName = CleanAndFormatUserName(value);
 		}
-		[Required, EmailAddress(ErrorMessage ="Email không được bỏ trống")]
+		[Required, EmailAddress(ErrorMessage ="Email không hợp lệ")]
         public string Email { get; set; } = null!;
         [Required, MinLength(6, ErrorMessage ="Mật khẩu phải dài hơn 6 kí tự")]
         public string Password { get; set; } = null!;
