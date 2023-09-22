@@ -1,17 +1,10 @@
 ﻿namespace Core.Models
 {
-    public partial class MotorbikeBrand
+    public partial class BrandRegisterDTO
     {
-        public MotorbikeBrand()
-        {
-            Motorbikes = new HashSet<Motorbike>();
-        }
-
         public int BrandId { get; set; }
         public string? BrandName { get; set; }
         public string? Description { get; set; }
         public string Status { get; set; } = null!;
-
-        public virtual ICollection<Motorbike> Motorbikes { get; set; }
     }
 }
