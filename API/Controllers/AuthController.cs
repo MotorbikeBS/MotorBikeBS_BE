@@ -89,7 +89,7 @@ namespace API.Controllers
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
-						_response.ErrorMessages.Add("Email này đã được đăng ký!");
+						_response.errors.Add("Email này đã được đăng ký!");
 					}
 				}
 				return _response;
@@ -126,7 +126,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
+					_response.errors.Add("Không tìm thấy người dùng!");
 				}
 				return _response;
 			}
@@ -134,7 +134,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages = new List<string>()
+				_response.errors = new List<string>()
 				{
 					ex.ToString()
 				};
@@ -154,19 +154,19 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
+					_response.errors.Add("Không tìm thấy người dùng!");
 				}
 				else if (user.UserVerifyAt == null)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Người dùng chưa xác minh!");
+					_response.errors.Add("Người dùng chưa xác minh!");
 				}
 				else if (!VerifyPasswordHash(obj.Password, user.PasswordHash, user.PasswordSalt))
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Sai mật khẩu!");
+					_response.errors.Add("Sai mật khẩu!");
 				}
 				else
 				{
@@ -204,7 +204,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages.Add("Lỗi hệ thống!");
+				_response.errors.Add("Lỗi hệ thống!");
 				return _response;
 			}
 		}
@@ -220,7 +220,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Mã xác minh không hợp lệ!");
+					_response.errors.Add("Mã xác minh không hợp lệ!");
 				}
 				else
 				{
@@ -237,7 +237,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages.Add("Lỗi hệ thống!");
+				_response.errors.Add("Lỗi hệ thống!");
 				return _response;
 			}
 		}
@@ -253,7 +253,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Không tìm thấy email này!");
+					_response.errors.Add("Không tìm thấy email này!");
 				}
 				else
 				{
@@ -291,13 +291,13 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Mã xác minh không lợp lệ!");
+					_response.errors.Add("Mã xác minh không lợp lệ!");
 				}
 				else if (user.ResetTokenExpires < DateTime.Now)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Mã xác minh đã hết hạn!");
+					_response.errors.Add("Mã xác minh đã hết hạn!");
 				}
 				else
 				{
@@ -317,7 +317,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages.Add("Lỗi hệ thống!");
+				_response.errors.Add("Lỗi hệ thống!");
 				return _response;
 			}
 		}
