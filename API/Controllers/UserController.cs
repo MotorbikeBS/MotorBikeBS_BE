@@ -32,7 +32,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.errors.Add("Không tìm thấy người dùng nào!");
+					_response.ErrorMessages.Add("Không tìm thấy người dùng nào!");
 				}
 				else
 				{
@@ -46,7 +46,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.errors = new List<string>()
+				_response.ErrorMessages = new List<string>()
 				{
 					ex.ToString()
 				};
@@ -64,7 +64,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.NotFound;
-				_response.errors.Add("Người dùng không tồn tại!");
+				_response.ErrorMessages.Add("Người dùng không tồn tại!");
 			}
 				else
 				{
@@ -78,7 +78,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.errors = new List<string>()
+				_response.ErrorMessages = new List<string>()
 				{
 					ex.ToString()
 				};
@@ -97,7 +97,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.errors.Add("Người dùng không tồn tại!");
+					_response.ErrorMessages.Add("Người dùng không tồn tại!");
 				}
 				else
 				{
@@ -115,7 +115,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.errors = new List<string>()
+				_response.ErrorMessages = new List<string>()
 				{
 					ex.ToString()
 				};

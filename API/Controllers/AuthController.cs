@@ -40,7 +40,7 @@ namespace API.Controllers
 
 		[HttpPost]
 		[Route("user-register")]
-		public async Task<ApiResponse> UserRegister(RegisterDTO user)
+		public async Task<IActionResult> UserRegister(RegisterDTO user)
 		{
 			try
 			{
@@ -66,6 +66,7 @@ namespace API.Controllers
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Result = newUser;
+					return Ok(_response);
 				}
 				else
 				{
@@ -86,31 +87,33 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.OK;
 						_response.Message = "Email này đã được đăng ký trước đây nhưng chưa xác nhận, vui lòng xác nhận email";
 						_response.Result = userInDb;
+						return Ok(_response);
 					}
 					else
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
-						_response.errors.Add("Email này đã được đăng ký!");
+						_response.ErrorMessages.Add("Email này đã được đăng ký!");
+						return BadRequest(_response);
 					}
 				}
-				return _response;
+				
 			}
 			catch (Exception ex)
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.errors = new List<string>()
+				_response.ErrorMessages = new List<string>()
 				{
 					ex.ToString()
 				};
-				return _response;
+				return Ok(_response);
 			}
 		}
 
 		[HttpPost]
 		[Route("store-register")]
-		public async Task<ApiResponse> StoreRegister(StoreRegisterDTO store)
+		public async Task<IActionResult> StoreRegister(StoreRegisterDTO store)
 		{
 			try
 			{
@@ -123,30 +126,32 @@ namespace API.Controllers
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Result = newStore;
+					return Ok(_response);
 				}
 				else
 				{
 					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.errors.Add("Không tìm thấy người dùng!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
+					return NotFound(_response);
 				}
-				return _response;
+				
 			}
 			catch (Exception ex)
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.errors = new List<string>()
+				_response.ErrorMessages = new List<string>()
 				{
 					ex.ToString()
 				};
-				return _response;
+				return BadRequest(_response);
 			}
 		}
 
 		[HttpPost]
 		[Route("login")]
-		public async Task<ApiResponse> Login(LoginDTO obj)
+		public async Task<IActionResult> Login(LoginDTO obj)
 		{
 			try
 			{
@@ -155,20 +160,23 @@ namespace API.Controllers
 				if (user == null)
 				{
 					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.errors.Add("Không tìm thấy người dùng!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
+					return NotFound(_response);
 				}
 				else if (user.UserVerifyAt == null)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.errors.Add("Người dùng chưa xác minh!");
+					_response.ErrorMessages.Add("Người dùng chưa xác minh!");
+					return BadRequest(_response);
 				}
 				else if (!VerifyPasswordHash(obj.Password, user.PasswordHash, user.PasswordSalt))
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.errors.Add("Sai mật khẩu!");
+					_response.ErrorMessages.Add("Sai mật khẩu!");
+					return BadRequest(_response);
 				}
 				else
 				{
@@ -199,21 +207,21 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Message = $"Chào mừng trở lại {user.UserName}";
 					_response.Result = tokenObject;
+					return Ok(_response);
 				}
-				return _response;
 			}
 			catch
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.errors.Add("Lỗi hệ thống!");
-				return _response;
+				_response.ErrorMessages.Add("Lỗi hệ thống!");
+				return BadRequest(_response);
 			}
 		}
 
 		[HttpPost]
 		[Route("verify-account")]
-		public async Task<ApiResponse> VerifyAccount(int id, string token)
+		public async Task<IActionResult> VerifyAccount(int id, string token)
 		{
 			try
 			{
@@ -222,7 +230,8 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.errors.Add("Mã xác minh không hợp lệ!");
+					_response.ErrorMessages.Add("Mã xác minh không hợp lệ!");
+					return BadRequest(_response);
 				}
 				else
 				{
@@ -232,21 +241,21 @@ namespace API.Controllers
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Message = "Xác minh thành công";
+					return Ok(_response);
 				}
-				return _response;
 			}
 			catch (Exception ex)
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.errors.Add("Lỗi hệ thống!");
-				return _response;
+				_response.ErrorMessages.Add("Lỗi hệ thống!");
+				return BadRequest(_response);
 			}
 		}
 
 		[HttpPost]
 		[Route("forgot-password")]
-		public async Task<ApiResponse> ForgotPassword(string email)
+		public async Task<IActionResult> ForgotPassword(string email)
 		{
 			try
 			{
@@ -254,8 +263,9 @@ namespace API.Controllers
 				if (user == null)
 				{
 					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.errors.Add("Không tìm thấy email này!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy email này!");
+					return NotFound(_response);
 				}
 				else
 				{
@@ -270,21 +280,21 @@ namespace API.Controllers
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Message = "Vui lòng xác minh trong email!";
+					return Ok(_response);
 				}
-				return _response;
 			}
 			catch (Exception ex)
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
 				_response.ErrorMessages.Add("Lỗi hệ thống!");
-				return _response;
+				return Ok(_response);
 			}
 		}
 
 		[HttpPost]
 		[Route("reset-password")]
-		public async Task<ApiResponse> ResetPassword([FromQuery] string token,ResetPasswordDTO request)
+		public async Task<IActionResult> ResetPassword([FromQuery] string token,ResetPasswordDTO request)
 		{
 			try
 			{
@@ -293,13 +303,15 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.errors.Add("Mã xác minh không lợp lệ!");
+					_response.ErrorMessages.Add("Mã xác minh không lợp lệ!");
+					return BadRequest(_response);
 				}
 				else if (user.ResetTokenExpires < DateTime.Now)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.errors.Add("Mã xác minh đã hết hạn!");
+					_response.ErrorMessages.Add("Mã xác minh đã hết hạn!");
+					return BadRequest(_response);
 				}
 				else
 				{
@@ -312,15 +324,15 @@ namespace API.Controllers
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Message = "Mật khẩu đã được thay đổi!";
+					return Ok(_response);
 				}
-				return _response;
 			}
 			catch (Exception ex)
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.errors.Add("Lỗi hệ thống!");
-				return _response;
+				_response.ErrorMessages.Add("Lỗi hệ thống!");
+				return BadRequest(_response);
 			}
 		}
 
