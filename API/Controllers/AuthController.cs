@@ -54,6 +54,7 @@ namespace API.Controllers
 					newUser.PasswordHash = passwordHash;
 					newUser.PasswordSalt = passwordSalt;
 					newUser.RoleId = 4;
+					//newUser.UserName = newUser.UserName.ToString().;
 					newUser.VerifycationToken = CreateRandomToken();
 					await _unitOfWork.UserService.Add(newUser);
 
@@ -83,6 +84,7 @@ namespace API.Controllers
 						await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 						_response.IsSuccess = true;
 						_response.StatusCode = HttpStatusCode.OK;
+						_response.Message = "Email này đã được đăng ký trước đây nhưng chưa xác nhận, vui lòng xác nhận email";
 						_response.Result = userInDb;
 					}
 					else
@@ -98,7 +100,7 @@ namespace API.Controllers
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages = new List<string>()
+				_response.errors = new List<string>()
 				{
 					ex.ToString()
 				};
