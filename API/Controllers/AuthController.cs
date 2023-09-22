@@ -58,7 +58,7 @@ namespace API.Controllers
 					await _unitOfWork.UserService.Add(newUser);
 
 					var subject = "Verify Token";
-					var htmlMessage = $"<p>Hello {newUser.UserName},<br>Please click <a href=\"http://localhost:3000/users/reset-password?token={newUser.VerifycationToken}\">here</a> to verify your password.</p>";
+					var htmlMessage = $"<p>Hello {newUser.UserName},<br>Please click <a href=\"https://motorbikebs.azurewebsites.net/users/{newUser.UserId}/verify/?token={newUser.PasswordResetToken}\">here</a> to verify your password.</p>";
 
 					await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 
@@ -78,7 +78,7 @@ namespace API.Controllers
 						await _unitOfWork.UserService.Update(userInDb);
 
 						var subject = "Verify Token";
-						var htmlMessage = $"<p>Hello {userInDb.UserName},<br>Please click <a href=\"http://localhost:3000/users/verify?token={userInDb.VerifycationToken}\">here</a> to verify your account.</p>";
+						var htmlMessage = $"<p>Hello {userInDb.UserName},<br>Please click <a href=\"https://motorbikebs.azurewebsites.net/users/{userInDb.UserId}/verify/?token={userInDb.PasswordResetToken}\">here</a> to verify your password.</p>";
 
 						await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 						_response.IsSuccess = true;
@@ -262,7 +262,7 @@ namespace API.Controllers
 					await _unitOfWork.UserService.Update(user);
 
 					var subject = "Reset Password";
-					var htmlMessage = $"<p>Hello {user.UserName},<br>Please click <a href=\"https://motorbikebs.azurewebsites.net/user/{user.UserId}/verify/?token={user.PasswordResetToken}\">here</a> to reset your password.</p>";
+					var htmlMessage = $"<p>Hello {user.UserName},<br>Please click <a href=\"https://motorbikebs.azurewebsites.net/user/{user.UserId}/reset-password/?token={user.PasswordResetToken}\">here</a> to reset your password.</p>";
 
 					await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 					_response.IsSuccess = true;
