@@ -160,7 +160,7 @@ namespace API.Controllers
 				if (user == null)
 				{
 					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.StatusCode = HttpStatusCode.NotFound;
 					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
 					return NotFound(_response);
 				}
