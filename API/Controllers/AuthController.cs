@@ -239,7 +239,7 @@ namespace API.Controllers
 						await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 						_response.IsSuccess = true;
 						_response.StatusCode = HttpStatusCode.OK;
-						_response.Message = "Email này đã được đăng ký trước đây nhưng chưa xác nhận, vui lòng xác nhận email";
+						_response.ErrorMessages.Add("Email này đã được đăng ký trước đây nhưng chưa xác nhận, vui lòng xác nhận email");
 						_response.Result = userInDb;
 						return Ok(_response);
 					}
