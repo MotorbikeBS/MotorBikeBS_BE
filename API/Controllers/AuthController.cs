@@ -44,8 +44,16 @@ namespace API.Controllers
 		{
 			try
 			{
+				var rs = InputValidation.RegisterValidation(user.UserName, user.Email, user.Password, user.PasswordConfirmed);
+				if(rs != "")
+				{
+					_response.IsSuccess = true;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add(rs);
+					return BadRequest(_response);
+				}
+				user.UserName = InputValidation.CleanAndFormatUserName(user.UserName);
 				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.Email == user.Email);
-
 				if (userInDb == null)
 				{
 					CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -161,7 +169,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
+					_response.ErrorMessages.Add("Email hoặc mặt khẩu không đúng!");
 					return NotFound(_response);
 				}
 				else if (user.UserVerifyAt == null)
@@ -175,7 +183,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Sai mật khẩu!");
+					_response.ErrorMessages.Add("Email hoặc mật khẩu không hợp lệ!");
 					return BadRequest(_response);
 				}
 				else
