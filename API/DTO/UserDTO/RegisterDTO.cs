@@ -13,7 +13,5 @@ namespace API.DTO.UserDTO
 
         public string PasswordConfirmed { get; set; }
 
-        public string? Phone { get; set; }
-        public int? RoleId { get; set; }
     }
 }
