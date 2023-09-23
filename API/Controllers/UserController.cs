@@ -15,53 +15,16 @@ namespace API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
 
-<<<<<<< HEAD
         public UserController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _response = new ApiResponse();
         }
 
-        [HttpGet]
-        public async Task<ApiResponse> Get()
-        {
-            try
-            {
-                var user = await _unitOfWork.UserService.Get();
-                if (user == null || user.Count() <= 0)
-                {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessages.Add("Không tìm thấy người dùng nào!");
-                }
-                else
-                {
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = user;
-                }
-                return _response;
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessages = new List<string>()
-                {
-                    ex.ToString()
-                };
-                return _response;
-            }
-        }
-=======
-		public UserController(IUnitOfWork unitOfWork)
-		{
-			_unitOfWork = unitOfWork;
-			_response = new ApiResponse();
-		}
+        
 		//[Authorize(Roles = "Admin")]
 		[HttpGet]
-		public async Task<ApiResponse>Get()
+		public async Task<IActionResult>Get()
 		{
 			try
 			{
@@ -71,14 +34,15 @@ namespace API.Controllers
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
 					_response.ErrorMessages.Add("Không tìm thấy người dùng nào!");
+                    return NotFound(_response);
 				}
 				else
 				{
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Result = user;
+                    return Ok(_response);
 				}
-				return _response;
 			}
 			catch (Exception ex)
 			{
@@ -88,13 +52,12 @@ namespace API.Controllers
 				{
 					ex.ToString()
 				};
-				return _response;
+                return BadRequest();
 			}
 		}
->>>>>>> 7c8e4723d3f076b00636f75946bbabdf4633d694
 
         [HttpGet("{id:int}")]
-        public async Task<ApiResponse> GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
@@ -104,14 +67,15 @@ namespace API.Controllers
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("Người dùng không tồn tại!");
+                    return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = user;
-                }
-                return _response;
+					return Ok(_response);
+				}
             }
             catch (Exception ex)
             {
@@ -121,13 +85,13 @@ namespace API.Controllers
                 {
                     ex.ToString()
                 };
-                return _response;
-            }
+				return BadRequest(_response);
+			}
         }
 
         [HttpPost]
         [Route("ChangePassword")]
-        public async Task<ApiResponse> ChangePassword([FromQuery] int id, ResetPasswordDTO passwordDTO)
+        public async Task<IActionResult> ChangePassword([FromQuery] int id, ResetPasswordDTO passwordDTO)
         {
             try
             {
@@ -137,7 +101,8 @@ namespace API.Controllers
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Người dùng không tồn tại!");
-                }
+					return BadRequest(_response);
+				}
                 else
                 {
                     CreatePasswordHash(passwordDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -147,8 +112,8 @@ namespace API.Controllers
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = user;
-                }
-                return _response;
+					return Ok(_response);
+				}
             }
             catch (Exception ex)
             {
@@ -158,8 +123,8 @@ namespace API.Controllers
                 {
                     ex.ToString()
                 };
-                return _response;
-            }
+				return BadRequest(_response);
+			}
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
