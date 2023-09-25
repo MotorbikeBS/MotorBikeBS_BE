@@ -21,9 +21,9 @@ namespace API.Controllers
             _response = new ApiResponse();
         }
 
-        
-		//[Authorize(Roles = "Admin")]
-		[HttpGet]
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
 		public async Task<IActionResult>Get()
 		{
 			try
@@ -56,7 +56,8 @@ namespace API.Controllers
 			}
 		}
 
-        [HttpGet("{id:int}")]
+		[Authorize(Roles = "Admin")]
+		[HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             try
@@ -89,6 +90,7 @@ namespace API.Controllers
 			}
         }
 
+        [Authorize]
         [HttpPost]
         [Route("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromQuery] int id, ResetPasswordDTO passwordDTO)
