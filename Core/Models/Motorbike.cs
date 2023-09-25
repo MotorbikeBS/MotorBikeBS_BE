@@ -1,4 +1,7 @@
-﻿namespace Core.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace Core.Models
 {
     public partial class Motorbike
     {
@@ -11,7 +14,6 @@
 
         public int MotorId { get; set; }
         public string CertificateNumber { get; set; } = null!;
-        public int? BrandId { get; set; }
         public int? ModelId { get; set; }
         public int? Odo { get; set; }
         public DateTime? Year { get; set; }
@@ -22,7 +24,6 @@
         public int? StoreId { get; set; }
         public int OwnerId { get; set; }
 
-        public virtual MotorbikeBrand? Brand { get; set; }
         public virtual MotorbikeModel? Model { get; set; }
         public virtual MotorbikeStatus? MotorStatus { get; set; }
         public virtual MotorbikeType? MotorType { get; set; }
