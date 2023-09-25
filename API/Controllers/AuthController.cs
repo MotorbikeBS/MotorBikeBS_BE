@@ -3,6 +3,8 @@ using API.DTO.UserDTO;
 using API.Validation;
 using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -16,6 +18,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace API.Controllers
 {
@@ -61,6 +64,7 @@ namespace API.Controllers
 					newUser.Status = "NOT VERIFY";
 					newUser.PasswordHash = passwordHash;
 					newUser.PasswordSalt = passwordSalt;
+					newUser.VerifycationTokenExpires = DateTime.Now.AddHours(3);
 					newUser.RoleId = 4;
 					//newUser.UserName = newUser.UserName.ToString().;
 					newUser.VerifycationToken = CreateRandomToken();
@@ -73,7 +77,6 @@ namespace API.Controllers
 
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
-					_response.Result = newUser;
 					return Ok(_response);
 				}
 				else
@@ -94,7 +97,6 @@ namespace API.Controllers
 						_response.IsSuccess = true;
 						_response.StatusCode = HttpStatusCode.OK;
 						_response.ErrorMessages.Add("Email này đã được đăng ký trước đây nhưng chưa xác nhận, vui lòng xác nhận email");
-						_response.Result = userInDb;
 						return Ok(_response);
 					}
 					else
@@ -133,7 +135,6 @@ namespace API.Controllers
 					await _unitOfWork.StoreDescriptionService.Add(newStore);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
-					_response.Result = newStore;
 					return Ok(_response);
 				}
 				else
@@ -243,13 +244,32 @@ namespace API.Controllers
 				}
 				else
 				{
-					user.UserVerifyAt = DateTime.UtcNow;
-					user.Status = "ACTIVE";
-					await _unitOfWork.UserService.Update(user);
-					_response.IsSuccess = true;
-					_response.StatusCode = HttpStatusCode.OK;
-					_response.Message = "Xác minh thành công";
-					return Ok(_response);
+					if(user.VerifycationTokenExpires < DateTime.Now)
+					{
+						_response.IsSuccess = false;
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.ErrorMessages.Add("Mã xác minh đã hết hạn!");
+						return BadRequest(_response);
+					}
+					if(user.Status== "ACTIVE")
+					{
+						_response.IsSuccess = false;
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.ErrorMessages.Add("Mã xác minh không hợp lệ!");
+						return BadRequest(_response);
+					}
+					else
+					{
+						user.UserVerifyAt = DateTime.UtcNow;
+						user.Status = "ACTIVE";
+						user.VerifycationToken = "";
+						user.VerifycationTokenExpires = null;
+						await _unitOfWork.UserService.Update(user);
+						_response.IsSuccess = true;
+						_response.StatusCode = HttpStatusCode.OK;
+						_response.Message = "Xác minh thành công";
+						return Ok(_response);
+					}
 				}
 			}
 			catch (Exception ex)
@@ -272,7 +292,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy email này!");
+					_response.ErrorMessages.Add("Email không hợp lệ!");
 					return NotFound(_response);
 				}
 				else
@@ -302,10 +322,24 @@ namespace API.Controllers
 
 		[HttpPost]
 		[Route("reset-password")]
-		public async Task<IActionResult> ResetPassword([FromQuery] string token,ResetPasswordDTO request)
+		public async Task<IActionResult> ResetPassword(string token,ResetPasswordDTO request)
 		{
 			try
 			{
+				if (!request.Password.Equals(request.PasswordConfirmed))
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add("Mật khẩu xác minh không trùng với mật khẩu!");
+					return BadRequest(_response);
+				}
+				if(request.Password.Length <6 || request.PasswordConfirmed.Length <6)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add("Độ dài mật khẩu phải từ 6 kí tự trở lên!");
+					return BadRequest(_response);
+				}
 				var user = await _unitOfWork.UserService.GetFirst(x => x.PasswordResetToken == token);
 				if (user == null)
 				{
@@ -343,6 +377,7 @@ namespace API.Controllers
 				return BadRequest(_response);
 			}
 		}
+
 
 		private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
 		{

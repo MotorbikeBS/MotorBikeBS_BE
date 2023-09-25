@@ -1,4 +1,7 @@
-﻿namespace Core.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace Core.Models
 {
     public partial class User
     {
@@ -28,6 +31,7 @@
         public string? PasswordResetToken { get; set; }
         public DateTime? ResetTokenExpires { get; set; }
         public string? VerifycationToken { get; set; }
+        public DateTime? VerifycationTokenExpires { get; set; }
 
         public virtual LocalAddress? Local { get; set; }
         public virtual Role? Role { get; set; }
