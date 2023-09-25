@@ -6,7 +6,7 @@ namespace API.DTO.UserDTO
 {
     public class RegisterDTO
     {
-		public string UserName { get; set; }
+        public string UserName { get; set; }
         public string Email { get; set; } = null!;
 
         public string Password { get; set; } = null!;

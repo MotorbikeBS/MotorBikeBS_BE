@@ -29,7 +29,7 @@ namespace API.Controllers
                 var list = await _unitOfWork.MotorImageService.Get(e => e.MotorId == id);
                 if (list == null || list.Count() <= 0)
                 {
-                    _response.ErrorMessages.Add("Can not found any Image!");
+                    _response.ErrorMessages.Add("Không tìm thấy ảnh nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -58,7 +58,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorImageService.GetFirst(e => e.ImageId == id);
                 if (obj == null)
                 {
-                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.ErrorMessages.Add("Không tồn tại xe này!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -87,7 +87,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorImageService.GetFirst(e => e.ImageId == id);
                 if (obj == null || id != p.ImageId)
                 {
-                    _response.ErrorMessages.Add("Can not found any image!");
+                    _response.ErrorMessages.Add("Không tồn tại xe này!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -97,6 +97,42 @@ namespace API.Controllers
                     await _unitOfWork.MotorImageService.Update(obj);
                     _response.IsSuccess = true;
                     _response.Result = obj;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+        [HttpPost]
+        [Route("ImageRegister")]
+        public async Task<IActionResult> ImageRegister(int id, List<ImageRegisterDTO> images)
+        {
+            try
+            {
+                var CertNum = await _unitOfWork.MotorBikeService.GetFirst(c => c.MotorId == id);
+                if (CertNum != null)
+                {
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Không tồn tại xe này!");
+                    return BadRequest(_response);
+                }
+                else
+                {
+                    foreach (var p in images)
+                    {
+                        var newImage = _mapper.Map<MotorbikeImage>(p);
+                        newImage.MotorId = id;
+                        await _unitOfWork.MotorImageService.Add(newImage);
+                        _response.IsSuccess = true;
+                        _response.Result = newImage;
+                    }
                 }
                 return Ok(_response);
             }

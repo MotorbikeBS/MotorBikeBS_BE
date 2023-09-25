@@ -29,7 +29,7 @@ namespace API.Controllers
                 var list = await _unitOfWork.MotorBrandService.Get();
                 if (list == null || list.Count() <= 0)
                 {
-                    _response.ErrorMessages.Add("Can not found any brand!");
+                    _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -58,7 +58,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorBrandService.GetFirst(e => e.BrandId == id);
                 if (obj == null)
                 {
-                    _response.ErrorMessages.Add("Can not found any brand!");
+                    _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -88,7 +88,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorBrandService.GetFirst(e => e.BrandId == id);
                 if (obj == null || id != p.BrandId)
                 {
-                    _response.ErrorMessages.Add("Can not found any brand!");
+                    _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -100,6 +100,38 @@ namespace API.Controllers
                     _response.Result = obj;
                 }
                 return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+        [HttpPost]
+        [Route("BrandRegister")]
+        public async Task<IActionResult> BrandRegister(BrandRegisterDTO Brand)
+        {
+            try
+            {
+                var CertNum = await _unitOfWork.MotorBrandService.GetFirst(c => c.BrandName == Brand.BrandName);
+                if (CertNum != null)
+                {
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Hãng xe \"" + Brand.BrandName + "\" đã tồn tại");
+                    return BadRequest(_response);
+                }
+                else
+                {
+                    var newBrand = _mapper.Map<MotorbikeBrand>(Brand);
+                    await _unitOfWork.MotorBrandService.Add(newBrand);
+                    _response.IsSuccess = true;
+                    _response.Result = newBrand;
+                    return Ok(_response);
+                }
             }
             catch (Exception ex)
             {

@@ -29,7 +29,7 @@ namespace API.Controllers
                 var list = await _unitOfWork.MotorStatusService.Get();
                 if (list == null || list.Count() <= 0)
                 {
-                    _response.ErrorMessages.Add("Can not found any Status!");
+                    _response.ErrorMessages.Add("Không tìm thấy trạng thái nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -58,7 +58,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorStatusService.GetFirst(e => e.MotorStatusId == id);
                 if (obj == null)
                 {
-                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -88,7 +88,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorStatusService.GetFirst(e => e.MotorStatusId == id);
                 if (obj == null || id != p.MotorStatusId)
                 {
-                    _response.ErrorMessages.Add("Can not found any Status!");
+                    _response.ErrorMessages.Add("Không tìm thấy trạng thái nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -100,6 +100,38 @@ namespace API.Controllers
                     _response.Result = obj;
                 }
                 return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+        [HttpPost]
+        [Route("StatusRegister")]
+        public async Task<IActionResult> StatusRegister(StatusRegisterDTO status)
+        {
+            try
+            {
+                var CertNum = await _unitOfWork.MotorStatusService.GetFirst(c => c.Title == status.Title);
+                if (CertNum != null)
+                {
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Trạng thái xe \"" + status.Title + "\" đã tồn tại");
+                    return BadRequest(_response);
+                }
+                else
+                {
+                    var newstatus = _mapper.Map<MotorbikeStatus>(status);
+                    await _unitOfWork.MotorStatusService.Add(newstatus);
+                    _response.IsSuccess = true;
+                    _response.Result = newstatus;
+                    return Ok(_response);
+                }
             }
             catch (Exception ex)
             {

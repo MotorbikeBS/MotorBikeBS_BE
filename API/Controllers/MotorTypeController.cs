@@ -29,7 +29,7 @@ namespace API.Controllers
                 var list = await _unitOfWork.MotorTypeService.Get();
                 if (list == null || list.Count() <= 0)
                 {
-                    _response.ErrorMessages.Add("Can not found any Type!");
+                    _response.ErrorMessages.Add("Không tìm thấy Danh mục nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -58,7 +58,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorTypeService.GetFirst(e => e.MotorTypeId == id);
                 if (obj == null)
                 {
-                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -87,7 +87,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorTypeService.GetFirst(e => e.MotorTypeId == id);
                 if (obj == null || id != p.MotorTypeId)
                 {
-                    _response.ErrorMessages.Add("Can not found any Type!");
+                    _response.ErrorMessages.Add("Không tìm thấy Danh mục nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -99,6 +99,38 @@ namespace API.Controllers
                     _response.Result = obj;
                 }
                 return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+        [HttpPost]
+        [Route("TypeRegister")]
+        public async Task<IActionResult> TypeRegister(TypeRegisterDTO type)
+        {
+            try
+            {
+                var CertNum = await _unitOfWork.MotorTypeService.GetFirst(c => c.Title == type.Title);
+                if (CertNum != null)
+                {
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Danh mục xe \"" + type.Title +"\" đã tồn tại");
+                    return BadRequest(_response);
+                }
+                else
+                {
+                    var newType = _mapper.Map<MotorbikeType>(type);
+                    await _unitOfWork.MotorTypeService.Add(newType);
+                    _response.IsSuccess = true;
+                    _response.Result = newType;
+                    return Ok(_response);
+                }
             }
             catch (Exception ex)
             {
