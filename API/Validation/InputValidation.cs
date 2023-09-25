@@ -75,6 +75,11 @@ namespace API.Validation
 				return "Email không hợp lệ";
 			}
 
+			if(password.Length <6 || passwordConfirm.Length <6)
+			{
+				return ("Độ dài mật khẩu phải từ 6 ký tự trở lên");
+			}
+
 			if(!password.Equals(passwordConfirm))
 			{
 				return ("Mật khẩu xác minh không trùng với mật khẩu");
