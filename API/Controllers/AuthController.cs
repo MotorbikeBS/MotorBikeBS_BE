@@ -3,6 +3,8 @@ using API.DTO.UserDTO;
 using API.Validation;
 using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -16,6 +18,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace API.Controllers
 {
@@ -74,7 +77,6 @@ namespace API.Controllers
 
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = newUser;
                     return Ok(_response);
                 }
                 else
@@ -95,7 +97,6 @@ namespace API.Controllers
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
                         _response.ErrorMessages.Add("Email này đã được đăng ký trước đây nhưng chưa xác nhận, vui lòng xác nhận email");
-                        _response.Result = userInDb;
                         return Ok(_response);
                     }
                     else
@@ -134,7 +135,6 @@ namespace API.Controllers
                     await _unitOfWork.StoreDescriptionService.Add(newStore);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = newStore;
                     return Ok(_response);
                 }
                 else
@@ -262,6 +262,8 @@ namespace API.Controllers
                     {
                         user.UserVerifyAt = DateTime.UtcNow;
                         user.Status = "ACTIVE";
+                        user.VerifycationToken = "";
+                        user.VerifycationTokenExpires = null;
                         await _unitOfWork.UserService.Update(user);
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
@@ -290,7 +292,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessages.Add("Không tìm thấy email này!");
+                    _response.ErrorMessages.Add("Email không hợp lệ!");
                     return NotFound(_response);
                 }
                 else
@@ -375,6 +377,7 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
