@@ -13,18 +13,15 @@ namespace API.Validation
                 return false;
             }
 
-            // Regular expression pattern that allows Vietnamese characters and spaces
-            string vietnamesePattern = @"^[a-zA-ZÀ-ỹ\s]+$";
+			string vietnamesePattern = @"^[a-zA-ZÀ-ỹ\s]+$";
 
-            if (!Regex.IsMatch(value, vietnamesePattern))
-            {
-                return false; // Input contains invalid characters
-            }
+			if (!Regex.IsMatch(value, vietnamesePattern))
+			{
+				return false;
+			}
 
-            // Additional validation logic can be added as needed
-
-            return true; // Input is valid
-        }
+			return true;
+		}
 
         public static bool EmailValidation(string? email)
         {
@@ -33,26 +30,24 @@ namespace API.Validation
                 return false;
             }
 
-            // Regular expression pattern for basic email validation
-            string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+			string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
 
-            if (!Regex.IsMatch(email, emailPattern))
-            {
-                return false; // Invalid email format
-            }
+			if (!Regex.IsMatch(email, emailPattern))
+			{
+				return false; 
+			}
 
-            return true; // Email is valid
-        }
-        public static string CleanAndFormatUserName(string? value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
+			return true; 
+		}
+		public static string CleanAndFormatUserName(string? value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				return value;
+			}
 
-            // Replace consecutive spaces with a single space and trim leading/trailing spaces
-            return Regex.Replace(value.Trim(), @"\s+", " ");
-        }
+			return Regex.Replace(value.Trim(), @"\s+", " ");
+		}
 
         public static string RegisterValidation(string name, string email, string password, string passwordConfirm)
         {
@@ -61,12 +56,17 @@ namespace API.Validation
                 return "Vui lòng nhập đầy đủ thông tin!";
             }
 
-            string vietnamesePattern = @"^[a-zA-ZÀ-ỹ\s]+$";
+			if(name.Length <6)
+			{
+				return "Tên phải từ 6 ký tự trở lên";
+			}
 
-            if (!Regex.IsMatch(name, vietnamesePattern))
-            {
-                return "Tên không chưa kí tự đặc biệt"; // Input contains invalid characters
-            }
+			string vietnamesePattern = @"^[a-zA-ZÀ-ỹ\s]+$";
+
+			if (!Regex.IsMatch(name, vietnamesePattern))
+			{
+				return "Tên không chưa ký tự đặc biệt";
+			}
 
             string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
 
