@@ -48,7 +48,7 @@ namespace API.Controllers
 			try
 			{
 				var rs = InputValidation.RegisterValidation(user.UserName, user.Email, user.Password, user.PasswordConfirmed);
-				if(rs != "")
+				if (rs != "")
 				{
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.BadRequest;
@@ -70,8 +70,8 @@ namespace API.Controllers
 					newUser.VerifycationToken = CreateRandomToken();
 					await _unitOfWork.UserService.Add(newUser);
 
-					var subject = "Verify Token";
-					var htmlMessage = $"<p>Hello {newUser.UserName},<br>Please click <a href=\"https://motorbikebs.azurewebsites.net/users/{newUser.UserId}/verify/{newUser.VerifycationToken}\">here</a> to verify your password.</p>";
+					var subject = "Xác minh tài khoản";
+					var htmlMessage = $"<p>Xin chào {newUser.UserName},<br>Vui lòng nhấn vào đây <a href=\"https://motorbikebs.azurewebsites.net/users/{newUser.UserId}/verify/{newUser.VerifycationToken}\">here</a> để xác minh tài khoản của bạn.</p>";
 
 					await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 
@@ -81,7 +81,7 @@ namespace API.Controllers
 				}
 				else
 				{
-					if(userInDb.Status.Equals("NOT VERIFY"))
+					if (userInDb.Status.Equals("NOT VERIFY"))
 					{
 						CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 						userInDb.PasswordHash = passwordHash;
@@ -90,8 +90,8 @@ namespace API.Controllers
 						userInDb.VerifycationToken = CreateRandomToken();
 						await _unitOfWork.UserService.Update(userInDb);
 
-						var subject = "Verify Token";
-						var htmlMessage = $"<p>Hello {userInDb.UserName},<br>Please click <a href=\"https://motorbikebs.azurewebsites.net/users/{userInDb.UserId}/verify/{userInDb.VerifycationToken}\">here</a> to verify your password.</p>";
+						var subject = "Xác minh tài khoản";
+						var htmlMessage = $"<p>Xin chào {userInDb.UserName},<br>Vui lòng nhấn vào đây <a href=\"https://motorbikebs.azurewebsites.net/users/{userInDb.UserId}/verify/{userInDb.VerifycationToken}\">here</a> để xác minh tài khoản của bạn.</p>";
 
 						await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 						_response.IsSuccess = true;
@@ -107,7 +107,7 @@ namespace API.Controllers
 						return BadRequest(_response);
 					}
 				}
-				
+
 			}
 			catch (Exception ex)
 			{
@@ -144,7 +144,7 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
 					return NotFound(_response);
 				}
-				
+
 			}
 			catch (Exception ex)
 			{
@@ -194,8 +194,8 @@ namespace API.Controllers
 						new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
 						new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 						new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-						new Claim("AccountId", user.UserId.ToString()),
-						new Claim("Name", user.UserName),
+						new Claim("UserId", user.UserId.ToString()),
+						new Claim("UserName", user.UserName),
 						new Claim(ClaimTypes.Role, role.Title.ToString()),
 						new Claim("RoleName", role.Title.ToString()),
 						new Claim("Email", user.Email)
@@ -210,12 +210,14 @@ namespace API.Controllers
 						expires: DateTime.UtcNow.AddHours(5),
 						signingCredentials: signIn);
 
-					var tokenObject = new { Token = new JwtSecurityTokenHandler().WriteToken(token) };
-					var tokenJson = JsonConvert.SerializeObject(tokenObject);
+					//var tokenObject = new { Token = new JwtSecurityTokenHandler().WriteToken(token) };
+					var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+					var userResponse = _mapper.Map<LoginResponseDTO>(user);
+					userResponse.Token = tokenString;
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Message = $"Chào mừng trở lại {user.UserName}";
-					_response.Result = tokenObject;
+					_response.Result = userResponse;
 					return Ok(_response);
 				}
 			}
@@ -244,14 +246,14 @@ namespace API.Controllers
 				}
 				else
 				{
-					if(user.VerifycationTokenExpires < DateTime.Now)
+					if (user.VerifycationTokenExpires < DateTime.Now)
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						_response.ErrorMessages.Add("Mã xác minh đã hết hạn!");
 						return BadRequest(_response);
 					}
-					if(user.Status== "ACTIVE")
+					if (user.Status == "ACTIVE")
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
@@ -287,28 +289,45 @@ namespace API.Controllers
 		{
 			try
 			{
-				var user = await _unitOfWork.UserService.GetFirst(x => x.Email == email);
-				if (user == null)
+				if (!InputValidation.EmailValidation(email))
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
 					_response.ErrorMessages.Add("Email không hợp lệ!");
 					return NotFound(_response);
 				}
+				var user = await _unitOfWork.UserService.GetFirst(x => x.Email == email);
+				if (user == null)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy email này!");
+					return NotFound(_response);
+				}
 				else
 				{
-					user.PasswordResetToken = CreateRandomToken();
-					user.ResetTokenExpires = DateTime.Now.AddHours(3);
-					await _unitOfWork.UserService.Update(user);
+					if (user.Status == "NOT VERIFY")
+					{
+						_response.IsSuccess = false;
+						_response.StatusCode = HttpStatusCode.NotFound;
+						_response.ErrorMessages.Add("Tài khoản chưa xác minh!");
+						return NotFound(_response);
+					}
+					else
+					{
+						user.PasswordResetToken = CreateRandomToken();
+						user.ResetTokenExpires = DateTime.Now.AddHours(3);
+						await _unitOfWork.UserService.Update(user);
 
-					var subject = "Reset Password";
-					var htmlMessage = $"<p>Hello {user.UserName},<br>Please click <a href=\"https://motorbikebs.azurewebsites.net/user/{user.UserId}/reset-password/{user.PasswordResetToken}\">here</a> to reset your password.</p>";
+						var subject = "Thay đổi mật khẩu";
+						var htmlMessage = $"<p>Xin chào {user.UserName},<br>Vui lòng nhấn vào đây <a href=\"https://motorbikebs.azurewebsites.net/user/{user.UserId}/reset-password/{user.PasswordResetToken}\">here</a> để đổi mật khẩu của bạn.</p>";
 
-					await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
-					_response.IsSuccess = true;
-					_response.StatusCode = HttpStatusCode.OK;
-					_response.Message = "Vui lòng xác minh trong email!";
-					return Ok(_response);
+						await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
+						_response.IsSuccess = true;
+						_response.StatusCode = HttpStatusCode.OK;
+						_response.Message = "Vui lòng xác minh trong email!";
+						return Ok(_response);
+					}
 				}
 			}
 			catch (Exception ex)
@@ -322,7 +341,7 @@ namespace API.Controllers
 
 		[HttpPost]
 		[Route("reset-password")]
-		public async Task<IActionResult> ResetPassword(string token,ResetPasswordDTO request)
+		public async Task<IActionResult> ResetPassword(string token, ResetPasswordDTO request)
 		{
 			try
 			{
@@ -333,7 +352,7 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Mật khẩu xác minh không trùng với mật khẩu!");
 					return BadRequest(_response);
 				}
-				if(request.Password.Length <6 || request.PasswordConfirmed.Length <6)
+				if (request.Password.Length < 6 || request.PasswordConfirmed.Length < 6)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
