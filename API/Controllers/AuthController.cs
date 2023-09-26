@@ -22,24 +22,24 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace API.Controllers
 {
-	[Route("api/[controller]")]
-	[ApiController]
-	public class AuthController : ControllerBase
-	{
-		public IConfiguration _configuration;
-		private readonly IUnitOfWork _unitOfWork;
-		private readonly IEmailSender _emailSender;
-		private ApiResponse _response;
-		private readonly IMapper _mapper;
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AuthController : ControllerBase
+    {
+        public IConfiguration _configuration;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailSender _emailSender;
+        private ApiResponse _response;
+        private readonly IMapper _mapper;
 
-		public AuthController(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IEmailSender emailSender)
-		{
-			_configuration = configuration;
-			_unitOfWork = unitOfWork;
-			_emailSender = emailSender;
-			_response = new ApiResponse();
-			_mapper = mapper;
-		}
+        public AuthController(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IEmailSender emailSender)
+        {
+            _configuration = configuration;
+            _unitOfWork = unitOfWork;
+            _emailSender = emailSender;
+            _response = new ApiResponse();
+            _mapper = mapper;
+        }
 
 		[HttpPost]
 		[Route("user-register")]
@@ -73,7 +73,7 @@ namespace API.Controllers
 					var subject = "Xác minh tài khoản";
 					var htmlMessage = $"<p>Xin chào {newUser.UserName},<br>Vui lòng nhấn vào đây <a href=\"https://motorbikebs.azurewebsites.net/users/{newUser.UserId}/verify/{newUser.VerifycationToken}\">here</a> để xác minh tài khoản của bạn.</p>";
 
-					await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
+                    await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
 
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
@@ -201,14 +201,14 @@ namespace API.Controllers
 						new Claim("Email", user.Email)
 					};
 
-					var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-					var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-					var token = new JwtSecurityToken(
-						_configuration["Jwt:Issuer"],
-						_configuration["Jwt:Audience"],
-						claims,
-						expires: DateTime.UtcNow.AddHours(5),
-						signingCredentials: signIn);
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                    var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                    var token = new JwtSecurityToken(
+                        _configuration["Jwt:Issuer"],
+                        _configuration["Jwt:Audience"],
+                        claims,
+                        expires: DateTime.UtcNow.AddHours(5),
+                        signingCredentials: signIn);
 
 					//var tokenObject = new { Token = new JwtSecurityTokenHandler().WriteToken(token) };
 					var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
@@ -398,28 +398,28 @@ namespace API.Controllers
 		}
 
 
-		private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-		{
-			using (var hmac = new HMACSHA512())
-			{
-				passwordSalt = hmac.Key;
-				passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-			}
-		}
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512())
+            {
+                passwordSalt = hmac.Key;
+                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
+        }
 
-		private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-		{
-			using (var hmac = new HMACSHA512(passwordSalt))
-			{
-				var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-				return computedHash.SequenceEqual(passwordHash);
-			}
-		}
+        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512(passwordSalt))
+            {
+                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                return computedHash.SequenceEqual(passwordHash);
+            }
+        }
 
-		private string CreateRandomToken()
-		{
-			return Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
-		}
+        private string CreateRandomToken()
+        {
+            return Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        }
 
-	}
+    }
 }

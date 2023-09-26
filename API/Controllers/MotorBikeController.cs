@@ -2,6 +2,7 @@
 using API.DTO.MotorbikeDTO;
 using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
 using System.Net;
@@ -31,7 +32,36 @@ namespace API.Controllers
                 var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatus.Equals("POSTING"));
                 if (list == null || list.Count() <= 0)
                 {
-                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
+                    _response.IsSuccess = false;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.Result = list;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+        [HttpGet("GetAllOnStoreExchange")]
+        public async Task<IActionResult> GetAllOnStoreExchange()
+        {
+            try
+            {
+                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatus.Equals("SALE_REQUEST"));
+                if (list == null || list.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -61,7 +91,7 @@ namespace API.Controllers
                 var list = await _unitOfWork.MotorBikeService.Get(e => e.StoreId == StoreID);
                 if (list == null || list.Count() <= 0)
                 {
-                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -91,7 +121,7 @@ namespace API.Controllers
                 var list = await _unitOfWork.MotorBikeService.Get(e => e.OwnerId == OwnerID);
                 if (list == null || list.Count() <= 0)
                 {
-                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
@@ -121,7 +151,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id);
                 if (obj == null)
                 {
-                    _response.ErrorMessages.Add("Can not found any motor bike!");
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false; 
                     return NotFound(_response);
                 }
@@ -144,6 +174,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [Route("MotorRegister")]
         public async Task<IActionResult> MotorRegister(MotorRegisterDTO motor)
         {
@@ -153,7 +184,7 @@ namespace API.Controllers
                 if (CertNum != null)
                 {
                     _response.IsSuccess = false;
-                    _response.ErrorMessages.Add("Certificate Number already exist!");
+                    _response.ErrorMessages.Add("Mã số chứng nhận đăng ký xe không đúng!");
                     return BadRequest(_response);
                 }
                 else

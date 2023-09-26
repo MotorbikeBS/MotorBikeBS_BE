@@ -24,40 +24,40 @@ namespace API.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
-		public async Task<IActionResult>Get()
-		{
-			try
-			{
-				var user = await _unitOfWork.UserService.Get();
-				if (user == null || user.Count() <= 0)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy người dùng nào!");
+        public async Task<IActionResult> Get()
+        {
+            try
+            {
+                var user = await _unitOfWork.UserService.Get();
+                if (user == null || user.Count() <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Không tìm thấy người dùng nào!");
                     return NotFound(_response);
-				}
-				else
-				{
-					_response.IsSuccess = true;
-					_response.StatusCode = HttpStatusCode.OK;
-					_response.Result = user;
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = user;
                     return Ok(_response);
-				}
-			}
-			catch (Exception ex)
-			{
-				_response.IsSuccess = false;
-				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages = new List<string>()
-				{
-					ex.ToString()
-				};
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
                 return BadRequest();
-			}
-		}
+            }
+        }
 
-		[Authorize(Roles = "Admin")]
-		[HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             try
@@ -75,8 +75,8 @@ namespace API.Controllers
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = user;
-					return Ok(_response);
-				}
+                    return Ok(_response);
+                }
             }
             catch (Exception ex)
             {
@@ -86,8 +86,8 @@ namespace API.Controllers
                 {
                     ex.ToString()
                 };
-				return BadRequest(_response);
-			}
+                return BadRequest(_response);
+            }
         }
 
         [Authorize]
@@ -103,8 +103,8 @@ namespace API.Controllers
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Người dùng không tồn tại!");
-					return BadRequest(_response);
-				}
+                    return BadRequest(_response);
+                }
                 else
                 {
                     CreatePasswordHash(passwordDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -114,8 +114,8 @@ namespace API.Controllers
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = user;
-					return Ok(_response);
-				}
+                    return Ok(_response);
+                }
             }
             catch (Exception ex)
             {
@@ -125,8 +125,8 @@ namespace API.Controllers
                 {
                     ex.ToString()
                 };
-				return BadRequest(_response);
-			}
+                return BadRequest(_response);
+            }
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
