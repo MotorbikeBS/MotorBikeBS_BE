@@ -1,8 +1,10 @@
 ﻿using API.DTO;
 using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
+using System.Data;
 using System.Net;
 
 namespace API.Controllers
@@ -31,11 +33,13 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy mẫu nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = list;
                 }
                 return Ok(_response);
@@ -43,6 +47,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -60,6 +65,7 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tồn tại mãu này!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
@@ -73,6 +79,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -80,7 +87,9 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
         [HttpPut]
+        [Authorize(Roles = "Store,Owner")]
         public async Task<IActionResult> UpdateModel([FromQuery] int id, ModelRegisterDTO p)
         {
             try
@@ -90,6 +99,7 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tồn tại model nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
@@ -97,6 +107,7 @@ namespace API.Controllers
                     obj = _mapper.Map<MotorbikeModel>(p);
                     await _unitOfWork.MotorModelService.Update(obj);
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -104,6 +115,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -112,6 +124,7 @@ namespace API.Controllers
             }
         }
         [HttpPost]
+        [Authorize(Roles = "Store,Owner")]
         [Route("ModelRegister")]
         public async Task<IActionResult> ModelRegister(int brandID, ModelRegisterDTO model)
         {
@@ -121,8 +134,9 @@ namespace API.Controllers
                 if (brand == null)
                 {
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("Không tồn tại hãng xe mục tiêu");
-                    return BadRequest(_response);
+                    return NotFound(_response);
                 }
                 else
                 {
@@ -130,6 +144,7 @@ namespace API.Controllers
                     if (checkmodel != null)
                     {
                         _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.ErrorMessages.Add("Mẫu xe \"" + model.ModelName + "\" đã tồn tại");
                         return BadRequest(_response);
                     }
@@ -138,6 +153,7 @@ namespace API.Controllers
                         var newModel = _mapper.Map<MotorbikeModel>(model);
                         await _unitOfWork.MotorModelService.Add(newModel);
                         _response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.OK;
                         _response.Result = newModel;
                     }                    
                     return Ok(_response);
@@ -146,6 +162,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()

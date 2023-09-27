@@ -1,8 +1,10 @@
 ﻿using API.DTO;
 using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
+using System.Data;
 using System.Net;
 
 namespace API.Controllers
@@ -31,11 +33,13 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = list;
                 }
                 return Ok(_response);
@@ -43,6 +47,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -60,11 +65,13 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -72,6 +79,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -81,6 +89,7 @@ namespace API.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Store,Owner")]
         public async Task<IActionResult> UpdateBrand([FromQuery] int id, BrandRegisterDTO p)
         {
             try
@@ -90,6 +99,7 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
@@ -97,6 +107,7 @@ namespace API.Controllers
                     obj = _mapper.Map<MotorbikeBrand>(p);
                     await _unitOfWork.MotorBrandService.Update(obj);
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -104,6 +115,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -112,6 +124,7 @@ namespace API.Controllers
             }
         }
         [HttpPost]
+        [Authorize(Roles = "Store,Owner")]
         [Route("BrandRegister")]
         public async Task<IActionResult> BrandRegister(BrandRegisterDTO Brand)
         {
@@ -121,6 +134,7 @@ namespace API.Controllers
                 if (CertNum != null)
                 {
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Hãng xe \"" + Brand.BrandName + "\" đã tồn tại");
                     return BadRequest(_response);
                 }
@@ -129,6 +143,7 @@ namespace API.Controllers
                     var newBrand = _mapper.Map<MotorbikeBrand>(Brand);
                     await _unitOfWork.MotorBrandService.Add(newBrand);
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = newBrand;
                     return Ok(_response);
                 }
@@ -136,6 +151,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()

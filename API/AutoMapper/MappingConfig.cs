@@ -22,7 +22,8 @@ namespace API.AutoMapper
                 config.CreateMap<MotorbikeModel, ModelRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeBrand, BrandRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeStatus, StatusRegisterDTO>().ReverseMap();
-                config.CreateMap<MotorbikeType, TypeRegisterDTO>().ReverseMap(); 
+                config.CreateMap<MotorbikeType, TypeRegisterDTO>().ReverseMap();
+                config.CreateMap<MotorbikeImage, ImageRegisterDTO>().ReverseMap();
             });
             return mappingConfig;
         }

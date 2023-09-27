@@ -29,16 +29,18 @@ namespace API.Controllers
         {
             try
             {
-                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatus.Equals("POSTING"));
+                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatus.Title.Equals("POSTING"));
                 if (list == null || list.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = list;
                 }
                 return Ok(_response);
@@ -46,35 +48,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string>()
-                {
-                    ex.ToString()
-                };
-                return BadRequest(_response);
-            }
-        }
-        [HttpGet("GetAllOnStoreExchange")]
-        public async Task<IActionResult> GetAllOnStoreExchange()
-        {
-            try
-            {
-                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatus.Equals("SALE_REQUEST"));
-                if (list == null || list.Count() <= 0)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                else
-                {
-                    _response.IsSuccess = true;
-                    _response.Result = list;
-                }
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -83,7 +57,41 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("GetMotorByStore")]
+        [Authorize(Roles = "Store")]
+        [HttpGet("GetAllOnStoreExchange")]
+        public async Task<IActionResult> GetAllOnStoreExchange()
+        {
+            try
+            {
+                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatus.Title.Equals("SALE_REQUEST"));
+                if (list == null || list.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = list;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
+        [HttpGet("GetMotorByStoreId")]
         public async Task<IActionResult> GetByStoreId(int StoreID)
         {
             try
@@ -93,11 +101,13 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = list;
                 }
                 return Ok(_response);
@@ -105,6 +115,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -123,11 +134,13 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = list;
                 }
                 return Ok(_response);
@@ -135,6 +148,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -152,12 +166,14 @@ namespace API.Controllers
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
-                    _response.IsSuccess = false; 
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -165,6 +181,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -174,7 +191,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Store,Owner")]
         [Route("MotorRegister")]
         public async Task<IActionResult> MotorRegister(MotorRegisterDTO motor)
         {
@@ -184,6 +201,7 @@ namespace API.Controllers
                 if (CertNum != null)
                 {
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Mã số chứng nhận đăng ký xe không đúng!");
                     return BadRequest(_response);
                 }
@@ -193,6 +211,7 @@ namespace API.Controllers
                     await _unitOfWork.MotorBikeService.Add(newMotor);
 
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = newMotor;
                 }
                 return Ok(_response);
@@ -200,6 +219,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
