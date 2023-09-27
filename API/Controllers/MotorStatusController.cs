@@ -1,8 +1,10 @@
 ﻿using API.DTO;
 using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
+using System.Data;
 using System.Net;
 
 namespace API.Controllers
@@ -31,11 +33,13 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy trạng thái nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = list;
                 }
                 return Ok(_response);
@@ -43,6 +47,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -60,6 +65,7 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
@@ -73,6 +79,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -81,6 +88,7 @@ namespace API.Controllers
             }
         }
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> UpdateStatus([FromQuery] int id, StatusRegisterDTO p)
         {
             try
@@ -90,6 +98,7 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy trạng thái nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
@@ -97,6 +106,7 @@ namespace API.Controllers
                     obj = _mapper.Map<MotorbikeStatus>(p);
                     await _unitOfWork.MotorStatusService.Update(obj);
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -104,6 +114,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -112,6 +123,7 @@ namespace API.Controllers
             }
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [Route("StatusRegister")]
         public async Task<IActionResult> StatusRegister(StatusRegisterDTO status)
         {
@@ -121,6 +133,7 @@ namespace API.Controllers
                 if (CertNum != null)
                 {
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Trạng thái xe \"" + status.Title + "\" đã tồn tại");
                     return BadRequest(_response);
                 }
@@ -129,6 +142,7 @@ namespace API.Controllers
                     var newstatus = _mapper.Map<MotorbikeStatus>(status);
                     await _unitOfWork.MotorStatusService.Add(newstatus);
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = newstatus;
                     return Ok(_response);
                 }
@@ -136,6 +150,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()

@@ -1,8 +1,10 @@
 ﻿using API.DTO;
 using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
+using System.Data;
 using System.Net;
 
 namespace API.Controllers
@@ -31,11 +33,13 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy Danh mục nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = list;
                 }
                 return Ok(_response);
@@ -43,6 +47,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -60,11 +65,13 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -72,6 +79,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -80,6 +88,7 @@ namespace API.Controllers
             }
         }
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> UpdateType([FromQuery] int id, TypeRegisterDTO p)
         {
             try
@@ -89,6 +98,7 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tìm thấy Danh mục nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
@@ -96,6 +106,7 @@ namespace API.Controllers
                     obj = _mapper.Map<MotorbikeType>(p);
                     await _unitOfWork.MotorTypeService.Update(obj);
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -103,6 +114,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -111,6 +123,7 @@ namespace API.Controllers
             }
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [Route("TypeRegister")]
         public async Task<IActionResult> TypeRegister(TypeRegisterDTO type)
         {
@@ -120,6 +133,7 @@ namespace API.Controllers
                 if (CertNum != null)
                 {
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Danh mục xe \"" + type.Title +"\" đã tồn tại");
                     return BadRequest(_response);
                 }
@@ -128,6 +142,7 @@ namespace API.Controllers
                     var newType = _mapper.Map<MotorbikeType>(type);
                     await _unitOfWork.MotorTypeService.Add(newType);
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = newType;
                     return Ok(_response);
                 }
@@ -135,6 +150,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()

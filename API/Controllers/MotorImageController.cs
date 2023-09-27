@@ -1,8 +1,10 @@
 ﻿using API.DTO;
 using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
+using System.Data;
 using System.Net;
 
 namespace API.Controllers
@@ -22,20 +24,22 @@ namespace API.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetByMotorId(int id)
+        public async Task<IActionResult> GetByMotorId(int MotorID)
         {
             try
             {
-                var list = await _unitOfWork.MotorImageService.Get(e => e.MotorId == id);
+                var list = await _unitOfWork.MotorImageService.Get(e => e.MotorId == MotorID);
                 if (list == null || list.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy ảnh nào!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = list;
                 }
                 return Ok(_response);
@@ -43,6 +47,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -51,20 +56,22 @@ namespace API.Controllers
             }
         }
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetByImageId(int id)
+        public async Task<IActionResult> GetByImageId(int ImageID)
         {
             try
             {
-                var obj = await _unitOfWork.MotorImageService.GetFirst(e => e.ImageId == id);
+                var obj = await _unitOfWork.MotorImageService.GetFirst(e => e.ImageId == ImageID);
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tồn tại xe này!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
                 {
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -72,6 +79,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -80,6 +88,7 @@ namespace API.Controllers
             }
         }
         [HttpPut]
+        [Authorize(Roles = "Store,Owner")]
         public async Task<IActionResult> UpdateImage([FromQuery] int id, ImageRegisterDTO p)
         {
             try
@@ -89,6 +98,7 @@ namespace API.Controllers
                 {
                     _response.ErrorMessages.Add("Không tồn tại xe này!");
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
                 else
@@ -96,6 +106,7 @@ namespace API.Controllers
                     obj = _mapper.Map<MotorbikeImage>(p);
                     await _unitOfWork.MotorImageService.Update(obj);
                     _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
                 }
                 return Ok(_response);
@@ -103,6 +114,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
@@ -111,17 +123,19 @@ namespace API.Controllers
             }
         }
         [HttpPost]
+        //[Authorize(Roles = "Store,Owner")]
         [Route("ImageRegister")]
         public async Task<IActionResult> ImageRegister(int id, List<ImageRegisterDTO> images)
         {
             try
             {
                 var CertNum = await _unitOfWork.MotorBikeService.GetFirst(c => c.MotorId == id);
-                if (CertNum != null)
+                if (CertNum == null)
                 {
                     _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("Không tồn tại xe này!");
-                    return BadRequest(_response);
+                    return NotFound(_response);
                 }
                 else
                 {
@@ -129,16 +143,18 @@ namespace API.Controllers
                     {
                         var newImage = _mapper.Map<MotorbikeImage>(p);
                         newImage.MotorId = id;
-                        await _unitOfWork.MotorImageService.Add(newImage);
-                        _response.IsSuccess = true;
-                        _response.Result = newImage;
+                        await _unitOfWork.MotorImageService.Add(newImage);                        
                     }
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = images;
                 }
                 return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>()
                 {
                     ex.ToString()
