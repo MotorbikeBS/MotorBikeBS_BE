@@ -5,7 +5,6 @@
 
         public int MotorId { get; set; }
         public string CertificateNumber { get; set; } = null!;
-        public int? BrandId { get; set; }
         public int? ModelId { get; set; }
         public int? Odo { get; set; }
         public DateTime? Year { get; set; }

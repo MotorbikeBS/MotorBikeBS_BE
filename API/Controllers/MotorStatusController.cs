@@ -94,7 +94,7 @@ namespace API.Controllers
             try
             {
                 var obj = await _unitOfWork.MotorStatusService.GetFirst(e => e.MotorStatusId == id);
-                if (obj == null || id != p.MotorStatusId)
+                if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy trạng thái nào!");
                     _response.IsSuccess = false;
@@ -103,7 +103,7 @@ namespace API.Controllers
                 }
                 else
                 {
-                    obj = _mapper.Map<MotorbikeStatus>(p);
+                    _mapper.Map(p, obj);
                     await _unitOfWork.MotorStatusService.Update(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;

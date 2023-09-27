@@ -103,7 +103,7 @@ namespace API.Controllers
                 }
                 else
                 {
-                    obj = _mapper.Map<MotorbikeType>(p);
+                    _mapper.Map(p, obj);
                     await _unitOfWork.MotorTypeService.Update(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;

@@ -190,6 +190,44 @@ namespace API.Controllers
             }
         }
 
+        [HttpPut]
+        [Authorize(Roles = "Store,Owner")]
+        [Route("UpdateMotor")]
+        public async Task<IActionResult> UpdateMotor(int id, MotorRegisterDTO p)
+        {
+            try
+            {
+                var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id);
+                if (obj == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    _mapper.Map(p, obj);
+                    await _unitOfWork.MotorBikeService.Update(obj);
+
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = obj;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
         [HttpPost]
         [Authorize(Roles = "Store,Owner")]
         [Route("MotorRegister")]
