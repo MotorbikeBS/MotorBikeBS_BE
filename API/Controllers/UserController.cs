@@ -56,8 +56,8 @@ namespace API.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpGet("{id:int}")]
+		[Authorize(Roles = "Admin, Customer")]
+		[HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             try
