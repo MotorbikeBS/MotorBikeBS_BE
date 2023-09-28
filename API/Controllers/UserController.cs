@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using API.Utility;
 using AutoMapper;
 using Core.Models;
+using API.Validation;
 
 namespace API.Controllers
 {
@@ -34,7 +35,7 @@ namespace API.Controllers
 		{
 			try
 			{
-				var user = await _unitOfWork.UserService.Get();
+				var user = await _unitOfWork.UserService.Get(includeProperties: "Role");
 				if (user == null || user.Count() <= 0)
 				{
 					_response.IsSuccess = false;
@@ -44,9 +45,10 @@ namespace API.Controllers
 				}
 				else
 				{
+					var userResponse = _mapper.Map<IEnumerable<UserResponseDTO>>(user);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
-					_response.Result = user;
+					_response.Result = userResponse;
 					return Ok(_response);
 				}
 			}
@@ -120,6 +122,14 @@ namespace API.Controllers
 		{
 			try
 			{
+				var rs = InputValidation.UserUpdateValidation(userUpdateDTO.UserName, userUpdateDTO.Phone, userUpdateDTO.Gender, userUpdateDTO.Dob, userUpdateDTO.Address, userUpdateDTO.LocalId);
+				if(rs != "")
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadGateway;
+					_response.ErrorMessages.Add(rs);
+					return BadRequest(_response);
+				}
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
 				if(userId != id)
