@@ -9,5 +9,6 @@ namespace API.DTO.UserDTO
         public string? StorePhone { get; set; }
         public string? StoreEmail { get; set; }
         public string? Address { get; set; }
-    }
+		public string? TaxCode { get; set; }
+	}
 }
