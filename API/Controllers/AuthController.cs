@@ -19,6 +19,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using API.Utility;
 
 namespace API.Controllers
 {
@@ -61,7 +62,7 @@ namespace API.Controllers
 				{
 					CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 					var newUser = _mapper.Map<User>(user);
-					newUser.Status = "NOT VERIFY";
+					newUser.Status = SD.not_verify;
 					newUser.PasswordHash = passwordHash;
 					newUser.PasswordSalt = passwordSalt;
 					newUser.VerifycationTokenExpires = DateTime.Now.AddHours(3);
@@ -81,7 +82,7 @@ namespace API.Controllers
 				}
 				else
 				{
-					if (userInDb.Status.Equals("NOT VERIFY"))
+					if (userInDb.Status.Equals(SD.not_verify))
 					{
 						CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 						userInDb.PasswordHash = passwordHash;
@@ -131,7 +132,7 @@ namespace API.Controllers
 				if (userInDb != null)
 				{
 					var newStore = _mapper.Map<StoreDesciption>(store);
-					newStore.Status = "NOT VERIFY";
+					newStore.Status = SD.not_verify;
 					await _unitOfWork.StoreDescriptionService.Add(newStore);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
@@ -198,6 +199,7 @@ namespace API.Controllers
 						new Claim("UserName", user.UserName),
 						new Claim(ClaimTypes.Role, role.Title.ToString()),
 						new Claim("RoleName", role.Title.ToString()),
+						new Claim("RoleId", user.RoleId.ToString()),
 						new Claim("Email", user.Email)
 					};
 
@@ -253,7 +255,7 @@ namespace API.Controllers
 						_response.ErrorMessages.Add("Mã xác minh đã hết hạn!");
 						return BadRequest(_response);
 					}
-					if (user.Status == "ACTIVE")
+					if (user.Status == SD.active)
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
@@ -263,7 +265,7 @@ namespace API.Controllers
 					else
 					{
 						user.UserVerifyAt = DateTime.UtcNow;
-						user.Status = "ACTIVE";
+						user.Status = SD.active;
 						user.VerifycationToken = "";
 						user.VerifycationTokenExpires = null;
 						await _unitOfWork.UserService.Update(user);
@@ -306,7 +308,7 @@ namespace API.Controllers
 				}
 				else
 				{
-					if (user.Status == "NOT VERIFY")
+					if (user.Status == SD.not_verify)
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.NotFound;
