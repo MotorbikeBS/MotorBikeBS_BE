@@ -6,6 +6,39 @@ namespace API.Validation
 {
     public static class InputValidation
     {
+        public static bool SpecialCharacters(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+			string vietnamesePattern = @"^[a-zA-ZÀ-ỹ\s]+$";
+
+			if (!Regex.IsMatch(value, vietnamesePattern))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+        public static bool EmailValidation(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return false;
+            }
+
+			string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+
+			if (!Regex.IsMatch(email, emailPattern))
+			{
+				return false; 
+			}
+
+			return true; 
+		}
 		public static string CleanAndFormatUserName(string? value)
 		{
 			if (string.IsNullOrWhiteSpace(value))

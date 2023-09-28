@@ -4,6 +4,7 @@ using API.Utility;
 using API.Validation;
 using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
 using System.Net;
@@ -25,8 +26,9 @@ namespace API.Controllers
             _response = new ApiResponse();
         }
 
+        [Authorize(Roles ="Admin")]
         [HttpGet]
-        public async Task<ApiResponse> Get(string? status)
+        public async Task<IActionResult> Get(string? status)
         {
             try
             {
@@ -38,14 +40,15 @@ namespace API.Controllers
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("Không tìm thấy cửa hàng nào!");
                     _response.IsSuccess = false;
+                    return NotFound(_response);
                 }
                 else
                 {
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.IsSuccess = true;
                     _response.Result = store;
+                    return Ok(_response);
                 }
-                return _response;
             }
             catch (Exception ex)
             {
@@ -55,10 +58,11 @@ namespace API.Controllers
                 {
                     ex.ToString()
                 };
-                return _response;
+                return BadRequest(_response);
             }
         }
 
+        [Authorize(Roles ="Customer, Owner")]
 		[HttpPost]
 		[Route("store-register")]
 		public async Task<IActionResult> StoreRegister(StoreRegisterDTO store)
@@ -112,16 +116,17 @@ namespace API.Controllers
 			}
 		}
 
+        [Authorize(Roles ="Admin")]
 		[HttpPost]
         [Route("VerifyStore")]
-        public async Task<ApiResponse> VerifyStore(int storeId)
+        public async Task<IActionResult> VerifyStore(int storeId)
         {
             if (storeId <= 0)
             {
-                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages.Add("Lỗi hệ thống!");
                 _response.IsSuccess = false;
-                return _response;
+                return BadRequest(_response);
             }
 			var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
             if (store == null)
@@ -129,6 +134,7 @@ namespace API.Controllers
                 _response.StatusCode = HttpStatusCode.NotFound;
                 _response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
                 _response.IsSuccess = false;
+                return NotFound(_response);
             }
             else
             {
@@ -141,16 +147,17 @@ namespace API.Controllers
                     await _unitOfWork.UserService.Update(user);
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.IsSuccess = true;
-                    _response.Result = store;
+                    _response.Message = "Xác minh thành công!";
+                    return Ok(_response);
                 }
                 else
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Cửa hàng đã được xác minh!");
                     _response.IsSuccess = false;
+                    return BadRequest(_response);
                 }
             }
-            return _response;
         }
     }
 }
