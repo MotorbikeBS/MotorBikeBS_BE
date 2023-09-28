@@ -123,43 +123,6 @@ namespace API.Controllers
 		}
 
 		[HttpPost]
-		[Route("store-register")]
-		public async Task<IActionResult> StoreRegister(StoreRegisterDTO store)
-		{
-			try
-			{
-				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.UserId == store.UserId);
-				if (userInDb != null)
-				{
-					var newStore = _mapper.Map<StoreDesciption>(store);
-					newStore.Status = SD.not_verify;
-					await _unitOfWork.StoreDescriptionService.Add(newStore);
-					_response.IsSuccess = true;
-					_response.StatusCode = HttpStatusCode.OK;
-					return Ok(_response);
-				}
-				else
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
-					return NotFound(_response);
-				}
-
-			}
-			catch (Exception ex)
-			{
-				_response.IsSuccess = false;
-				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages = new List<string>()
-				{
-					ex.ToString()
-				};
-				return BadRequest(_response);
-			}
-		}
-
-		[HttpPost]
 		[Route("login")]
 		public async Task<IActionResult> Login(LoginDTO obj)
 		{
