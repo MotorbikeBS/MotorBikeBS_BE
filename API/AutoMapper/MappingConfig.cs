@@ -1,4 +1,5 @@
 ﻿using API.DTO.MotorbikeDTO;
+using API.DTO.Role;
 using API.DTO.UserDTO;
 using AutoMapper;
 using Core.Models;
@@ -15,6 +16,11 @@ namespace API.AutoMapper
                 config.CreateMap<User, RegisterDTO>().ReverseMap().ForSourceMember(source => source.PasswordConfirmed, opt => opt.DoNotValidate());
                 config.CreateMap<User, ResetPasswordDTO>().ReverseMap().ForSourceMember(source => source.PasswordConfirmed, opt => opt.DoNotValidate());
 				config.CreateMap<User, LoginResponseDTO>().ReverseMap().ForSourceMember(source => source.Token, opt => opt.DoNotValidate());
+                config.CreateMap<User, UserResponseDTO>().ReverseMap().ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
+				config.CreateMap<User, UserUpdateDTO>().ReverseMap();
+
+				config.CreateMap<Role, RoleResponseDTO>().ReverseMap();
+
 				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap();
 
                 config.CreateMap<Motorbike, MotorRegisterDTO>().ReverseMap();

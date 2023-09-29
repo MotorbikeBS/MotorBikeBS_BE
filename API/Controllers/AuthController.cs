@@ -19,6 +19,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using API.Utility;
 
 namespace API.Controllers
 {
@@ -61,7 +62,7 @@ namespace API.Controllers
 				{
 					CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 					var newUser = _mapper.Map<User>(user);
-					newUser.Status = "NOT VERIFY";
+					newUser.Status = SD.not_verify;
 					newUser.PasswordHash = passwordHash;
 					newUser.PasswordSalt = passwordSalt;
 					newUser.VerifycationTokenExpires = DateTime.Now.AddHours(3);
@@ -81,7 +82,7 @@ namespace API.Controllers
 				}
 				else
 				{
-					if (userInDb.Status.Equals("NOT VERIFY"))
+					if (userInDb.Status.Equals(SD.not_verify))
 					{
 						CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 						userInDb.PasswordHash = passwordHash;
@@ -118,43 +119,6 @@ namespace API.Controllers
 					ex.ToString()
 				};
 				return Ok(_response);
-			}
-		}
-
-		[HttpPost]
-		[Route("store-register")]
-		public async Task<IActionResult> StoreRegister(StoreRegisterDTO store)
-		{
-			try
-			{
-				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.UserId == store.UserId);
-				if (userInDb != null)
-				{
-					var newStore = _mapper.Map<StoreDesciption>(store);
-					newStore.Status = "NOT VERIFY";
-					await _unitOfWork.StoreDescriptionService.Add(newStore);
-					_response.IsSuccess = true;
-					_response.StatusCode = HttpStatusCode.OK;
-					return Ok(_response);
-				}
-				else
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
-					return NotFound(_response);
-				}
-
-			}
-			catch (Exception ex)
-			{
-				_response.IsSuccess = false;
-				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages = new List<string>()
-				{
-					ex.ToString()
-				};
-				return BadRequest(_response);
 			}
 		}
 
@@ -198,6 +162,7 @@ namespace API.Controllers
 						new Claim("UserName", user.UserName),
 						new Claim(ClaimTypes.Role, role.Title.ToString()),
 						new Claim("RoleName", role.Title.ToString()),
+						new Claim("RoleId", user.RoleId.ToString()),
 						new Claim("Email", user.Email)
 					};
 
@@ -253,7 +218,7 @@ namespace API.Controllers
 						_response.ErrorMessages.Add("Mã xác minh đã hết hạn!");
 						return BadRequest(_response);
 					}
-					if (user.Status == "ACTIVE")
+					if (user.Status == SD.active)
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
@@ -263,7 +228,7 @@ namespace API.Controllers
 					else
 					{
 						user.UserVerifyAt = DateTime.UtcNow;
-						user.Status = "ACTIVE";
+						user.Status = SD.active;
 						user.VerifycationToken = "";
 						user.VerifycationTokenExpires = null;
 						await _unitOfWork.UserService.Update(user);
@@ -306,7 +271,7 @@ namespace API.Controllers
 				}
 				else
 				{
-					if (user.Status == "NOT VERIFY")
+					if (user.Status == SD.not_verify)
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.NotFound;
