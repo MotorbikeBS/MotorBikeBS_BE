@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.DTO.MotorbikeDTO;
+using API.DTO.UserDTO;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -24,12 +25,47 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("GetAllWithSpecificStatus")]
+        public async Task<IActionResult> GetAllWithSpecificStatus(int StatusID )
+        {
+            try
+            {
+                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == StatusID);
+                if (list == null || list.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = list;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
         [HttpGet("GetAllOnExchange")]
         public async Task<IActionResult> GetAllOnExchange()
         {
             try
             {
-                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatus.Title.Equals("POSTING"));
+                var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("POSTING"));
+                var StatusDTO = _mapper.Map<StatusRegisterDTO>(Status);
+                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == StatusDTO.MotorStatusId);
                 if (list == null || list.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -63,7 +99,8 @@ namespace API.Controllers
         {
             try
             {
-                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatus.Title.Equals("SALE_REQUEST"));
+                var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("SALE_REQUEST"));
+                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId);
                 if (list == null || list.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
