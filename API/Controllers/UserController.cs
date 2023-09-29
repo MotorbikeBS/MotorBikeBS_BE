@@ -83,9 +83,10 @@ namespace API.Controllers
 						return NotFound(_response);
 					}
 					var c = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId);
+					var userResponse = _mapper.Map<UserResponseDTO>(c);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
-					_response.Result = c;
+					_response.Result = userResponse;
 					return Ok(_response);
 				}
 				var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == id);
@@ -98,9 +99,10 @@ namespace API.Controllers
 				}
 				else
 				{
+					var userResponse = _mapper.Map<UserResponseDTO>(user);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
-					_response.Result = user;
+					_response.Result = userResponse;
 					return Ok(_response);
 				}
 			}
@@ -122,7 +124,7 @@ namespace API.Controllers
 		{
 			try
 			{
-				var rs = InputValidation.UserUpdateValidation(userUpdateDTO.UserName, userUpdateDTO.Phone, userUpdateDTO.Gender, userUpdateDTO.Dob, userUpdateDTO.Address, userUpdateDTO.LocalId);
+				var rs = InputValidation.UserUpdateValidation(userUpdateDTO.UserName, userUpdateDTO.Phone, userUpdateDTO.Gender, userUpdateDTO.Dob, userUpdateDTO.IdCard, userUpdateDTO.Address);
 				if(rs != "")
 				{
 					_response.IsSuccess = false;
@@ -137,6 +139,7 @@ namespace API.Controllers
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					_response.ErrorMessages.Add("Bạn không có quyền thực hiện chức năng này");
+					return BadRequest(_response);
 				}
 				var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == id);
 				if(user == null)
@@ -144,6 +147,7 @@ namespace API.Controllers
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
 					_response.ErrorMessages.Add("Không tìm thấy người dùng này");
+					return NotFound(_response);
 				}
 				var userUpdate = _mapper.Map(userUpdateDTO, user);
 				userUpdate.UserUpdatedAt = DateTime.Now;

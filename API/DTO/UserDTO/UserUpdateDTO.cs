@@ -8,6 +8,6 @@
 		public DateTime Dob { get; set; }
 		public string IdCard { get; set; }
 		public string Address { get; set; }
-		public int LocalId { get; set; }
+		//public int LocalId { get; set; }
 	}
 }
