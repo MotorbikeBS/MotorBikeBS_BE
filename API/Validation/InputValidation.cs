@@ -131,9 +131,9 @@ namespace API.Validation
             return "";
         }
 
-		public static string UserUpdateValidation(string name, string phone, int gender, DateTime dob, string address, int localId)
+		public static string UserUpdateValidation(string name, string phone, int gender, DateTime dob, string idCard, string address)
 		{
-			if (name == null || phone == null || gender.ToString() == null || dob.ToString() == null || address == null)
+			if (name == null || phone == null || gender.ToString() == null || dob.ToString() == null || address == null || idCard == null)
 			{
 				return "Vui lòng nhập đầy đủ thông tin!";
 			}
@@ -143,7 +143,13 @@ namespace API.Validation
 				return "Tên phải từ 6 ký tự trở lên!";
 			}
 
-			if(gender <1 || gender >3)
+			string phonePattern = @"^[0-9]{10}$";
+			if (!Regex.IsMatch(phone, phonePattern))
+			{
+				return "Số điện thoại không hợp lệ!";
+			}
+
+			if (gender <1 || gender >3)
 			{
 				return "Giới tính không hợp lệ!";
 			}
@@ -152,6 +158,12 @@ namespace API.Validation
 			if (age < 16)
 			{
 				return "Người dùng phải từ 16 tuổi trở lên!";
+			}
+
+			string idCardPattern = @"^[0-9]{12}$";
+			if (!Regex.IsMatch(idCard, idCardPattern))
+			{
+				return "Mã căn cước không hợp lệ!";
 			}
 
 			string vietnamesePattern = @"^[a-zA-ZÀ-ỹ\s]+$";
