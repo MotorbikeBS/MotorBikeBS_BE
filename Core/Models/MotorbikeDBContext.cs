@@ -287,10 +287,6 @@ namespace Core.Models
 
                 entity.Property(e => e.ModelId).HasColumnName("model_id");
 
-                entity.Property(e => e.MotorName)
-                    .HasMaxLength(50)
-                    .HasColumnName("motor_name");
-
                 entity.Property(e => e.MotorStatusId).HasColumnName("motor_status_id");
 
                 entity.Property(e => e.MotorTypeId).HasColumnName("motor_type_id");
@@ -323,17 +319,6 @@ namespace Core.Models
                     .WithMany(p => p.Motorbikes)
                     .HasForeignKey(d => d.MotorTypeId)
                     .HasConstraintName("FK_Motorbike_MotorbikeType");
-
-                entity.HasOne(d => d.Owner)
-                    .WithMany(p => p.Motorbikes)
-                    .HasForeignKey(d => d.OwnerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Motorbike_User");
-
-                entity.HasOne(d => d.Store)
-                    .WithMany(p => p.Motorbikes)
-                    .HasForeignKey(d => d.StoreId)
-                    .HasConstraintName("FK_Motorbike_StoreDesciption");
             });
 
             modelBuilder.Entity<MotorbikeBrand>(entity =>
@@ -748,6 +733,10 @@ namespace Core.Models
                     .HasColumnType("datetime")
                     .HasColumnName("store_updated_at");
 
+                entity.Property(e => e.TaxCode)
+                    .HasMaxLength(13)
+                    .HasColumnName("tax_code");
+
                 entity.Property(e => e.UserId).HasColumnName("user_id");
 
                 entity.HasOne(d => d.Local)
@@ -759,7 +748,7 @@ namespace Core.Models
                     .WithMany(p => p.StoreDesciptions)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_StoreDesciption_User1");
+                    .HasConstraintName("FK_StoreDesciption_User");
             });
 
             modelBuilder.Entity<StoreImage>(entity =>

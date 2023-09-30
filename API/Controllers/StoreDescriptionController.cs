@@ -32,23 +32,23 @@ namespace API.Controllers
         {
             try
             {
-				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
-                if(roleId == SD.Role_Customer_Id || roleId == SD.Role_Owner_Id)
+                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                if (roleId == SD.Role_Customer_Id || roleId == SD.Role_Owner_Id)
                 {
-					var storeForUser = await _unitOfWork.StoreDescriptionService.Get(x => x.Status == SD.active);
-                    if(storeForUser == null)
+                    var storeForUser = await _unitOfWork.StoreDescriptionService.Get(x => x.Status == SD.active);
+                    if (storeForUser == null)
                     {
-						_response.StatusCode = HttpStatusCode.NotFound;
-						_response.ErrorMessages.Add("Không tìm thấy cửa hàng nào!");
-						_response.IsSuccess = false;
-						return NotFound(_response);
-					}
-					_response.StatusCode = HttpStatusCode.OK;
-					_response.IsSuccess = true;
-					_response.Result = storeForUser;
-					return Ok(_response);
-				}
-				var store = await _unitOfWork.StoreDescriptionService.Get();
+                        _response.StatusCode = HttpStatusCode.NotFound;
+                        _response.ErrorMessages.Add("Không tìm thấy cửa hàng nào!");
+                        _response.IsSuccess = false;
+                        return NotFound(_response);
+                    }
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.IsSuccess = true;
+                    _response.Result = storeForUser;
+                    return Ok(_response);
+                }
+                var store = await _unitOfWork.StoreDescriptionService.Get();
                 if (status != null)
                     store = store.Where(x => x.Status == status);
                 if (store == null)
@@ -78,30 +78,30 @@ namespace API.Controllers
             }
         }
 
-		[Authorize]
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             try
             {
-				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
-				if (roleId == SD.Role_Store_Id)
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                if (roleId == SD.Role_Store_Id)
                 {
-                    if(userId != id)
+                    if (userId != id)
                     {
-						_response.IsSuccess = false;
-						_response.StatusCode = HttpStatusCode.BadGateway;
-						_response.ErrorMessages.Add("Bạn không có quyền thực hiện chức năng này!");
-						return NotFound(_response);
-					}
-					var storeOwner = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == id);
-					_response.IsSuccess = true;
-					_response.StatusCode = HttpStatusCode.OK;
-					_response.Result = storeOwner;
-					return Ok(_response);
-				}
-				var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == id);
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadGateway;
+                        _response.ErrorMessages.Add("Bạn không có quyền thực hiện chức năng này!");
+                        return NotFound(_response);
+                    }
+                    var storeOwner = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == id);
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = storeOwner;
+                    return Ok(_response);
+                }
+                var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == id);
                 if (store == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -129,15 +129,15 @@ namespace API.Controllers
             }
         }
 
-        [Authorize(Roles ="Customer, Owner")]
-		[HttpPost]
-		[Route("store-register")]
-		public async Task<IActionResult> StoreRegister(StoreRegisterDTO store)
-		{
-			try
-			{
+        [Authorize(Roles = "Customer, Owner")]
+        [HttpPost]
+        [Route("store-register")]
+        public async Task<IActionResult> StoreRegister(StoreRegisterDTO store)
+        {
+            try
+            {
                 var rs = InputValidation.StoreRegisterValidation(store.StoreName, store.StorePhone, store.StoreEmail, store.Address, store.TaxCode);
-                if(rs != "")
+                if (rs != "")
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Result = false;
@@ -145,56 +145,56 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
                 var taxCodeInDb = await _unitOfWork.StoreDescriptionService.Get(x => x.TaxCode == store.TaxCode);
-                if(taxCodeInDb != null)
+                if (taxCodeInDb != null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Result = false;
                     _response.ErrorMessages.Add("Mã số thuế này đã được đăng ký!");
                     return BadRequest(_response);
                 }
-				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == userId);
-                if(storeInDb != null)
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == userId);
+                if (storeInDb != null)
                 {
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.Result = false;
-					_response.ErrorMessages.Add("Người dùng nãy đã đăng ký trở thành cửa hàng!");
-					return BadRequest(_response);
-				}
-				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.UserId == userId);
-				if (userInDb != null)
-				{
-					var newStore = _mapper.Map<StoreDesciption>(store);
-					newStore.Status = SD.not_verify;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add("Người dùng nãy đã đăng ký trở thành cửa hàng!");
+                    return BadRequest(_response);
+                }
+                var userInDb = await _unitOfWork.UserService.GetFirst(c => c.UserId == userId);
+                if (userInDb != null)
+                {
+                    var newStore = _mapper.Map<StoreDesciption>(store);
+                    newStore.Status = SD.not_verify;
                     newStore.UserId = userId;
-					await _unitOfWork.StoreDescriptionService.Add(newStore);
-					_response.IsSuccess = true;
-					_response.StatusCode = HttpStatusCode.OK;
-					return Ok(_response);
-				}
-				else
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
-					return NotFound(_response);
-				}
+                    await _unitOfWork.StoreDescriptionService.Add(newStore);
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    return Ok(_response);
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Không tìm thấy người dùng!");
+                    return NotFound(_response);
+                }
 
-			}
-			catch (Exception ex)
-			{
-				_response.IsSuccess = false;
-				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages = new List<string>()
-				{
-					ex.ToString()
-				};
-				return BadRequest(_response);
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
 
-        [Authorize(Roles ="Admin")]
-		[HttpPost]
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
         [Route("VerifyStore")]
         public async Task<IActionResult> VerifyStore(int storeId)
         {
@@ -205,7 +205,7 @@ namespace API.Controllers
                 _response.IsSuccess = false;
                 return BadRequest(_response);
             }
-			var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
+            var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
             if (store == null)
             {
                 _response.StatusCode = HttpStatusCode.NotFound;
@@ -217,8 +217,8 @@ namespace API.Controllers
             {
                 if (store.Status != SD.active)
                 {
-					var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == store.UserId);
-					store.Status = SD.active;
+                    var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == store.UserId);
+                    store.Status = SD.active;
                     await _unitOfWork.StoreDescriptionService.Update(store);
                     user.RoleId = 2;
                     await _unitOfWork.UserService.Update(user);
