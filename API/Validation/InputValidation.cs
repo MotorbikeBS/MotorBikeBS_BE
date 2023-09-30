@@ -50,9 +50,9 @@ namespace API.Validation
 			return Regex.Replace(value.Trim(), @"\s+", " ");
 		}
 
-        public static string StoreRegisterValidation(int userId, string storeName, string storePhone, string storeEmail, string address, string taxCode)
+        public static string StoreRegisterValidation(string storeName, string storePhone, string storeEmail, string address, string taxCode)
         {
-            if(userId.ToString() == null || storeName == null || storeEmail == null || storePhone == null || address == null || taxCode == null)
+            if(storeName == null || storeEmail == null || storePhone == null || address == null || taxCode == null)
             {
                 return "Không được bỏ trống!";
             }

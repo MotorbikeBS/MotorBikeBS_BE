@@ -4,7 +4,6 @@ namespace API.DTO.UserDTO
 {
     public class StoreRegisterDTO
     {
-        public int UserId { get; set; }
         public string StoreName { get; set; } = null!;
         public string? StorePhone { get; set; }
         public string? StoreEmail { get; set; }

@@ -120,7 +120,7 @@ namespace API.Controllers
 		{
 			try
 			{
-                var rs = InputValidation.StoreRegisterValidation(store.UserId, store.StoreName, store.StorePhone, store.StoreEmail, store.Address, store.TaxCode);
+                var rs = InputValidation.StoreRegisterValidation(store.StoreName, store.StorePhone, store.StoreEmail, store.Address, store.TaxCode);
                 if(rs != "")
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -128,7 +128,8 @@ namespace API.Controllers
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
-                var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == store.UserId);
+				var userId = int.Parse(User.FindFirst("UserId")?.Value);
+				var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == userId);
                 if(storeInDb != null)
                 {
 					_response.StatusCode = HttpStatusCode.BadRequest;
@@ -136,11 +137,12 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Người dùng nãy đã đăng ký trở thành cửa hàng!");
 					return BadRequest(_response);
 				}
-				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.UserId == store.UserId);
+				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.UserId == userId);
 				if (userInDb != null)
 				{
 					var newStore = _mapper.Map<StoreDesciption>(store);
 					newStore.Status = SD.not_verify;
+                    newStore.UserId = userId;
 					await _unitOfWork.StoreDescriptionService.Add(newStore);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
