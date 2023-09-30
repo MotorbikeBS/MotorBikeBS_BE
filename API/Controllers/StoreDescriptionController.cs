@@ -62,6 +62,57 @@ namespace API.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            try
+            {
+				var userId = int.Parse(User.FindFirst("UserId")?.Value);
+				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+				if (roleId == SD.Role_Store_Id)
+                {
+                    if(userId != id)
+                    {
+						_response.IsSuccess = false;
+						_response.StatusCode = HttpStatusCode.BadGateway;
+						_response.ErrorMessages.Add("Bạn không có quyền thực hiện chức năng này!");
+						return NotFound(_response);
+					}
+					var storeOwner = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == id);
+					_response.IsSuccess = true;
+					_response.StatusCode = HttpStatusCode.OK;
+					_response.Result = storeOwner;
+					return Ok(_response);
+				}
+				var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == id);
+                if (store == null)
+                {
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
+                    _response.IsSuccess = false;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.IsSuccess = true;
+                    _response.Result = store;
+                    return Ok(_response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
         [Authorize(Roles ="Customer, Owner")]
 		[HttpPost]
 		[Route("store-register")]

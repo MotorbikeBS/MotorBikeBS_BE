@@ -186,6 +186,13 @@ namespace API.Controllers
 				}
 				else
 				{
+					if(passwordDTO.Password != passwordDTO.PasswordConfirmed)
+					{
+						_response.IsSuccess = false;
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.ErrorMessages.Add("Mật khẩu không trùng với mật khẩu xác nhận!");
+						return BadRequest(_response);
+					}
 					CreatePasswordHash(passwordDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
 					user.PasswordHash = passwordHash;
 					user.PasswordSalt = passwordSalt;
