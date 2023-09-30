@@ -172,8 +172,8 @@ namespace API.Controllers
                         _configuration["Jwt:Issuer"],
                         _configuration["Jwt:Audience"],
                         claims,
-                        expires: DateTime.UtcNow.AddHours(5),
-                        signingCredentials: signIn);
+						expires: DateTime.UtcNow.AddHours(5),
+						signingCredentials: signIn);
 
 					//var tokenObject = new { Token = new JwtSecurityTokenHandler().WriteToken(token) };
 					var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
