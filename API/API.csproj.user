@@ -4,7 +4,11 @@
     <Controller_SelectedScaffolderID>ApiControllerEmptyScaffolder</Controller_SelectedScaffolderID>
     <Controller_SelectedScaffolderCategoryPath>root/Common/Api</Controller_SelectedScaffolderCategoryPath>
     <ActiveDebugProfile>API</ActiveDebugProfile>
+<<<<<<< HEAD
+    <NameOfLastUsedPublishProfile>C:\Users\user\Desktop\Pull\MotorBikeBS_BE\API\Properties\PublishProfiles\motorbike-be-swagger - Web Deploy.pubxml</NameOfLastUsedPublishProfile>
+=======
     <NameOfLastUsedPublishProfile>D:\j2yD9gmz\Majors 9\CP\Git\main\MotorBikeBS_BE\API\Properties\PublishProfiles\motorbike-be-swagger - FTP.pubxml</NameOfLastUsedPublishProfile>
+>>>>>>> a0bc8eba1a900fab1722f42a85bee6066ef3f83b
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
