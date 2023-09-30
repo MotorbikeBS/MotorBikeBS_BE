@@ -43,18 +43,18 @@ namespace Core.Models
         public virtual DbSet<StoreImage> StoreImages { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-			var d = Directory.GetCurrentDirectory();
-			IConfigurationRoot configuration = builder.Build();
-			string connectionString = configuration.GetConnectionString("DefaultConnection");
-			optionsBuilder.UseSqlServer(connectionString);
-		}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            var d = Directory.GetCurrentDirectory();
+            IConfigurationRoot configuration = builder.Build();
+            string connectionString = configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseSqlServer(connectionString);
+        }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -287,6 +287,10 @@ namespace Core.Models
 
                 entity.Property(e => e.ModelId).HasColumnName("model_id");
 
+                entity.Property(e => e.MotorName)
+                    .HasMaxLength(50)
+                    .HasColumnName("motor_name");
+
                 entity.Property(e => e.MotorStatusId).HasColumnName("motor_status_id");
 
                 entity.Property(e => e.MotorTypeId).HasColumnName("motor_type_id");
@@ -319,6 +323,17 @@ namespace Core.Models
                     .WithMany(p => p.Motorbikes)
                     .HasForeignKey(d => d.MotorTypeId)
                     .HasConstraintName("FK_Motorbike_MotorbikeType");
+
+                entity.HasOne(d => d.Owner)
+                    .WithMany(p => p.Motorbikes)
+                    .HasForeignKey(d => d.OwnerId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Motorbike_User");
+
+                entity.HasOne(d => d.Store)
+                    .WithMany(p => p.Motorbikes)
+                    .HasForeignKey(d => d.StoreId)
+                    .HasConstraintName("FK_Motorbike_StoreDesciption");
             });
 
             modelBuilder.Entity<MotorbikeBrand>(entity =>
@@ -748,7 +763,7 @@ namespace Core.Models
                     .WithMany(p => p.StoreDesciptions)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_StoreDesciption_User");
+                    .HasConstraintName("FK_StoreDesciption_User1");
             });
 
             modelBuilder.Entity<StoreImage>(entity =>
