@@ -4,6 +4,7 @@
     <Controller_SelectedScaffolderID>ApiControllerEmptyScaffolder</Controller_SelectedScaffolderID>
     <Controller_SelectedScaffolderCategoryPath>root/Common/Api</Controller_SelectedScaffolderCategoryPath>
     <ActiveDebugProfile>API</ActiveDebugProfile>
+    <NameOfLastUsedPublishProfile>D:\j2yD9gmz\Majors 9\CP\Git\HungTQ\MotorBikeBS_BE\API\Properties\PublishProfiles\motorbike-be-swagger - FTP.pubxml</NameOfLastUsedPublishProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
