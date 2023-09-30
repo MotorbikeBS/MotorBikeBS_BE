@@ -1,5 +1,4 @@
 ﻿using API.DTO;
-using API.DTO.MotorbikeDTO;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -29,8 +28,7 @@ namespace API.Controllers
         {
             try
             {
-                var list = await _unitOfWork.MotorModelService.Get(includeProperties: "Brand");
-                var listResponse = _mapper.Map<List<ModelResponseDTO>>(list);
+                var list = await _unitOfWork.MotorModelService.Get();
                 if (list == null || list.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy mẫu nào!");
@@ -42,7 +40,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = listResponse;
+                    _response.Result = list;
                 }
                 return Ok(_response);
             }
@@ -62,8 +60,7 @@ namespace API.Controllers
         {
             try
             {
-                var obj = await _unitOfWork.MotorModelService.GetFirst(e => e.ModelId == id, includeProperties: "Brand");
-                var objResponse = _mapper.Map<List<ModelResponseDTO>>(obj);
+                var obj = await _unitOfWork.MotorModelService.GetFirst(e => e.ModelId == id);
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tồn tại mãu này!");
@@ -75,7 +72,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = objResponse;
+                    _response.Result = obj;
                 }
                 return Ok(_response);
             }
@@ -100,7 +97,7 @@ namespace API.Controllers
                 var obj = await _unitOfWork.MotorModelService.GetFirst(e => e.ModelId == id);
                 if (obj == null || id != p.ModelId)
                 {
-                    _response.ErrorMessages.Add("Không tồn tại mẫu nào!");
+                    _response.ErrorMessages.Add("Không tồn tại model nào!");
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
