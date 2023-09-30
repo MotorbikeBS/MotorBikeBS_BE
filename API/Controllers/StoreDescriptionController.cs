@@ -144,6 +144,14 @@ namespace API.Controllers
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
+                var taxCodeInDb = await _unitOfWork.StoreDescriptionService.Get(x => x.TaxCode == store.TaxCode);
+                if(taxCodeInDb != null)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add("Mã số thuế này đã được đăng ký!");
+                    return BadRequest(_response);
+                }
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
 				var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == userId);
                 if(storeInDb != null)
