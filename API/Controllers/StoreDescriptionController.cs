@@ -26,13 +26,29 @@ namespace API.Controllers
             _response = new ApiResponse();
         }
 
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin, Customer, Owner")]
         [HttpGet]
         public async Task<IActionResult> Get(string? status)
         {
             try
             {
-                var store = await _unitOfWork.StoreDescriptionService.Get();
+				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                if(roleId == SD.Role_Customer_Id || roleId == SD.Role_Owner_Id)
+                {
+					var storeForUser = await _unitOfWork.StoreDescriptionService.Get(x => x.Status == SD.active);
+                    if(storeForUser == null)
+                    {
+						_response.StatusCode = HttpStatusCode.NotFound;
+						_response.ErrorMessages.Add("Không tìm thấy cửa hàng nào!");
+						_response.IsSuccess = false;
+						return NotFound(_response);
+					}
+					_response.StatusCode = HttpStatusCode.OK;
+					_response.IsSuccess = true;
+					_response.Result = storeForUser;
+					return Ok(_response);
+				}
+				var store = await _unitOfWork.StoreDescriptionService.Get();
                 if (status != null)
                     store = store.Where(x => x.Status == status);
                 if (store == null)
@@ -62,7 +78,7 @@ namespace API.Controllers
             }
         }
 
-        [Authorize]
+		[Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
