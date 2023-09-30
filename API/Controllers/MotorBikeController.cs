@@ -62,11 +62,11 @@ namespace API.Controllers
         public async Task<IActionResult> GetAllOnExchange()
         {
             try
-            {
+            {  
                 var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("POSTING"));
-                var StatusDTO = _mapper.Map<StatusRegisterDTO>(Status);
-                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == StatusDTO.MotorStatusId);
-                if (list == null || list.Count() <= 0)
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId, "Model", "Model.Brand", "MotorStatus","MotorType", "MotorbikeImages", "Owner", "Store");
+                var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
@@ -77,7 +77,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = list;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
@@ -100,8 +100,9 @@ namespace API.Controllers
             try
             {
                 var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("SALE_REQUEST"));
-                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId);
-                if (list == null || list.Count() <= 0)
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
@@ -112,7 +113,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = list;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
@@ -133,8 +134,9 @@ namespace API.Controllers
         {
             try
             {
-                var list = await _unitOfWork.MotorBikeService.Get(e => e.StoreId == StoreID);
-                if (list == null || list.Count() <= 0)
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.StoreId == StoreID, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
@@ -145,7 +147,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = list;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
@@ -166,8 +168,9 @@ namespace API.Controllers
         {
             try
             {
-                var list = await _unitOfWork.MotorBikeService.Get(e => e.OwnerId == OwnerID);
-                if (list == null || list.Count() <= 0)
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.OwnerId == OwnerID, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
@@ -178,7 +181,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = list;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
@@ -199,8 +202,9 @@ namespace API.Controllers
         {
             try
             {
-                var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id);
-                if (obj == null)
+                var listDatabase = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listResponse = _mapper.Map<MotorResponseDTO>(listDatabase);
+                if (listDatabase == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
@@ -211,7 +215,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = obj;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
