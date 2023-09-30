@@ -30,8 +30,9 @@ namespace API.Controllers
         {
             try
             {
-                var list = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == StatusID);
-                if (list == null || list.Count() <= 0)
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == StatusID, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
                     _response.IsSuccess = false;
@@ -42,7 +43,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = list;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
