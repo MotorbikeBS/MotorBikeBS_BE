@@ -7,6 +7,7 @@ namespace Core.Models
     {
         public User()
         {
+            Motorbikes = new HashSet<Motorbike>();
             RequestReceivers = new HashSet<Request>();
             RequestSenders = new HashSet<Request>();
             StoreDesciptions = new HashSet<StoreDesciption>();
@@ -35,6 +36,7 @@ namespace Core.Models
 
         public virtual LocalAddress? Local { get; set; }
         public virtual Role? Role { get; set; }
+        public virtual ICollection<Motorbike> Motorbikes { get; set; }
         public virtual ICollection<Request> RequestReceivers { get; set; }
         public virtual ICollection<Request> RequestSenders { get; set; }
         public virtual ICollection<StoreDesciption> StoreDesciptions { get; set; }
