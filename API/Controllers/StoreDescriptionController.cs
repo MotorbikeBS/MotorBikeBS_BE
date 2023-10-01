@@ -198,43 +198,55 @@ namespace API.Controllers
         [Route("VerifyStore")]
         public async Task<IActionResult> VerifyStore(int storeId)
         {
-            if (storeId <= 0)
+            try
             {
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessages.Add("Lỗi hệ thống!");
-                _response.IsSuccess = false;
-                return BadRequest(_response);
-            }
-            var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
-            if (store == null)
-            {
-                _response.StatusCode = HttpStatusCode.NotFound;
-                _response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
-                _response.IsSuccess = false;
-                return NotFound(_response);
-            }
-            else
-            {
-                if (store.Status != SD.active)
-                {
-                    var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == store.UserId);
-                    store.Status = SD.active;
-                    await _unitOfWork.StoreDescriptionService.Update(store);
-                    user.RoleId = 2;
-                    await _unitOfWork.UserService.Update(user);
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.IsSuccess = true;
-                    _response.Message = "Xác minh thành công!";
-                    return Ok(_response);
-                }
-                else
+                if (storeId <= 0)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Cửa hàng đã được xác minh!");
+                    _response.ErrorMessages.Add("Lỗi hệ thống!");
                     _response.IsSuccess = false;
                     return BadRequest(_response);
                 }
-            }
+                var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
+                if (store == null)
+                {
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
+                    _response.IsSuccess = false;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    if (store.Status != SD.active)
+                    {
+                        var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == store.UserId);
+                        store.Status = SD.active;
+                        await _unitOfWork.StoreDescriptionService.Update(store);
+                        user.RoleId = 2;
+                        await _unitOfWork.UserService.Update(user);
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.IsSuccess = true;
+                        _response.Message = "Xác minh thành công!";
+                        return Ok(_response);
+                    }
+                    else
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Cửa hàng đã được xác minh!");
+                        _response.IsSuccess = false;
+                        return BadRequest(_response);
+                    }
+                }
+            }catch(Exception ex)
+            {
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return BadRequest(_response);
+			}
         }
     }
 }
