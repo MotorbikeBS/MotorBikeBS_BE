@@ -144,7 +144,7 @@ namespace API.Controllers
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
-                var taxCodeInDb = await _unitOfWork.StoreDescriptionService.Get(x => x.TaxCode == store.TaxCode);
+                var taxCodeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.TaxCode == store.TaxCode);
                 if (taxCodeInDb != null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
