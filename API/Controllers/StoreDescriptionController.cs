@@ -167,6 +167,7 @@ namespace API.Controllers
                     var newStore = _mapper.Map<StoreDesciption>(store);
                     newStore.Status = SD.not_verify;
                     newStore.UserId = userId;
+                    newStore.StoreCreatedAt = DateTime.Now;
                     await _unitOfWork.StoreDescriptionService.Add(newStore);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
