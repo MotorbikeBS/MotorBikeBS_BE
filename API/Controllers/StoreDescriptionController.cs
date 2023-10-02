@@ -38,7 +38,7 @@ namespace API.Controllers
 				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
 				if (roleId == SD.Role_Customer_Id || roleId == SD.Role_Owner_Id)
 				{
-					var storeForUser = await _unitOfWork.StoreDescriptionService.Get(x => x.Status == SD.active);
+					var storeForUser = await _unitOfWork.StoreDescriptionService.Get(x => x.Status == SD.active, includeProperties: "StoreImages");
 					if (storeForUser == null)
 					{
 						_response.StatusCode = HttpStatusCode.NotFound;
