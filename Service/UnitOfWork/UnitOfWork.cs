@@ -15,9 +15,10 @@ namespace Service.UnitOfWork
         public IUserService UserService { get; private set; } = null!;
         public IRoleService RoleService { get; private set; } = null!;
         public IStoreDescriptionService StoreDescriptionService { get; private set; } = null!;
+		public IStoreImageService StoreImageService { get; private set; } = null!;
 
 
-        private readonly MotorbikeDBContext _context;
+		private readonly MotorbikeDBContext _context;
 
         public UnitOfWork()
         {
@@ -36,6 +37,7 @@ namespace Service.UnitOfWork
             UserService = new UserRepository(_context, this);
             RoleService = new RoleRepository(_context, this);
             StoreDescriptionService = new StoreDescriptionRepository(_context, this);
-        }
+			StoreImageService = new StoreImageRepository(_context, this);
+		}
     }
 }
