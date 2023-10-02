@@ -1,6 +1,7 @@
 ﻿using API.DTO;
 using API.DTO.MotorbikeDTO;
 using API.DTO.UserDTO;
+using API.Utility;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -25,12 +26,14 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
+       
         [HttpGet("GetAllWithSpecificStatus")]
+        [Authorize(Roles = "Store,Owner")]
         public async Task<IActionResult> GetAllWithSpecificStatus(int StatusID )
         {
             try
             {
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == StatusID, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == StatusID, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
@@ -59,13 +62,14 @@ namespace API.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("GetAllOnExchange")]
         public async Task<IActionResult> GetAllOnExchange()
         {
             try
             {  
                 var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("POSTING"));
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId, "Model", "Model.Brand", "MotorStatus","MotorType", "MotorbikeImages", "Owner", "Store");
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
@@ -101,7 +105,7 @@ namespace API.Controllers
             try
             {
                 var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("SALE_REQUEST"));
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId,SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
@@ -130,12 +134,13 @@ namespace API.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("GetMotorByStoreId")]
         public async Task<IActionResult> GetByStoreId(int StoreID)
         {
             try
             {
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.StoreId == StoreID, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.StoreId == StoreID,SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
@@ -164,12 +169,13 @@ namespace API.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("GetMotorByOwner")]
         public async Task<IActionResult> GetByOwnerId(int OwnerID)
         {
             try
             {
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.OwnerId == OwnerID, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.OwnerId == OwnerID,SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
@@ -198,12 +204,13 @@ namespace API.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetByMotorId(int id)
         {
             try
             {
-                var listDatabase = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id, "Model", "Model.Brand", "MotorStatus", "MotorType", "MotorbikeImages", "Owner", "Store");
+                var listDatabase = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id,SD.GetMotorArray);
                 var listResponse = _mapper.Map<MotorResponseDTO>(listDatabase);
                 if (listDatabase == null)
                 {
@@ -282,7 +289,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Mã số chứng nhận đăng ký xe không đúng!");
+                    _response.ErrorMessages.Add("Mã số chứng nhận đăng ký xe đã tồn tại!");
                     return BadRequest(_response);
                 }
                 else

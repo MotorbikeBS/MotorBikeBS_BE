@@ -1,4 +1,5 @@
 ﻿using API.DTO;
+using API.DTO.MotorbikeDTO;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -23,12 +24,14 @@ namespace API.Controllers
             _response = new ApiResponse();
             _mapper = mapper;
         }
+
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
             try
             {
-                var list = await _unitOfWork.MotorBrandService.Get();
+                var list = await _unitOfWork.MotorBrandService.Get(includeProperties: "MotorbikeModels");
                 if (list == null || list.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
@@ -55,12 +58,14 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetByBrandId(int id)
         {
             try
             {
-                var obj = await _unitOfWork.MotorBrandService.GetFirst(e => e.BrandId == id);
+                var obj = await _unitOfWork.MotorBrandService.GetFirst(e => e.BrandId == id, includeProperties: "MotorbikeModels");
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
