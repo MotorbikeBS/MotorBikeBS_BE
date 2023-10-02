@@ -13,5 +13,6 @@ namespace Service.UnitOfWork
         public IUserService UserService { get; }
         public IRoleService RoleService { get; }
         public IStoreDescriptionService StoreDescriptionService { get; }
-    }
+		public IStoreImageService StoreImageService { get; }
+	}
 }

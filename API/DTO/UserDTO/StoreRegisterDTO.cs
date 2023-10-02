@@ -9,5 +9,6 @@ namespace API.DTO.UserDTO
         public string? StoreEmail { get; set; }
         public string? Address { get; set; }
 		public string? TaxCode { get; set; }
+		public IFormFile File { get; set; }
 	}
 }

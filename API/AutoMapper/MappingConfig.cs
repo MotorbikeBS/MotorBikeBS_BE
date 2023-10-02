@@ -22,9 +22,9 @@ namespace API.AutoMapper
 
 				config.CreateMap<Role, RoleResponseDTO>().ReverseMap();
 
-				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap();
+				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap().ForSourceMember(source => source.File, opt => opt.DoNotValidate());
 
-                config.CreateMap<Motorbike, MotorRegisterDTO>().ReverseMap();
+				config.CreateMap<Motorbike, MotorRegisterDTO>().ReverseMap();
                 config.CreateMap<Motorbike, MotorResponseDTO>().ReverseMap()
                     .ForMember(dest => dest.Model, opt => opt.MapFrom(src => src.Model))
                     .ForMember(dest => dest.MotorStatus, opt => opt.MapFrom(src => src.MotorStatus))
