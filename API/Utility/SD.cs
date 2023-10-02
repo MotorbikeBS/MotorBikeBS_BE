@@ -9,5 +9,17 @@
 
 		public const string not_verify = "NOT VERIFY";
 		public const string active = "ACTIVE";
-	}
+
+        public static readonly string[] GetMotorArray = new string[]
+        {
+            "Model",
+            "Model.Brand",
+            "MotorStatus",
+            "MotorType",
+            "MotorbikeImages",
+            "Owner",
+            "Owner.Role",
+            "Store"
+        };
+    }
 }

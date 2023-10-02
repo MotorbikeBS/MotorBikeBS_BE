@@ -15,8 +15,9 @@ namespace API.DTO.MotorbikeDTO
         public virtual ModelResponseDTO? Model { get; set; }
         public virtual StatusRegisterDTO? MotorStatus { get; set; }
         public virtual TypeRegisterDTO? MotorType { get; set; }
+        public int? StoreId { get; set; }
         public virtual StoreRegisterDTO? Store { get; set; }
-        public virtual UserUpdateDTO? Owner { get; set; }
+        public virtual UserResponseDTO? Owner { get; set; }
         public virtual ICollection<ImageRegisterDTO> MotorbikeImages { get; set; }
     }
 }

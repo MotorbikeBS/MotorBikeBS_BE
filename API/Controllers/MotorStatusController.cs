@@ -23,7 +23,9 @@ namespace API.Controllers
             _response = new ApiResponse();
             _mapper = mapper;
         }
+
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Get()
         {
             try
@@ -55,7 +57,9 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
         [HttpGet("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> GetByStatusId(int id)
         {
             try

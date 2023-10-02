@@ -23,6 +23,8 @@ namespace API.Controllers
             _response = new ApiResponse();
             _mapper = mapper;
         }
+
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetByMotorId(int MotorID)
         {
@@ -55,6 +57,8 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetByImageId(int ImageID)
         {

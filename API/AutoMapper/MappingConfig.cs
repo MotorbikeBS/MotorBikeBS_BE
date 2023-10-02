@@ -25,6 +25,14 @@ namespace API.AutoMapper
 				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap();
 
                 config.CreateMap<Motorbike, MotorRegisterDTO>().ReverseMap();
+                config.CreateMap<Motorbike, MotorResponseDTO>().ReverseMap()
+                    .ForMember(dest => dest.Model, opt => opt.MapFrom(src => src.Model))
+                    .ForMember(dest => dest.MotorStatus, opt => opt.MapFrom(src => src.MotorStatus))
+                    .ForMember(dest => dest.MotorType, opt => opt.MapFrom(src => src.MotorType))
+                    .ForMember(dest => dest.Owner, opt => opt.MapFrom(src => src.Owner))
+                    .ForMember(dest => dest.Store, opt => opt.MapFrom(src => src.Store))
+                    .ForMember(dest => dest.MotorbikeImages, opt => opt.MapFrom(src => src.MotorbikeImages));
+
                 config.CreateMap<MotorbikeBrand, BrandRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeModel, ModelRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeModel, ModelResponseDTO>().ReverseMap().ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Brand));
@@ -33,13 +41,7 @@ namespace API.AutoMapper
                 config.CreateMap<MotorbikeType, TypeRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeImage, ImageRegisterDTO>().ReverseMap();
 
-                config.CreateMap<Motorbike, MotorResponseDTO>().ReverseMap()
-                    .ForMember(dest => dest.Model, opt => opt.MapFrom(src => src.Model))
-                    .ForMember(dest => dest.MotorStatus, opt => opt.MapFrom(src => src.MotorStatus))
-                    .ForMember(dest => dest.MotorType, opt => opt.MapFrom(src => src.MotorType))
-                    .ForMember(dest => dest.Owner, opt => opt.MapFrom(src => src.Owner))
-                    .ForMember(dest => dest.Store, opt => opt.MapFrom(src => src.Store))
-                    .ForMember(dest => dest.MotorbikeImages, opt => opt.MapFrom(src => src.MotorbikeImages));
+                
             });
             return mappingConfig;
         }
