@@ -154,33 +154,60 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Vui lòng chọn hình ảnh cửa hàng!");
 					return BadRequest(_response);
 				}
+
+				var userId = int.Parse(User.FindFirst("UserId")?.Value);
+				var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == userId);
 				var taxCodeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.TaxCode == store.TaxCode);
-				if (taxCodeInDb != null)
+
+				if (taxCodeInDb != null && storeInDb.Status != SD.refuse)
 				{
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					_response.Result = false;
 					_response.ErrorMessages.Add("Mã số thuế này đã được đăng ký!");
 					return BadRequest(_response);
 				}
-				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == userId);
-				if (storeInDb != null)
+
+				if (storeInDb != null && storeInDb.Status != SD.refuse)
 				{
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					_response.Result = false;
 					_response.ErrorMessages.Add("Người dùng nãy đã đăng ký trở thành cửa hàng!");
 					return BadRequest(_response);
 				}
+				
 				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.UserId == userId);
 				if (userInDb != null)
 				{
-					var newStore = _mapper.Map<StoreDesciption>(store);
-					newStore.Status = SD.not_verify;
-					newStore.UserId = userId;
-					newStore.StoreCreatedAt = DateTime.Now;
-					await _unitOfWork.StoreDescriptionService.Add(newStore);
+					if(storeInDb != null && storeInDb.Status == SD.refuse)
+					{
+						var newStore = _mapper.Map(store, storeInDb);
+						newStore.Status = SD.not_verify;
+						await _unitOfWork.StoreDescriptionService.Update(newStore);
 
-					string fileName = $"{Guid.NewGuid()}{Path.GetExtension(store.File.FileName)}";
+						var oldImg = await _unitOfWork.StoreImageService.GetFirst(x => x.StoreId == storeInDb.StoreId);
+						var link = oldImg.ImageLink.Split('/').Last();
+
+						await _blobService.DeleteBlob(link, SD.Storage_Container);
+						await _unitOfWork.StoreImageService.Delete(oldImg);
+
+						string fileName = $"{Guid.NewGuid()}{Path.GetExtension(store.File.FileName)}";
+						var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, store.File);
+						StoreImage image = new()
+						{
+							ImageLink = img,
+							StoreId = newStore.StoreId
+						};
+						await _unitOfWork.StoreImageService.Add(image);
+					}
+					else
+					{
+						var newStore = _mapper.Map<StoreDesciption>(store);
+						newStore.Status = SD.not_verify;
+						newStore.UserId = userId;
+						newStore.StoreCreatedAt = DateTime.Now;
+						await _unitOfWork.StoreDescriptionService.Add(newStore);
+
+											string fileName = $"{Guid.NewGuid()}{Path.GetExtension(store.File.FileName)}";
 					var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, store.File);
 					StoreImage image = new()
 					{
@@ -188,6 +215,7 @@ namespace API.Controllers
 						StoreId = newStore.StoreId
 					};
 					await _unitOfWork.StoreImageService.Add(image);
+					}
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Message = ("Đăng ký thành công, vui lòng chờ xác thực!");
@@ -290,6 +318,7 @@ namespace API.Controllers
 					if (store.Status == SD.not_verify)
 					{
 						store.Status = SD.refuse;
+						await _unitOfWork.StoreDescriptionService.Update(store);
 						_response.StatusCode = HttpStatusCode.OK;
 						_response.IsSuccess = true;
 						_response.Message = "Từ chối thành công!";
