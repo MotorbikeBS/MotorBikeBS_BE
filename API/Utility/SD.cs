@@ -10,6 +10,7 @@
 		public const string not_verify = "NOT VERIFY";
 		public const string active = "ACTIVE";
 		public const string in_active = "INACTIVE";
+		public const string refuse = "REFUSE";
 
 		public const string Storage_Container = "motorbikebs";
 
