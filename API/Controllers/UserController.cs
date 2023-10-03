@@ -82,14 +82,14 @@ namespace API.Controllers
 						_response.ErrorMessages.Add("Bạn không có quyền thực hiện chức năng này!");
 						return NotFound(_response);
 					}
-					var c = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId, includeProperties: "Role");
+					var c = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId, includeProperties: new string[] { "Role", "StoreDesciptions" });
 					var userResponse = _mapper.Map<UserResponseDTO>(c);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Result = userResponse;
 					return Ok(_response);
 				}
-				var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == id, includeProperties: "Role");
+				var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == id, includeProperties: new string[] { "Role", "StoreDesciptions" });
 				if (user == null)
 				{
 					_response.IsSuccess = false;
@@ -172,11 +172,12 @@ namespace API.Controllers
 		[Authorize]
 		[HttpPost]
 		[Route("ChangePassword")]
-		public async Task<IActionResult> ChangePassword([FromQuery] int id, ResetPasswordDTO passwordDTO)
+		public async Task<IActionResult> ChangePassword(ResetPasswordDTO passwordDTO)
 		{
 			try
 			{
-				var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == id);
+				var userId = int.Parse(User.FindFirst("UserId")?.Value);
+				var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId);
 				if (user == null)
 				{
 					_response.IsSuccess = false;
@@ -193,13 +194,27 @@ namespace API.Controllers
 						_response.ErrorMessages.Add("Mật khẩu không trùng với mật khẩu xác nhận!");
 						return BadRequest(_response);
 					}
+					if(passwordDTO.Password.Length <6)
+					{
+						_response.IsSuccess = false;
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.ErrorMessages.Add("Mật khẩu phải từ 6 ký tự trở lên!");
+						return BadRequest(_response);
+					}
+					if (!VerifyPasswordHash(passwordDTO.OldPassword, user.PasswordHash, user.PasswordSalt))
+					{
+						_response.IsSuccess = false;
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.ErrorMessages.Add("Mật khẩu hiện tại không đúng!");
+						return BadRequest(_response);
+					}
 					CreatePasswordHash(passwordDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
 					user.PasswordHash = passwordHash;
 					user.PasswordSalt = passwordSalt;
 					await _unitOfWork.UserService.Update(user);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
-					_response.Result = user;
+					_response.Message = "Mật khẩu đã được thay đổi!";
 					return Ok(_response);
 				}
 			}
@@ -221,6 +236,15 @@ namespace API.Controllers
 			{
 				passwordSalt = hmac.Key;
 				passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+			}
+		}
+
+		private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+		{
+			using (var hmac = new HMACSHA512(passwordSalt))
+			{
+				var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+				return computedHash.SequenceEqual(passwordHash);
 			}
 		}
 	}

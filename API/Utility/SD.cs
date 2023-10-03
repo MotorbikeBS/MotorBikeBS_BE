@@ -9,8 +9,12 @@
 
 		public const string not_verify = "NOT VERIFY";
 		public const string active = "ACTIVE";
+		public const string in_active = "INACTIVE";
+		public const string refuse = "REFUSE";
 
-        public static readonly string[] GetMotorArray = new string[]
+		public const string Storage_Container = "motorbikebs";
+
+		public static readonly string[] GetMotorArray = new string[]
         {
             "Model",
             "Model.Brand",

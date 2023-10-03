@@ -1,8 +1,10 @@
 using API.AutoMapper;
 using AutoMapper;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Service.BlobImageService;
 using Service.Repository;
 using Service.Service;
 using Service.UnitOfWork;
@@ -25,6 +27,11 @@ builder.Services.AddTransient<IEmailSender, EmailSenderRepository>();
 
 //Cors
 builder.Services.AddCors();
+
+//BlobService
+builder.Services.AddSingleton(u => new BlobServiceClient(
+	builder.Configuration.GetConnectionString("StorageAccount")));
+builder.Services.AddSingleton<IBlobService, BlobService>();
 
 //Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
