@@ -270,6 +270,51 @@ namespace API.Controllers
 			}
         }
 
+		[Authorize(Roles ="Admin")]
+		[HttpPut]
+		[Route("RefuseStore")]
+		public async Task<IActionResult>RefuseStore(int storeId)
+		{
+			try
+			{
+				var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
+				if (store == null)
+				{
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
+					_response.IsSuccess = false;
+					return NotFound(_response);
+				}
+				else
+				{
+					if (store.Status == SD.not_verify)
+					{
+						store.Status = SD.refuse;
+						_response.StatusCode = HttpStatusCode.OK;
+						_response.IsSuccess = true;
+						_response.Message = "Từ chối thành công!";
+						return Ok(_response);
+					}
+					else
+					{
+						_response.StatusCode = HttpStatusCode.BadGateway;
+						_response.IsSuccess = false;
+						_response.Message = "Không thành công!";
+						return Ok(_response);
+					}
+				}
+			}catch (Exception ex)
+			{
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return BadRequest(_response);
+			}
+		}
+
 		[Authorize(Roles = "Admin")]
 		[HttpPost]
 		[Route("InactiveStore")]
