@@ -66,7 +66,7 @@ namespace API.Controllers
             }
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("GetAllOnExchange")]
         public async Task<IActionResult> GetAllOnExchange()
         {
@@ -75,6 +75,7 @@ namespace API.Controllers
                 var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("POSTING"));
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                listResponse.ForEach(item => item.Owner = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -111,6 +112,7 @@ namespace API.Controllers
                 var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("SALE_REQUEST"));
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId,SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                listResponse.ForEach(item => item.Store = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -208,7 +210,7 @@ namespace API.Controllers
             }
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetByMotorId(int id)
         {
@@ -246,11 +248,11 @@ namespace API.Controllers
         [HttpPut]
         [Authorize(Roles = "Store,Owner")]
         [Route("UpdateMotor")]
-        public async Task<IActionResult> UpdateMotor(int id, MotorRegisterDTO p)
+        public async Task<IActionResult> UpdateMotor(int MotorID, [FromForm] MotorRegisterDTO motor, List<IFormFile> images)
         {
             try
             {
-                var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id);
+                var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == MotorID);
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe này!");
@@ -260,14 +262,48 @@ namespace API.Controllers
                 }
                 else
                 {
-                    _mapper.Map(p, obj);
-                    await _unitOfWork.MotorBikeService.Update(obj);
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
+                        return BadRequest(_response);
+                    }
+                    else
+                    {
+                        _mapper.Map(motor, obj);
+                        await _unitOfWork.MotorBikeService.Update(obj);
 
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = obj;
+                        if (motor != null)
+                        {
+                            var oldImages = await _unitOfWork.MotorImageService.Get(x => x.MotorId == MotorID);
+                            foreach (var oldImg in oldImages)
+                            {
+                                var link = oldImg.ImageLink.Split('/').Last();
+                                await _blobService.DeleteBlob(link, SD.Storage_Container);
+                                await _unitOfWork.MotorImageService.Delete(oldImg);
+                            }
+                            foreach (var p in images)
+                            {
+                                string fileName = $"{Guid.NewGuid()}{Path.GetExtension(p.FileName)}";
+                                var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, p);
+                                MotorbikeImage image = new()
+                                {
+                                    ImageLink = img,
+                                    MotorId = MotorID
+                                };
+                                await _unitOfWork.MotorImageService.Add(image);
+                            }
+                        }
+                        
+
+                        _response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.Result = obj;
+                    }
+                    return Ok(_response);
                 }
-                return Ok(_response);
             }
             catch (Exception ex)
             {
@@ -298,9 +334,9 @@ namespace API.Controllers
                 }
                 else
                 {
-                    var userID = int.Parse(User.FindFirst("UserId")?.Value);
                     var newMotor = _mapper.Map<Motorbike>(motor);
                     newMotor.MotorStatusId = SD.Status_Storage;
+                    newMotor.OwnerId = int.Parse(User.FindFirst("UserId")?.Value); 
                     await _unitOfWork.MotorBikeService.Add(newMotor);
                     //Add list Image
                     var motorInDb = await _unitOfWork.MotorBikeService.GetFirst(c => c.CertificateNumber == motor.CertificateNumber);

@@ -30,7 +30,7 @@ namespace API.Controllers
             _blobService = blobService;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetByMotorId(int MotorID)
         {
@@ -100,12 +100,12 @@ namespace API.Controllers
             }
         }
         [HttpPut]
-        //[Authorize(Roles = "Store,Owner")]
-        public async Task<IActionResult> UpdateImage([FromForm] int id, List<IFormFile> images)
+        [Authorize(Roles = "Store,Owner")]
+        public async Task<IActionResult> UpdateImage([FromForm] int MotorID, List<IFormFile> images)
         {
             try
             {
-                var motor = await _unitOfWork.MotorBikeService.GetFirst(c => c.MotorId == id);
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(c => c.MotorId == MotorID);
                 if (motor == null)
                 {
                     _response.IsSuccess = false;
@@ -125,25 +125,25 @@ namespace API.Controllers
                     }
                     else
                     {
-                        foreach (var p in images)
+                        if (motor != null)
                         {
-                            if (motor != null)
+                            var oldImages = await _unitOfWork.MotorImageService.Get(x => x.MotorId == MotorID);
+                            foreach (var oldImg in oldImages)
                             {
-                                var oldImg = await _unitOfWork.MotorImageService.GetFirst(x => x.ImageId == id);
                                 var link = oldImg.ImageLink.Split('/').Last();
-
                                 await _blobService.DeleteBlob(link, SD.Storage_Container);
                                 await _unitOfWork.MotorImageService.Delete(oldImg);
-
+                            }
+                            foreach (var p in images)
+                            {
                                 string fileName = $"{Guid.NewGuid()}{Path.GetExtension(p.FileName)}";
                                 var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, p);
                                 MotorbikeImage image = new()
                                 {
                                     ImageLink = img,
-                                    MotorId = motor.MotorId
+                                    MotorId = MotorID
                                 };
                                 await _unitOfWork.MotorImageService.Add(image);
-
                             }
                         }
                         _response.IsSuccess = true;
@@ -165,7 +165,7 @@ namespace API.Controllers
             }
         }
         [HttpPost]
-        //[Authorize(Roles = "Store,Owner")]
+        [Authorize(Roles = "Store,Owner")]
         [Route("image-register")]
         public async Task<IActionResult> ImageRegister(int id, List<IFormFile> images)
         {
