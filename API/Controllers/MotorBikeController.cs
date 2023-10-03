@@ -6,8 +6,10 @@ using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.BlobImageService;
 using Service.UnitOfWork;
 using System.Net;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Controllers
 {
@@ -18,17 +20,19 @@ namespace API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
         private readonly IMapper _mapper;
+        private readonly IBlobService _blobService;
 
-        public MotorBikeController(IUnitOfWork unitOfWork, IMapper mapper)
+        public MotorBikeController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService)
         {
             _unitOfWork = unitOfWork;
             _response = new ApiResponse();
             _mapper = mapper;
+            _blobService = blobService;
         }
 
        
         [HttpGet("GetAllWithSpecificStatus")]
-        [Authorize(Roles = "Store,Owner")]
+        //[Authorize(Roles = "Store,Owner")]
         public async Task<IActionResult> GetAllWithSpecificStatus(int StatusID )
         {
             try
@@ -62,7 +66,7 @@ namespace API.Controllers
             }
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("GetAllOnExchange")]
         public async Task<IActionResult> GetAllOnExchange()
         {
@@ -204,7 +208,7 @@ namespace API.Controllers
             }
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetByMotorId(int id)
         {
@@ -280,7 +284,7 @@ namespace API.Controllers
         [HttpPost]
         [Authorize(Roles = "Store,Owner")]
         [Route("MotorRegister")]
-        public async Task<IActionResult> MotorRegister(MotorRegisterDTO motor)
+        public async Task<IActionResult> MotorRegister([FromForm] MotorRegisterDTO motor, List<IFormFile> images)
         {
             try
             {
@@ -294,9 +298,27 @@ namespace API.Controllers
                 }
                 else
                 {
+                    var userID = int.Parse(User.FindFirst("UserId")?.Value);
                     var newMotor = _mapper.Map<Motorbike>(motor);
+                    newMotor.MotorStatusId = SD.Status_Storage;
                     await _unitOfWork.MotorBikeService.Add(newMotor);
+                    //Add list Image
+                    var motorInDb = await _unitOfWork.MotorBikeService.GetFirst(c => c.CertificateNumber == motor.CertificateNumber);
+                    foreach (var p in images)
+                    {
+                        if (motor != null)
+                        {
+                            string fileName = $"{Guid.NewGuid()}{Path.GetExtension(p.FileName)}";
+                            var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, p);
+                            MotorbikeImage image = new()
+                            {
+                                ImageLink = img,
+                                MotorId = motorInDb.MotorId
+                            };
+                            await _unitOfWork.MotorImageService.Add(image);
 
+                        }
+                    }
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = newMotor;

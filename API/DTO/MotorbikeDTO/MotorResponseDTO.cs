@@ -13,11 +13,11 @@ namespace API.DTO.MotorbikeDTO
         public decimal? Price { get; set; }
         public string? Description { get; set; }      
         public virtual ModelResponseDTO? Model { get; set; }
-        public virtual StatusRegisterDTO? MotorStatus { get; set; }
-        public virtual TypeRegisterDTO? MotorType { get; set; }
+        public virtual StatusResponseDTO? MotorStatus { get; set; }
+        public virtual TypeResponseDTO? MotorType { get; set; }
         public int? StoreId { get; set; }
         public virtual StoreRegisterDTO? Store { get; set; }
         public virtual UserResponseDTO? Owner { get; set; }
-        public virtual ICollection<ImageRegisterDTO> MotorbikeImages { get; set; }
+        public virtual ICollection<ImageResponseDTO> MotorbikeImages { get; set; }
     }
 }

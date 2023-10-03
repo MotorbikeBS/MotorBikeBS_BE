@@ -1,11 +1,15 @@
 ﻿using API.DTO;
+using API.Utility;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.BlobImageService;
 using Service.UnitOfWork;
+using System.Collections.Generic;
 using System.Data;
 using System.Net;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Controllers
 {
@@ -16,21 +20,24 @@ namespace API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
         private readonly IMapper _mapper;
+        private readonly IBlobService _blobService;
 
-        public MotorImageController(IUnitOfWork unitOfWork, IMapper mapper)
+        public MotorImageController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService)
         {
             _unitOfWork = unitOfWork;
             _response = new ApiResponse();
             _mapper = mapper;
+            _blobService = blobService;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet]
         public async Task<IActionResult> GetByMotorId(int MotorID)
         {
             try
             {
                 var list = await _unitOfWork.MotorImageService.Get(e => e.MotorId == MotorID);
+                var listResponse = _mapper.Map<List<ImageResponseDTO>>(list);
                 if (list == null || list.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy ảnh nào!");
@@ -42,7 +49,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = list;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
@@ -65,6 +72,7 @@ namespace API.Controllers
             try
             {
                 var obj = await _unitOfWork.MotorImageService.GetFirst(e => e.ImageId == ImageID);
+                var objResponse = _mapper.Map<ImageResponseDTO>(obj);
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tồn tại xe này!");
@@ -76,7 +84,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = obj;
+                    _response.Result = objResponse;
                 }
                 return Ok(_response);
             }
@@ -92,28 +100,58 @@ namespace API.Controllers
             }
         }
         [HttpPut]
-        [Authorize(Roles = "Store,Owner")]
-        public async Task<IActionResult> UpdateImage([FromQuery] int id, ImageRegisterDTO p)
+        //[Authorize(Roles = "Store,Owner")]
+        public async Task<IActionResult> UpdateImage([FromForm] int id, List<IFormFile> images)
         {
             try
             {
-                var obj = await _unitOfWork.MotorImageService.GetFirst(e => e.ImageId == id);
-                if (obj == null || id != p.ImageId)
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(c => c.MotorId == id);
+                if (motor == null)
                 {
-                    _response.ErrorMessages.Add("Không tồn tại xe này!");
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Không tồn tại xe này!");
                     return NotFound(_response);
                 }
                 else
                 {
-                    _mapper.Map(p, obj);
-                    await _unitOfWork.MotorImageService.Update(obj);
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = obj;
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    if (userId != motor.StoreId && userId != motor.OwnerId)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
+                        return BadRequest(_response);
+                    }
+                    else
+                    {
+                        foreach (var p in images)
+                        {
+                            if (motor != null)
+                            {
+                                var oldImg = await _unitOfWork.MotorImageService.GetFirst(x => x.ImageId == id);
+                                var link = oldImg.ImageLink.Split('/').Last();
+
+                                await _blobService.DeleteBlob(link, SD.Storage_Container);
+                                await _unitOfWork.MotorImageService.Delete(oldImg);
+
+                                string fileName = $"{Guid.NewGuid()}{Path.GetExtension(p.FileName)}";
+                                var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, p);
+                                MotorbikeImage image = new()
+                                {
+                                    ImageLink = img,
+                                    MotorId = motor.MotorId
+                                };
+                                await _unitOfWork.MotorImageService.Add(image);
+
+                            }
+                        }
+                        _response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.Result = images;
+                    }
+                    return Ok(_response);
                 }
-                return Ok(_response);
             }
             catch (Exception ex)
             {
@@ -128,13 +166,13 @@ namespace API.Controllers
         }
         [HttpPost]
         //[Authorize(Roles = "Store,Owner")]
-        [Route("ImageRegister")]
-        public async Task<IActionResult> ImageRegister(int id, List<ImageRegisterDTO> images)
+        [Route("image-register")]
+        public async Task<IActionResult> ImageRegister(int id, List<IFormFile> images)
         {
             try
             {
-                var CertNum = await _unitOfWork.MotorBikeService.GetFirst(c => c.MotorId == id);
-                if (CertNum == null)
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(c => c.MotorId == id);
+                if (motor == null)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -143,17 +181,37 @@ namespace API.Controllers
                 }
                 else
                 {
-                    foreach (var p in images)
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    if (userId != motor.StoreId && userId != motor.OwnerId)
                     {
-                        var newImage = _mapper.Map<MotorbikeImage>(p);
-                        newImage.MotorId = id;
-                        await _unitOfWork.MotorImageService.Add(newImage);                        
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
+                        return BadRequest(_response);
                     }
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = images;
+                    else
+                    {
+                        foreach (var p in images)
+                        {
+                            if (motor != null)
+                            {
+                                string fileName = $"{Guid.NewGuid()}{Path.GetExtension(p.FileName)}";
+                                var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, p);
+                                MotorbikeImage image = new()
+                                {
+                                    ImageLink = img,
+                                    MotorId = motor.MotorId
+                                };
+                                await _unitOfWork.MotorImageService.Add(image);
+
+                            }
+                        }
+                        _response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.Result = images;
+                    }
+                    return Ok(_response);
                 }
-                return Ok(_response);
             }
             catch (Exception ex)
             {
