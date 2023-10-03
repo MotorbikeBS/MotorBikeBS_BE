@@ -139,6 +139,13 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Email hoặc mặt khẩu không đúng!");
 					return NotFound(_response);
 				}
+				else if (!VerifyPasswordHash(obj.Password, user.PasswordHash, user.PasswordSalt))
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add("Email hoặc mật khẩu không hợp lệ!");
+					return BadRequest(_response);
+				}
 				else if (user.UserVerifyAt == null)
 				{
 					_response.IsSuccess = false;
@@ -146,11 +153,11 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Người dùng chưa xác minh!");
 					return BadRequest(_response);
 				}
-				else if (!VerifyPasswordHash(obj.Password, user.PasswordHash, user.PasswordSalt))
+				else if(user.Status == SD.in_active)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Email hoặc mật khẩu không hợp lệ!");
+					_response.ErrorMessages.Add("Người dùng này đã bị chặn!");
 					return BadRequest(_response);
 				}
 				else
