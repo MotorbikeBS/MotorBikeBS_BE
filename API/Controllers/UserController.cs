@@ -82,14 +82,14 @@ namespace API.Controllers
 						_response.ErrorMessages.Add("Bạn không có quyền thực hiện chức năng này!");
 						return NotFound(_response);
 					}
-					var c = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId, includeProperties: "Role");
+					var c = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId, includeProperties: new string[] { "Role", "StoreDesciptions" });
 					var userResponse = _mapper.Map<UserResponseDTO>(c);
 					_response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Result = userResponse;
 					return Ok(_response);
 				}
-				var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == id, includeProperties: "Role");
+				var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == id, includeProperties: new string[] { "Role", "StoreDesciptions" });
 				if (user == null)
 				{
 					_response.IsSuccess = false;
