@@ -2,8 +2,6 @@
 {
     public partial class ImageRegisterDTO
     {
-        public int ImageId { get; set; }
-        public string? ImageLink { get; set; }
-        public int? MotorId { get; set; }
+        public IFormFile File { get; set; }
     }
 }

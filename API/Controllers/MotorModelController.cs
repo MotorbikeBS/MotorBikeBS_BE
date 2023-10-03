@@ -102,7 +102,7 @@ namespace API.Controllers
             try
             {
                 var obj = await _unitOfWork.MotorModelService.GetFirst(e => e.ModelId == id);
-                if (obj == null || id != p.ModelId)
+                if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tồn tại mẫu nào!");
                     _response.IsSuccess = false;

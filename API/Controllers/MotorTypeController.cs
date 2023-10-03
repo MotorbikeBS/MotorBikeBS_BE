@@ -98,7 +98,7 @@ namespace API.Controllers
             try
             {
                 var obj = await _unitOfWork.MotorTypeService.GetFirst(e => e.MotorTypeId == id);
-                if (obj == null || id != p.MotorTypeId)
+                if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy Danh mục nào!");
                     _response.IsSuccess = false;

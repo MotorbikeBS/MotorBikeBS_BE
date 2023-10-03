@@ -100,7 +100,7 @@ namespace API.Controllers
             try
             {
                 var obj = await _unitOfWork.MotorBrandService.GetFirst(e => e.BrandId == id);
-                if (obj == null || id != p.BrandId)
+                if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
                     _response.IsSuccess = false;
