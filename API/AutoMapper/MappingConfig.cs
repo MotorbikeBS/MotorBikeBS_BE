@@ -1,4 +1,5 @@
 ﻿using API.DTO.MotorbikeDTO;
+using API.DTO.OwnerDTO;
 using API.DTO.Role;
 using API.DTO.StoreDTO;
 using API.DTO.UserDTO;
@@ -22,6 +23,7 @@ namespace API.AutoMapper
 					.ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
 			        .ForMember(dest => dest.StoreDesciptions, opt => opt.MapFrom(src => src.StoreDesciptions));
 				config.CreateMap<User, UserUpdateDTO>().ReverseMap();
+				config.CreateMap<User, OwnerRegisterDTO>().ReverseMap();
 
 				config.CreateMap<Role, RoleResponseDTO>().ReverseMap();
 				config.CreateMap<StoreDesciption, StoreDescriptionResponseDTO>().ReverseMap();
