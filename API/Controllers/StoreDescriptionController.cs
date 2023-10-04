@@ -372,7 +372,6 @@ namespace API.Controllers
 						var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == store.UserId);
 						store.Status = SD.in_active;
 						await _unitOfWork.StoreDescriptionService.Update(store);
-						user.RoleId = 4;
 						user.Status = SD.in_active;
 						await _unitOfWork.UserService.Update(user);
 						_response.StatusCode = HttpStatusCode.OK;
