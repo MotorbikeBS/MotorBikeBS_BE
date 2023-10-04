@@ -157,7 +157,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Người dùng này đã bị chặn!");
+					_response.ErrorMessages.Add("Tài khoản đã bị khóa, do vi phạm, vui lòng liện hệ Admin để được hỗ trợ!");
 					return BadRequest(_response);
 				}
 				else
