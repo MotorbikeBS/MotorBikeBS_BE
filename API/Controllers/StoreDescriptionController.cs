@@ -449,7 +449,7 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.OK;
 						_response.IsSuccess = true;
 						_response.Message = ("Cửa hàng đã hoạt động trở lại!");
-						return BadRequest(_response);
+						return Ok(_response);
 					}
 					else
 					{
