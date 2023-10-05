@@ -37,7 +37,7 @@ namespace API.Controllers
 		{
 			try
 			{
-				var rs = InputValidation.OwnerRegisterValidation(owner.Phone, owner.Gender, (DateTime)owner.Dob, owner.IdCard, owner.Address);
+				var rs = InputValidation.OwnerRegisterValidation(owner.Phone, owner.IdCard, owner.Address);
 				if (rs != "")
 				{
 					_response.StatusCode = HttpStatusCode.BadRequest;
@@ -56,15 +56,15 @@ namespace API.Controllers
 						return BadRequest(_response);
 					}
 					var userId = int.Parse(User.FindFirst("UserId")?.Value);
-					var user = _unitOfWork.UserService.GetFirst(x => x.UserId == userId);
-					if (user == null)
+					var userInDb = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId);
+					if (userInDb == null)
 					{
 						_response.StatusCode = HttpStatusCode.NotFound;
 						_response.Result = false;
 						_response.ErrorMessages.Add("Lỗi hệ thống!");
 						return NotFound(_response);
 					}
-					var newOwner = await _mapper.Map(owner, user);
+					var newOwner = _mapper.Map(owner, userInDb);
 					newOwner.RoleId = 3;
 					await _unitOfWork.UserService.Update(newOwner);
 					_response.StatusCode = HttpStatusCode.OK;
