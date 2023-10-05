@@ -51,9 +51,9 @@ namespace API.Validation
 			return Regex.Replace(value.Trim(), @"\s+", " ");
 		}
 
-		public static string OwnerRegisterValidation(string phone, int? gender, DateTime dob, string idCard, string address)
+		public static string OwnerRegisterValidation(string phone, string idCard, string address)
 		{
-			if (phone == null || gender == null || dob == null || idCard == null || address == null)
+			if (phone == null || idCard == null || address == null)
 			{
 				return "Không được bỏ trống!";
 			}
@@ -64,16 +64,16 @@ namespace API.Validation
 				return "Số điện thoại không hợp lệ!";
 			}
 
-			if(gender <1 || gender >3)
-			{
-				return "Giới tính không hợp lệ!";
-			}
+			//if(gender <1 || gender >3)
+			//{
+			//	return "Giới tính không hợp lệ!";
+			//}
 
-			int age = DateTime.Now.Year - dob.Year;
-			if (age < 16)
-			{
-				return "Người dùng phải từ 16 tuổi trở lên!";
-			}
+			//int age = DateTime.Now.Year - dob.Year;
+			//if (age < 16)
+			//{
+			//	return "Người dùng phải từ 16 tuổi trở lên!";
+			//}
 
 			string idCardPattern = @"^[0-9]{12}$";
 			if (!Regex.IsMatch(idCard, idCardPattern))
