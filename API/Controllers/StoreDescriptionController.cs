@@ -5,6 +5,7 @@ using API.Validation;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Service.BlobImageService;
 using Service.UnitOfWork;
@@ -12,13 +13,13 @@ using System.Net;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class StoreDescriptionController : ControllerBase
-    {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-        private ApiResponse _response;
+	[Route("api/[controller]")]
+	[ApiController]
+	public class StoreDescriptionController : ControllerBase
+	{
+		private readonly IUnitOfWork _unitOfWork;
+		private readonly IMapper _mapper;
+		private ApiResponse _response;
 		private readonly IBlobService _blobService;
 
 		public StoreDescriptionController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService)
@@ -174,11 +175,11 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Người dùng nãy đã đăng ký trở thành cửa hàng!");
 					return BadRequest(_response);
 				}
-				
+
 				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.UserId == userId);
 				if (userInDb != null)
 				{
-					if(storeInDb != null && storeInDb.Status == SD.refuse)
+					if (storeInDb != null && storeInDb.Status == SD.refuse)
 					{
 						var newStore = _mapper.Map(store, storeInDb);
 						newStore.Status = SD.not_verify;
@@ -198,6 +199,10 @@ namespace API.Controllers
 							StoreId = newStore.StoreId
 						};
 						await _unitOfWork.StoreImageService.Add(image);
+						_response.IsSuccess = true;
+						_response.StatusCode = HttpStatusCode.OK;
+						_response.Message = ("Đăng ký thành công, vui lòng chờ xác thực!");
+						return Ok(_response);
 					}
 					else
 					{
@@ -207,19 +212,19 @@ namespace API.Controllers
 						newStore.StoreCreatedAt = DateTime.Now;
 						await _unitOfWork.StoreDescriptionService.Add(newStore);
 
-											string fileName = $"{Guid.NewGuid()}{Path.GetExtension(store.File.FileName)}";
-					var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, store.File);
-					StoreImage image = new()
-					{
-						ImageLink = img,
-						StoreId = newStore.StoreId
-					};
-					await _unitOfWork.StoreImageService.Add(image);
+						string fileName = $"{Guid.NewGuid()}{Path.GetExtension(store.File.FileName)}";
+						var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, store.File);
+						StoreImage image = new()
+						{
+							ImageLink = img,
+							StoreId = newStore.StoreId
+						};
+						await _unitOfWork.StoreImageService.Add(image);
+						_response.IsSuccess = true;
+						_response.StatusCode = HttpStatusCode.OK;
+						_response.Message = ("Đăng ký thành công, vui lòng chờ xác thực!");
+						return Ok(_response);
 					}
-					_response.IsSuccess = true;
-					_response.StatusCode = HttpStatusCode.OK;
-					_response.Message = ("Đăng ký thành công, vui lòng chờ xác thực!");
-					return Ok(_response);
 				}
 				else
 				{
@@ -228,7 +233,6 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy người dùng!");
 					return NotFound(_response);
 				}
-
 			}
 			catch (Exception ex)
 			{
@@ -243,51 +247,52 @@ namespace API.Controllers
 		}
 
 		[Authorize(Roles = "Admin")]
-        [HttpPost]
-        [Route("VerifyStore")]
-        public async Task<IActionResult> VerifyStore(int storeId)
-        {
-            try
-            {
-                if (storeId <= 0)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Lỗi hệ thống!");
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
-                if (store == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                else
-                {
-                    if (store.Status != SD.active)
-                    {
-                        var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == store.UserId);
-                        store.Status = SD.active;
-                        await _unitOfWork.StoreDescriptionService.Update(store);
-                        user.RoleId = 2;
-                        await _unitOfWork.UserService.Update(user);
-                        _response.StatusCode = HttpStatusCode.OK;
-                        _response.IsSuccess = true;
-                        _response.Message = "Xác minh thành công!";
-                        return Ok(_response);
-                    }
-                    else
-                    {
-                        _response.StatusCode = HttpStatusCode.BadRequest;
-                        _response.ErrorMessages.Add("Cửa hàng đã được xác minh!");
-                        _response.IsSuccess = false;
-                        return BadRequest(_response);
-                    }
-                }
-            }catch(Exception ex)
-            {
+		[HttpPost]
+		[Route("VerifyStore")]
+		public async Task<IActionResult> VerifyStore(int storeId)
+		{
+			try
+			{
+				if (storeId <= 0)
+				{
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add("Lỗi hệ thống!");
+					_response.IsSuccess = false;
+					return BadRequest(_response);
+				}
+				var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
+				if (store == null)
+				{
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
+					_response.IsSuccess = false;
+					return NotFound(_response);
+				}
+				else
+				{
+					if (store.Status != SD.active)
+					{
+						var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == store.UserId);
+						store.Status = SD.active;
+						await _unitOfWork.StoreDescriptionService.Update(store);
+						user.RoleId = 2;
+						await _unitOfWork.UserService.Update(user);
+						_response.StatusCode = HttpStatusCode.OK;
+						_response.IsSuccess = true;
+						_response.Message = "Xác minh thành công!";
+						return Ok(_response);
+					}
+					else
+					{
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.ErrorMessages.Add("Cửa hàng đã được xác minh!");
+						_response.IsSuccess = false;
+						return BadRequest(_response);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
 				_response.ErrorMessages = new List<string>()
@@ -296,12 +301,12 @@ namespace API.Controllers
 				};
 				return BadRequest(_response);
 			}
-        }
+		}
 
-		[Authorize(Roles ="Admin")]
+		[Authorize(Roles = "Admin")]
 		[HttpPut]
 		[Route("RefuseStore")]
-		public async Task<IActionResult>RefuseStore(int storeId)
+		public async Task<IActionResult> RefuseStore(int storeId)
 		{
 			try
 			{
@@ -332,7 +337,8 @@ namespace API.Controllers
 						return Ok(_response);
 					}
 				}
-			}catch (Exception ex)
+			}
+			catch (Exception ex)
 			{
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
@@ -366,7 +372,6 @@ namespace API.Controllers
 						var user = await _unitOfWork.UserService.GetFirst(x => x.UserId == store.UserId);
 						store.Status = SD.in_active;
 						await _unitOfWork.StoreDescriptionService.Update(store);
-						user.RoleId = 4;
 						user.Status = SD.in_active;
 						await _unitOfWork.UserService.Update(user);
 						_response.StatusCode = HttpStatusCode.OK;
@@ -379,6 +384,77 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						_response.ErrorMessages.Add("Cửa hàng đã được ngưng hoạt động!");
 						_response.IsSuccess = false;
+						return BadRequest(_response);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return BadRequest(_response);
+			}
+		}
+
+		[Authorize(Roles = "Admin")]
+		[HttpPut]
+		[Route("ReActiveStore")]
+		public async Task<IActionResult> ReActiveStore(int storeId)
+		{
+			try
+			{
+				var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
+				if (storeInDb == null)
+				{
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
+					return NotFound(_response);
+				}
+				else
+				{
+					if (storeInDb.Status == SD.active)
+					{
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.IsSuccess = false;
+						_response.ErrorMessages.Add("Cửa hàng này đang hoạt động bình thường!");
+						return BadRequest(_response);
+					}
+					else if (storeInDb.Status == SD.not_verify || storeInDb.Status == SD.refuse)
+					{
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.IsSuccess = false;
+						_response.ErrorMessages.Add("Cửa hàng này chưa được duyệt!");
+						return BadRequest(_response);
+					}
+					else if (storeInDb.Status == SD.in_active)
+					{
+						storeInDb.Status = SD.active;
+						var storeOwner = await _unitOfWork.UserService.GetFirst(x => x.UserId == storeInDb.UserId);
+						if (storeOwner == null)
+						{
+							_response.StatusCode = HttpStatusCode.BadRequest;
+							_response.IsSuccess = false;
+							_response.ErrorMessages.Add("Không tìm thấy người dùng!");
+							return BadRequest(_response);
+						}
+						await _unitOfWork.StoreDescriptionService.Update(storeInDb);
+						storeOwner.Status = SD.active;
+						await _unitOfWork.UserService.Update(storeOwner);
+						_response.StatusCode = HttpStatusCode.OK;
+						_response.IsSuccess = true;
+						_response.Message = ("Cửa hàng đã hoạt động trở lại!");
+						return Ok(_response);
+					}
+					else
+					{
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.IsSuccess = false;
+						_response.ErrorMessages.Add("Đã có lỗi xảy ra!");
 						return BadRequest(_response);
 					}
 				}
