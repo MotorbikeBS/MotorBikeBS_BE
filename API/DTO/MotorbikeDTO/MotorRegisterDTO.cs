@@ -1,7 +1,7 @@
 ﻿using Core.Models;
 
 namespace API.DTO.MotorbikeDTO
-{
+{ 
     public partial class MotorRegisterDTO
     {
         public string CertificateNumber { get; set; } = null!;
@@ -12,5 +12,7 @@ namespace API.DTO.MotorbikeDTO
         public decimal? Price { get; set; }
         public string? Description { get; set; }
         public int? MotorTypeId { get; set; }
+        public int? StoreId { get; set; }
     }
 }
+

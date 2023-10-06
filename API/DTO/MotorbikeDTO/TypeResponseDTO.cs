@@ -1,4 +1,6 @@
-﻿namespace Core.Models
+﻿using Core.Models;
+
+namespace API.DTO.MotorbikeDTO
 {
     public partial class TypeResponseDTO
     {
