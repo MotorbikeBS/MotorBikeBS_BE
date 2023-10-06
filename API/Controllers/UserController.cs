@@ -172,7 +172,7 @@ namespace API.Controllers
 		[Authorize]
 		[HttpPost]
 		[Route("ChangePassword")]
-		public async Task<IActionResult> ChangePassword(ResetPasswordDTO passwordDTO)
+		public async Task<IActionResult> ChangePassword(ChangePasswordDTO passwordDTO)
 		{
 			try
 			{
