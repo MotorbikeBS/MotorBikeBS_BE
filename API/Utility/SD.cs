@@ -27,5 +27,11 @@
             "Owner.Role",
             "Store"
         };
+        public static readonly string[] GetRequestArray = new string[]
+        {
+            "Receiver",
+            "Sender",
+            "RequestType"
+        };
     }
 }

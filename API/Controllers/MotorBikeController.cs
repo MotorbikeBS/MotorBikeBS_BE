@@ -32,7 +32,7 @@ namespace API.Controllers
 
        
         [HttpGet("GetAllWithSpecificStatus")]
-        //[Authorize(Roles = "Store,Owner")]
+        [Authorize(Roles = "Store,Owner")]
         public async Task<IActionResult> GetAllWithSpecificStatus(int StatusID )
         {
             try

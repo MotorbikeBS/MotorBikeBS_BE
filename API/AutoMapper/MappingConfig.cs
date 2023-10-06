@@ -1,5 +1,6 @@
 ﻿using API.DTO.MotorbikeDTO;
 using API.DTO.OwnerDTO;
+using API.DTO.RequestDTO;
 using API.DTO.Role;
 using API.DTO.StoreDTO;
 using API.DTO.UserDTO;
@@ -44,14 +45,20 @@ namespace API.AutoMapper
 
                 config.CreateMap<MotorbikeBrand, BrandRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeModel, ModelRegisterDTO>().ReverseMap();
-                config.CreateMap<MotorbikeModel, ModelResponseDTO>().ReverseMap().ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Brand));
-                
+                config.CreateMap<MotorbikeModel, ModelResponseDTO>().ReverseMap().ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Brand));                
                 config.CreateMap<MotorbikeStatus, StatusRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeStatus, StatusResponseDTO>().ReverseMap();
                 config.CreateMap<MotorbikeType, TypeRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeType, TypeResponseDTO>().ReverseMap();
                 config.CreateMap<MotorbikeImage, ImageRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeImage, ImageResponseDTO>().ReverseMap();
+
+                config.CreateMap<RequestType, Type_RequestRegisterDTO>().ReverseMap();
+                config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
+                config.CreateMap<Request, RequestResponseDTO>().ReverseMap()
+                    .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver))
+                    .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
+                    .ForMember(dest => dest.RequestType, opt => opt.MapFrom(src => src.RequestType));
 
             });
             return mappingConfig;
