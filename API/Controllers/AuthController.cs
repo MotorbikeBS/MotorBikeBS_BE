@@ -58,9 +58,8 @@ namespace API.Controllers
 				}
 				user.UserName = InputValidation.CleanAndFormatUserName(user.UserName);
 				var userInDb = await _unitOfWork.UserService.GetFirst(c => c.Email == user.Email);
-				var emailStore = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.StoreEmail == user.Email);
 				
-				if (userInDb == null && emailStore == null)
+				if (userInDb == null)
 				{
 					CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
 					var newUser = _mapper.Map<User>(user);
