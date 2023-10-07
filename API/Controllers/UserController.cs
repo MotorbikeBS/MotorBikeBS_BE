@@ -149,6 +149,16 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy người dùng này");
 					return NotFound(_response);
 				}
+
+				var idCardInDb = await _unitOfWork.UserService.GetFirst(x => x.IdCard == userUpdateDTO.IdCard);
+
+				if(idCardInDb != null && userUpdateDTO.IdCard != user.IdCard)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add("Mã căn cước này đã được đăng ký!");
+					return NotFound(_response);
+				}
 				var userUpdate = _mapper.Map(userUpdateDTO, user);
 				userUpdate.UserUpdatedAt = DateTime.Now;
 				await _unitOfWork.UserService.Update(userUpdate);

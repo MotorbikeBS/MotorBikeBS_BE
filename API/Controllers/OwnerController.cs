@@ -47,16 +47,9 @@ namespace API.Controllers
 				}
 				else
 				{
-					var idCardInDb = await _unitOfWork.UserService.GetFirst(x => x.IdCard == owner.IdCard);
-					if(idCardInDb != null)
-					{
-						_response.StatusCode = HttpStatusCode.BadRequest;
-						_response.Result = false;
-						_response.ErrorMessages.Add("Mã căn cước này đã được đăng ký!");
-						return BadRequest(_response);
-					}
 					var userId = int.Parse(User.FindFirst("UserId")?.Value);
 					var userInDb = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId);
+
 					if (userInDb == null)
 					{
 						_response.StatusCode = HttpStatusCode.NotFound;
@@ -64,6 +57,16 @@ namespace API.Controllers
 						_response.ErrorMessages.Add("Lỗi hệ thống!");
 						return NotFound(_response);
 					}
+
+					var idCardInDb = await _unitOfWork.UserService.GetFirst(x => x.IdCard == owner.IdCard);
+					if(idCardInDb != null && idCardInDb.IdCard != userInDb.IdCard)
+					{
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						_response.Result = false;
+						_response.ErrorMessages.Add("Mã căn cước này đã được đăng ký!");
+						return BadRequest(_response);
+					}
+					
 					var newOwner = _mapper.Map(owner, userInDb);
 					newOwner.RoleId = 3;
 					await _unitOfWork.UserService.Update(newOwner);
