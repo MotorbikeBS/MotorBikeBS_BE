@@ -21,12 +21,12 @@ namespace Core.Models
         public DateTime? StoreUpdatedAt { get; set; }
         public int? Point { get; set; }
         public string? Address { get; set; }
-        public int? LocalId { get; set; }
+        public string? WardId { get; set; }
         public string? Status { get; set; }
         public string? TaxCode { get; set; }
 
-        public virtual LocalAddress? Local { get; set; }
         public virtual User User { get; set; } = null!;
+        public virtual Ward? Ward { get; set; }
         public virtual ICollection<Motorbike> Motorbikes { get; set; }
         public virtual ICollection<StoreImage> StoreImages { get; set; }
     }

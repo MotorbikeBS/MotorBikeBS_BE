@@ -23,7 +23,6 @@ namespace Core.Models
         public virtual DbSet<ConsignmentContractImage> ConsignmentContractImages { get; set; } = null!;
         public virtual DbSet<EarnAlivingContract> EarnAlivingContracts { get; set; } = null!;
         public virtual DbSet<EarnAlivingContractImage> EarnAlivingContractImages { get; set; } = null!;
-        public virtual DbSet<LocalAddress> LocalAddresses { get; set; } = null!;
         public virtual DbSet<Motorbike> Motorbikes { get; set; } = null!;
         public virtual DbSet<MotorbikeBrand> MotorbikeBrands { get; set; } = null!;
         public virtual DbSet<MotorbikeImage> MotorbikeImages { get; set; } = null!;
@@ -42,19 +41,21 @@ namespace Core.Models
         public virtual DbSet<StoreDesciption> StoreDesciptions { get; set; } = null!;
         public virtual DbSet<StoreImage> StoreImages { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
+        public virtual DbSet<Ward> Wards { get; set; } = null!;
+        public virtual DbSet<Wishlist> Wishlists { get; set; } = null!;
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            var d = Directory.GetCurrentDirectory();
-            IConfigurationRoot configuration = builder.Build();
-            string connectionString = configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseSqlServer(connectionString);
-        }
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+			var d = Directory.GetCurrentDirectory();
+			IConfigurationRoot configuration = builder.Build();
+			string connectionString = configuration.GetConnectionString("DefaultConnection");
+			optionsBuilder.UseSqlServer(connectionString);
+		}
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -251,21 +252,6 @@ namespace Core.Models
                     .HasForeignKey(d => d.ContractId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_EarnALiving_ContractImage_EarnALiving_Contract");
-            });
-
-            modelBuilder.Entity<LocalAddress>(entity =>
-            {
-                entity.HasKey(e => e.LocalId);
-
-                entity.ToTable("LocalAddress");
-
-                entity.Property(e => e.LocalId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("local_id");
-
-                entity.Property(e => e.WardName)
-                    .HasMaxLength(50)
-                    .HasColumnName("ward_name");
             });
 
             modelBuilder.Entity<Motorbike>(entity =>
@@ -719,8 +705,6 @@ namespace Core.Models
                     .HasMaxLength(1000)
                     .HasColumnName("description");
 
-                entity.Property(e => e.LocalId).HasColumnName("local_id");
-
                 entity.Property(e => e.Point).HasColumnName("point");
 
                 entity.Property(e => e.Status)
@@ -754,16 +738,20 @@ namespace Core.Models
 
                 entity.Property(e => e.UserId).HasColumnName("user_id");
 
-                entity.HasOne(d => d.Local)
-                    .WithMany(p => p.StoreDesciptions)
-                    .HasForeignKey(d => d.LocalId)
-                    .HasConstraintName("FK_StoreDesciption_LocalAddress");
+                entity.Property(e => e.WardId)
+                    .HasMaxLength(5)
+                    .HasColumnName("ward_id");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.StoreDesciptions)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_StoreDesciption_User1");
+
+                entity.HasOne(d => d.Ward)
+                    .WithMany(p => p.StoreDesciptions)
+                    .HasForeignKey(d => d.WardId)
+                    .HasConstraintName("FK_StoreDesciption_LocalAddress");
             });
 
             modelBuilder.Entity<StoreImage>(entity =>
@@ -810,8 +798,6 @@ namespace Core.Models
                     .HasColumnName("idCard")
                     .IsFixedLength();
 
-                entity.Property(e => e.LocalId).HasColumnName("local_id");
-
                 entity.Property(e => e.PasswordHash).HasColumnName("password_hash");
 
                 entity.Property(e => e.PasswordResetToken).HasColumnName("password_reset_token");
@@ -851,32 +837,67 @@ namespace Core.Models
                     .HasColumnType("datetime")
                     .HasColumnName("verifycation_token_expires");
 
-                entity.HasOne(d => d.Local)
-                    .WithMany(p => p.Users)
-                    .HasForeignKey(d => d.LocalId)
-                    .HasConstraintName("FK_User_LocalAddress");
+                entity.Property(e => e.WardId)
+                    .HasMaxLength(5)
+                    .HasColumnName("ward_id");
 
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Users)
                     .HasForeignKey(d => d.RoleId)
                     .HasConstraintName("FK_User_Role");
 
-                entity.HasMany(d => d.Motors)
+                entity.HasOne(d => d.Ward)
                     .WithMany(p => p.Users)
-                    .UsingEntity<Dictionary<string, object>>(
-                        "Wishlist",
-                        l => l.HasOne<Motorbike>().WithMany().HasForeignKey("MotorId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_Wishlist_Motorbike"),
-                        r => r.HasOne<User>().WithMany().HasForeignKey("UserId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_Wishlist_User"),
-                        j =>
-                        {
-                            j.HasKey("UserId", "MotorId");
+                    .HasForeignKey(d => d.WardId)
+                    .HasConstraintName("FK_User_LocalAddress");
+            });
 
-                            j.ToTable("Wishlist");
+            modelBuilder.Entity<Ward>(entity =>
+            {
+                entity.ToTable("Ward");
 
-                            j.IndexerProperty<int>("UserId").HasColumnName("user_id");
+                entity.Property(e => e.WardId)
+                    .HasMaxLength(5)
+                    .HasColumnName("ward_id");
 
-                            j.IndexerProperty<int>("MotorId").HasColumnName("motor_id");
-                        });
+                entity.Property(e => e.DistrictId)
+                    .HasMaxLength(5)
+                    .HasColumnName("district_id");
+
+                entity.Property(e => e.Type)
+                    .HasMaxLength(50)
+                    .HasColumnName("type");
+
+                entity.Property(e => e.WardName)
+                    .HasMaxLength(100)
+                    .HasColumnName("ward_name");
+            });
+
+            modelBuilder.Entity<Wishlist>(entity =>
+            {
+                entity.HasKey(e => new { e.UserId, e.MotorId });
+
+                entity.ToTable("Wishlist");
+
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+
+                entity.Property(e => e.MotorId).HasColumnName("motor_id");
+
+                entity.Property(e => e.MotorbikeName)
+                    .HasMaxLength(50)
+                    .HasColumnName("motorbike_name");
+
+                entity.HasOne(d => d.Motor)
+                    .WithMany(p => p.Wishlists)
+                    .HasForeignKey(d => d.MotorId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Wishlist_Motorbike");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Wishlists)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Wishlist_User");
             });
 
             OnModelCreatingPartial(modelBuilder);
