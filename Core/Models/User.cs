@@ -11,7 +11,7 @@ namespace Core.Models
             RequestReceivers = new HashSet<Request>();
             RequestSenders = new HashSet<Request>();
             StoreDesciptions = new HashSet<StoreDesciption>();
-            Motors = new HashSet<Motorbike>();
+            Wishlists = new HashSet<Wishlist>();
         }
 
         public int UserId { get; set; }
@@ -22,7 +22,7 @@ namespace Core.Models
         public DateTime? Dob { get; set; }
         public string? IdCard { get; set; }
         public string? Address { get; set; }
-        public int? LocalId { get; set; }
+        public string? WardId { get; set; }
         public int? RoleId { get; set; }
         public DateTime? UserVerifyAt { get; set; }
         public DateTime? UserUpdatedAt { get; set; }
@@ -34,13 +34,12 @@ namespace Core.Models
         public string? VerifycationToken { get; set; }
         public DateTime? VerifycationTokenExpires { get; set; }
 
-        public virtual LocalAddress? Local { get; set; }
         public virtual Role? Role { get; set; }
+        public virtual Ward? Ward { get; set; }
         public virtual ICollection<Motorbike> Motorbikes { get; set; }
         public virtual ICollection<Request> RequestReceivers { get; set; }
         public virtual ICollection<Request> RequestSenders { get; set; }
         public virtual ICollection<StoreDesciption> StoreDesciptions { get; set; }
-
-        public virtual ICollection<Motorbike> Motors { get; set; }
+        public virtual ICollection<Wishlist> Wishlists { get; set; }
     }
 }

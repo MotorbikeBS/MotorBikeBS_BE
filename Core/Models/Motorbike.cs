@@ -9,7 +9,7 @@ namespace Core.Models
         {
             MotorbikeImages = new HashSet<MotorbikeImage>();
             Requests = new HashSet<Request>();
-            Users = new HashSet<User>();
+            Wishlists = new HashSet<Wishlist>();
         }
 
         public int MotorId { get; set; }
@@ -32,7 +32,6 @@ namespace Core.Models
         public virtual StoreDesciption? Store { get; set; }
         public virtual ICollection<MotorbikeImage> MotorbikeImages { get; set; }
         public virtual ICollection<Request> Requests { get; set; }
-
-        public virtual ICollection<User> Users { get; set; }
+        public virtual ICollection<Wishlist> Wishlists { get; set; }
     }
 }

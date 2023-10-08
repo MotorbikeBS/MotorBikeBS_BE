@@ -18,6 +18,7 @@ namespace Service.UnitOfWork
         public IRoleService RoleService { get; private set; } = null!;
         public IStoreDescriptionService StoreDescriptionService { get; private set; } = null!;
 		public IStoreImageService StoreImageService { get; private set; } = null!;
+		public IWishListService WishListService { get; private set; } = null!;
 
 
 		private readonly MotorbikeDBContext _context;
@@ -42,6 +43,7 @@ namespace Service.UnitOfWork
             RoleService = new RoleRepository(_context, this);
             StoreDescriptionService = new StoreDescriptionRepository(_context, this);
 			StoreImageService = new StoreImageRepository(_context, this);
+            WishListService = new WishListRepository(_context, this);
 		}
     }
 }
