@@ -34,7 +34,7 @@ namespace API.Controllers
 			try
 			{
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				var list = await _unitOfWork.WishListService.Get(x => x.UserId == userId, includeProperties: new string[] { "Motor", "Motor.MotorbikeImages" });
+				var list = await _unitOfWork.WishListService.Get(x => x.UserId == userId, includeProperties: new string[] { "Motor", "Motor.MotorbikeImages", "Motor.Store" });
 				if (list == null || list.Count()<1)
 				{
 					_response.IsSuccess = false;
