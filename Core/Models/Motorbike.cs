@@ -14,6 +14,7 @@ namespace Core.Models
 
         public int MotorId { get; set; }
         public string CertificateNumber { get; set; } = null!;
+        public string? RegistrationImage { get; set; }
         public string? MotorName { get; set; }
         public int? ModelId { get; set; }
         public int? Odo { get; set; }

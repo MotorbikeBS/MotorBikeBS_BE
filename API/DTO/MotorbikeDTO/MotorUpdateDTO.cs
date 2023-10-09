@@ -5,6 +5,7 @@ namespace API.DTO.MotorbikeDTO
     public partial class MotorUpdateDTO
     {
         public string CertificateNumber { get; set; } = null!;
+        public IFormFile? RegistrationImage { get; set; }
         public string? MotorName { get; set; }
         public int? ModelId { get; set; }
         public int? Odo { get; set; }

@@ -152,12 +152,12 @@ namespace API.Controllers
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
-                var CertNum = await _unitOfWork.MotorBrandService.GetFirst(c => c.BrandName == Brand.Title);
+                var CertNum = await _unitOfWork.MotorBrandService.GetFirst(c => c.BrandName == Brand.BrandName);
                 if (CertNum != null)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Hãng xe \"" + Brand.Title + "\" đã tồn tại");
+                    _response.ErrorMessages.Add("Hãng xe \"" + Brand.BrandName + "\" đã tồn tại");
                     return BadRequest(_response);
                 }
                 else

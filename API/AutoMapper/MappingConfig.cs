@@ -49,7 +49,7 @@ namespace API.AutoMapper
                     .ForMember(dest => dest.MotorbikeImages, opt => opt.MapFrom(src => src.MotorbikeImages));
 
 
-                config.CreateMap<MotorbikeBrand, BrandRegisterDTO>().ReverseMap().ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Title)); ;
+                config.CreateMap<MotorbikeBrand, BrandRegisterDTO>().ReverseMap(); 
                 config.CreateMap<MotorbikeModel, ModelRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeModel, ModelResponseDTO>().ReverseMap().ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Brand));                
                 config.CreateMap<MotorbikeStatus, StatusRegisterDTO>().ReverseMap();

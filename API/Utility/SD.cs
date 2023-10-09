@@ -37,5 +37,11 @@
             "Sender",
             "RequestType"
         };
+        public static readonly string[] GetModelArray = new string[]
+        {
+            "Receiver",
+            "Sender",
+            "RequestType"
+        };
     }
 }
