@@ -68,7 +68,7 @@ namespace API.Controllers
             }
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("GetAllOnExchange")]
         public async Task<IActionResult> GetAllOnExchange()
         {
