@@ -98,11 +98,11 @@ namespace API.Controllers
 
         [HttpPut]
         [Authorize(Roles = "Store,Owner")]
-        public async Task<IActionResult> UpdateModel([FromQuery] int id, ModelRegisterDTO p)
+        public async Task<IActionResult> UpdateModel([FromQuery] int id, ModelRegisterDTO model)
         {
             try
             {
-                var rs = InputValidation.ValidateTitle(p, "mẫu xe"); ;
+                var rs = InputValidation.ValidateTitle(model, "mẫu xe"); ;
                 if (rs != "")
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -120,7 +120,7 @@ namespace API.Controllers
                 }
                 else
                 {
-                    _mapper.Map(p, obj);
+                    _mapper.Map(model, obj);
                     await _unitOfWork.MotorModelService.Update(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
@@ -146,7 +146,7 @@ namespace API.Controllers
         {
             try
             {
-                var rs = InputValidation.ValidateTitle(p, "mẫu xe"); ;
+                var rs = InputValidation.ValidateTitle(model, "mẫu xe"); ;
                 if (rs != "")
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;

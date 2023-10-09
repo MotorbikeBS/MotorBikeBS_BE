@@ -95,7 +95,7 @@ namespace API.Controllers
         }
         [HttpPut]
         [Authorize]
-        public async Task<IActionResult> UpdateType([FromQuery] int id, TypeRegisterDTO p)
+        public async Task<IActionResult> UpdateType([FromQuery] int id, TypeRegisterDTO type)
         {
             try
             {
@@ -117,7 +117,7 @@ namespace API.Controllers
                 }
                 else
                 {
-                    _mapper.Map(p, obj);
+                    _mapper.Map(type, obj);
                     await _unitOfWork.MotorTypeService.Update(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
