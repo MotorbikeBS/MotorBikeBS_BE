@@ -102,7 +102,7 @@ namespace API.Controllers
 				{
 					UserId = userId,
 					MotorId = motorId,
-					MotorbikeName = name,
+                    MotorbikeName = name,
 				};
 				await _unitOfWork.WishListService.Add(wishlist);
 				_response.IsSuccess = true;

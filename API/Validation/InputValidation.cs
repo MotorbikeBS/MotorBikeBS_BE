@@ -230,13 +230,13 @@ namespace API.Validation
                 return "Tên phải từ 6 ký tự trở lên!";
             }
 
-            string phonePattern = @"^[0-9]{10}$";
+            string phonePattern = @"^[0-9]{6}$";
             if (!Regex.IsMatch(motorRegisterDTO.CertificateNumber, phonePattern))
             {
-                return "Số điện thoại không hợp lệ!";
+                return "Số chứng nhận đăng ký xe không hợp lệ!";
             }
 
-            if (motorRegisterDTO.Year < DateTime.Now)
+            if (motorRegisterDTO.Year > DateTime.Now)
             {
                 return "Năm đăng ký không được lớn hơn năm hiện tại!";
             }
@@ -252,11 +252,11 @@ namespace API.Validation
         }
         public static string ValidateTitle<TEntity>(TEntity entity, string entityName = "", int minLength = 4)
         {
-            PropertyInfo titleProperty = entity.GetType().GetProperty("Title");
+            PropertyInfo titleProperty = entity.GetType().GetProperty("Title") ?? entity.GetType().GetProperty("BrandName");
 
             if (titleProperty == null)
             {
-                throw new ArgumentException("The 'Title' property does not exist on the entity.");
+                throw new ArgumentException("The 'Title' or 'BrandName' property does not exist on the entity.");
             }
 
             var titleValue = titleProperty.GetValue(entity, null);
@@ -277,6 +277,7 @@ namespace API.Validation
 
             return string.Empty;
         }
+
 
 
 

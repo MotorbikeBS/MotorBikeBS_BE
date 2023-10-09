@@ -74,8 +74,7 @@ namespace API.Controllers
         {
             try
             {  
-                var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("POSTING"));
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId, SD.GetMotorArray);
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId ==SD.Status_Posting, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 listResponse.ForEach(item => item.Owner = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
@@ -111,8 +110,7 @@ namespace API.Controllers
         {
             try
             {
-                var Status = await _unitOfWork.MotorStatusService.GetFirst(e => e.Title.Equals("SALE_REQUEST"));
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == Status.MotorStatusId,SD.GetMotorArray);
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == SD.Status_Consignment || e.MotorStatusId == SD.Status_Livelihood, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 listResponse.ForEach(item => item.Store = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
@@ -250,7 +248,7 @@ namespace API.Controllers
         [HttpPut]
         [Authorize(Roles = "Store,Owner")]
         [Route("UpdateMotor-Status")]
-        public async Task<IActionResult> UpdateMotorStatus(int MotorID)
+        public async Task<IActionResult> UpdateMotorStatus(int MotorID, int StatusID)
         {
             try
             {
@@ -274,15 +272,7 @@ namespace API.Controllers
                     }
                     else
                     {
-                        var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
-                        if (roleId == SD.Role_Store_Id)
-                        {
-                            obj.MotorStatusId = (obj.MotorStatusId == SD.Status_Storage) ? SD.Status_Posting : SD.Status_Storage;
-                        }
-                        else if (roleId == SD.Role_Owner_Id)
-                        {
-                            obj.MotorStatusId = (obj.MotorStatusId == SD.Status_Storage) ? SD.Status_SaleRequest : SD.Status_Storage;
-                        }
+                        obj.MotorStatusId = StatusID;
                         await _unitOfWork.MotorBikeService.Update(obj);
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
@@ -346,27 +336,40 @@ namespace API.Controllers
                     else
                     {
                         _mapper.Map(motor, obj);
+                        //Delete oldRegistration Image
+                        if (motor.RegistrationImage != null && motor.RegistrationImage.Length > 0)
+                        {
+                            var reglink = obj.RegistrationImage.Split('/').Last();
+                            await _blobService.DeleteBlob(reglink, SD.Storage_Container);
+                            string rgtfileName = $"{Guid.NewGuid()}{Path.GetExtension(motor.RegistrationImage.FileName)}";
+                            var rgtLink = await _blobService.UploadBlob(rgtfileName, SD.Storage_Container, motor.RegistrationImage);
+                            obj.RegistrationImage = rgtLink;
+                        }
+                        //---------------------------                      
                         await _unitOfWork.MotorBikeService.Update(obj);
 
                         if (motor != null)
                         {
-                            var oldImages = await _unitOfWork.MotorImageService.Get(x => x.MotorId == MotorID);
-                            foreach (var oldImg in oldImages)
+                            if (images != null && images.Count > 0)
                             {
-                                var link = oldImg.ImageLink.Split('/').Last();
-                                await _blobService.DeleteBlob(link, SD.Storage_Container);
-                                await _unitOfWork.MotorImageService.Delete(oldImg);
-                            }
-                            foreach (var p in images)
-                            {
-                                string fileName = $"{Guid.NewGuid()}{Path.GetExtension(p.FileName)}";
-                                var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, p);
-                                MotorbikeImage image = new()
+                                var oldImages = await _unitOfWork.MotorImageService.Get(x => x.MotorId == MotorID);
+                                foreach (var oldImg in oldImages)
                                 {
-                                    ImageLink = img,
-                                    MotorId = MotorID
-                                };
-                                await _unitOfWork.MotorImageService.Add(image);
+                                    var link = oldImg.ImageLink.Split('/').Last();
+                                    await _blobService.DeleteBlob(link, SD.Storage_Container);
+                                    await _unitOfWork.MotorImageService.Delete(oldImg);
+                                }
+                                foreach (var p in images)
+                                {
+                                    string fileName = $"{Guid.NewGuid()}{Path.GetExtension(p.FileName)}";
+                                    var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, p);
+                                    MotorbikeImage image = new()
+                                    {
+                                        ImageLink = img,
+                                        MotorId = MotorID
+                                    };
+                                    await _unitOfWork.MotorImageService.Add(image);
+                                }
                             }
                         }
                         
@@ -417,6 +420,11 @@ namespace API.Controllers
                 {
                     var newMotor = _mapper.Map<Motorbike>(motor);
                     newMotor.MotorStatusId = SD.Status_Storage;
+                    //Registration-Img
+                    string rgtfileName = $"{Guid.NewGuid()}{Path.GetExtension(motor.RegistrationImage.FileName)}";
+                    var imgLink = await _blobService.UploadBlob(rgtfileName, SD.Storage_Container, motor.RegistrationImage);
+                    newMotor.RegistrationImage = imgLink;
+                    //----------------
                     newMotor.OwnerId = int.Parse(User.FindFirst("UserId")?.Value); 
                     await _unitOfWork.MotorBikeService.Add(newMotor);
                     //Add list Image

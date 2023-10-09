@@ -44,18 +44,27 @@ namespace Core.Models
         public virtual DbSet<Ward> Wards { get; set; } = null!;
         public virtual DbSet<Wishlist> Wishlists { get; set; } = null!;
 
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-			var d = Directory.GetCurrentDirectory();
-			IConfigurationRoot configuration = builder.Build();
-			string connectionString = configuration.GetConnectionString("DefaultConnection");
-			optionsBuilder.UseSqlServer(connectionString);
-		}
+        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //        {
+        //            if (!optionsBuilder.IsConfigured)
+        //            {
+        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        //                optionsBuilder.UseSqlServer("Server=(local);Uid=sa;Pwd=1234567890;Database=MotorbikeDB");
+        //            }
+        //        }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            var d = Directory.GetCurrentDirectory();
+            IConfigurationRoot configuration = builder.Build();
+            string connectionString = configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseSqlServer(connectionString);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -288,6 +297,10 @@ namespace Core.Models
                 entity.Property(e => e.Price)
                     .HasColumnType("money")
                     .HasColumnName("price");
+
+                entity.Property(e => e.RegistrationImage)
+                    .HasMaxLength(200)
+                    .HasColumnName("registration_image");
 
                 entity.Property(e => e.StoreId).HasColumnName("store_id");
 
@@ -881,13 +894,15 @@ namespace Core.Models
             {
                 entity.ToTable("Wishlist");
 
-                entity.Property(e => e.WishlistId).HasColumnName("wishlist_id");
+                entity.Property(e => e.WishlistId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("wishlist_id");
 
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
-                entity.Property(e => e.MotorbikeName)
+                entity.Property(e => e.MotorName)
                     .HasMaxLength(50)
-                    .HasColumnName("motorbike_name");
+                    .HasColumnName("motor_name");
 
                 entity.Property(e => e.UserId).HasColumnName("user_id");
 
@@ -895,13 +910,13 @@ namespace Core.Models
                     .WithMany(p => p.Wishlists)
                     .HasForeignKey(d => d.MotorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Motorbike");
+                    .HasConstraintName("FK_Wishlist_Motorbike");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Wishlists)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_User");
+                    .HasConstraintName("FK_Wishlist_User");
             });
 
             OnModelCreatingPartial(modelBuilder);
