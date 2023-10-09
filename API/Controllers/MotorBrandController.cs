@@ -96,11 +96,11 @@ namespace API.Controllers
 
         [HttpPut]
         [Authorize(Roles = "Store,Owner")]
-        public async Task<IActionResult> UpdateBrand([FromQuery] int id, BrandRegisterDTO p)
+        public async Task<IActionResult> UpdateBrand([FromQuery] int id, BrandRegisterDTO Brand)
         {
             try
             {
-                var rs = InputValidation.ValidateTitle(p, "hãng xe"); ;
+                var rs = InputValidation.ValidateTitle(Brand, "hãng xe"); ;
                 if (rs != "")
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -118,7 +118,7 @@ namespace API.Controllers
                 }
                 else
                 {
-                    _mapper.Map(p, obj);
+                    _mapper.Map(Brand, obj);
                     await _unitOfWork.MotorBrandService.Update(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;

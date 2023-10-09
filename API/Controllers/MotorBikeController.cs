@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Service.BlobImageService;
 using Service.UnitOfWork;
 using System.Net;
+using System.Security.Cryptography;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Controllers
@@ -233,6 +234,62 @@ namespace API.Controllers
                     _response.Result = listResponse;
                 }
                 return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
+        [HttpPut]
+        [Authorize(Roles = "Store,Owner")]
+        [Route("UpdateMotor-Status")]
+        public async Task<IActionResult> UpdateMotorStatus(int MotorID)
+        {
+            try
+            {
+                var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == MotorID);
+                if (obj == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
+                        return BadRequest(_response);
+                    }
+                    else
+                    {
+                        var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                        if (roleId == SD.Role_Store_Id)
+                        {
+                            obj.MotorStatusId = (obj.MotorStatusId == SD.Status_Storage) ? SD.Status_Posting : SD.Status_Storage;
+                        }
+                        else if (roleId == SD.Role_Owner_Id)
+                        {
+                            obj.MotorStatusId = (obj.MotorStatusId == SD.Status_Storage) ? SD.Status_SaleRequest : SD.Status_Storage;
+                        }
+                        await _unitOfWork.MotorBikeService.Update(obj);
+                        _response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.Result = obj;
+                    }
+                    return Ok(_response);
+                }
             }
             catch (Exception ex)
             {
