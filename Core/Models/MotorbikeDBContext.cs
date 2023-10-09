@@ -701,6 +701,10 @@ namespace Core.Models
                     .HasMaxLength(100)
                     .HasColumnName("address");
 
+                entity.Property(e => e.BusinessLicense)
+                    .HasMaxLength(100)
+                    .HasColumnName("business_license");
+
                 entity.Property(e => e.Description)
                     .HasMaxLength(1000)
                     .HasColumnName("description");
@@ -875,11 +879,9 @@ namespace Core.Models
 
             modelBuilder.Entity<Wishlist>(entity =>
             {
-                entity.HasKey(e => new { e.UserId, e.MotorId });
-
                 entity.ToTable("Wishlist");
 
-                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.WishlistId).HasColumnName("wishlist_id");
 
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
@@ -887,17 +889,19 @@ namespace Core.Models
                     .HasMaxLength(50)
                     .HasColumnName("motorbike_name");
 
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+
                 entity.HasOne(d => d.Motor)
                     .WithMany(p => p.Wishlists)
                     .HasForeignKey(d => d.MotorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Wishlist_Motorbike");
+                    .HasConstraintName("FK_Motorbike");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Wishlists)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Wishlist_User");
+                    .HasConstraintName("FK_User");
             });
 
             OnModelCreatingPartial(modelBuilder);

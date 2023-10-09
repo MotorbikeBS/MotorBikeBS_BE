@@ -24,6 +24,7 @@ namespace Core.Models
         public string? WardId { get; set; }
         public string? Status { get; set; }
         public string? TaxCode { get; set; }
+        public string? BusinessLicense { get; set; }
 
         public virtual User User { get; set; } = null!;
         public virtual Ward? Ward { get; set; }

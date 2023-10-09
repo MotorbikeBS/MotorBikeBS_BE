@@ -148,11 +148,11 @@ namespace API.Controllers
 					_response.ErrorMessages.Add(rs);
 					return BadRequest(_response);
 				}
-				if (store.File == null || store.File.Length == 0)
+				if (store.File == null || store.File.Length == 0 || store.License == null || store.License.Length == 0)
 				{
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					_response.Result = false;
-					_response.ErrorMessages.Add("Vui lòng chọn hình ảnh cửa hàng!");
+					_response.ErrorMessages.Add("Vui lòng chọn đầy đủ hình ảnh!");
 					return BadRequest(_response);
 				}
 
@@ -183,6 +183,15 @@ namespace API.Controllers
 					{
 						var newStore = _mapper.Map(store, storeInDb);
 						newStore.Status = SD.not_verify;
+						newStore.StoreCreatedAt = DateTime.Now;
+
+						var oldLisenceImg = storeInDb.BusinessLicense.Split('/').Last();
+						await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
+
+						string fileLisence = $"{Guid.NewGuid()}{Path.GetExtension(store.License.FileName)}";
+						var imgLisence = await _blobService.UploadBlob(fileLisence, SD.Storage_Container, store.License);
+						newStore.BusinessLicense = imgLisence;
+
 						await _unitOfWork.StoreDescriptionService.Update(newStore);
 
 						var oldImg = await _unitOfWork.StoreImageService.GetFirst(x => x.StoreId == storeInDb.StoreId);
@@ -210,10 +219,16 @@ namespace API.Controllers
 						newStore.Status = SD.not_verify;
 						newStore.UserId = userId;
 						newStore.StoreCreatedAt = DateTime.Now;
+
+						string fileLicense = $"{Guid.NewGuid()}{Path.GetExtension(store.License.FileName)}";
+						var imgLicense = await _blobService.UploadBlob(fileLicense, SD.Storage_Container, store.License);
+						newStore.BusinessLicense = imgLicense;
+
 						await _unitOfWork.StoreDescriptionService.Add(newStore);
 
 						string fileName = $"{Guid.NewGuid()}{Path.GetExtension(store.File.FileName)}";
 						var img = await _blobService.UploadBlob(fileName, SD.Storage_Container, store.File);
+
 						StoreImage image = new()
 						{
 							ImageLink = img,
