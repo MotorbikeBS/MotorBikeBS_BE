@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.DTO.UserDTO;
+using API.DTO.WishlistDTO;
 using API.Utility;
 using AutoMapper;
 using Core.Models;
@@ -42,8 +43,10 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Mục yêu thích đang trống!");
 					return NotFound(_response);
 				}
+				var response = _mapper.Map<IEnumerable<WishlistResponseDTO>>(list);
+				_response.Message = list.Count().ToString();
 				_response.IsSuccess = true;
-				_response.Result = list;
+				_response.Result = response;
 				_response.StatusCode = HttpStatusCode.OK;
 				return Ok(_response);
 			}
@@ -67,7 +70,7 @@ namespace API.Controllers
 			try
 			{
 				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == motorId);
-				if (motor == null || motor.MotorStatus.MotorStatusId != 1)
+				if (motor == null || motor.MotorStatusId != 1)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;

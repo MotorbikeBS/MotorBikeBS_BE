@@ -5,6 +5,7 @@ namespace Core.Models
 {
     public partial class Wishlist
     {
+        public int WishlistId { get; set; }
         public int UserId { get; set; }
         public int MotorId { get; set; }
         public string? MotorbikeName { get; set; }

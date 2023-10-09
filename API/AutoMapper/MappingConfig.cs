@@ -4,6 +4,7 @@ using API.DTO.RequestDTO;
 using API.DTO.Role;
 using API.DTO.StoreDTO;
 using API.DTO.UserDTO;
+using API.DTO.WishlistDTO;
 using AutoMapper;
 using Core.Models;
 using Service.UnitOfWork;
@@ -31,9 +32,12 @@ namespace API.AutoMapper
 				config.CreateMap<Role, RoleResponseDTO>().ReverseMap();
 				config.CreateMap<StoreDesciption, StoreDescriptionResponseDTO>().ReverseMap();
 
-				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap().ForSourceMember(source => source.File, opt => opt.DoNotValidate());
+				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap().ForSourceMember(source => source.File, opt => opt.DoNotValidate())
+				                                                                  .ForSourceMember(source => source.License, opt => opt.DoNotValidate());
 
-                config.CreateMap<Motorbike, MotorRegisterDTO>().ReverseMap();
+                config.CreateMap<Wishlist, WishlistResponseDTO>().ReverseMap();
+
+				config.CreateMap<Motorbike, MotorRegisterDTO>().ReverseMap();
                 config.CreateMap<Motorbike, MotorUpdateDTO>().ReverseMap();
                 config.CreateMap<MotorRegisterDTO, MotorUpdateDTO>().ReverseMap();
                 config.CreateMap<Motorbike, MotorResponseDTO>().ReverseMap()
