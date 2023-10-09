@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.DTO.MotorbikeDTO;
+using API.Validation;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -101,6 +102,14 @@ namespace API.Controllers
         {
             try
             {
+                var rs = InputValidation.ValidateTitle(p, "mẫu xe"); ;
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
                 var obj = await _unitOfWork.MotorModelService.GetFirst(e => e.ModelId == id);
                 if (obj == null)
                 {
@@ -137,6 +146,14 @@ namespace API.Controllers
         {
             try
             {
+                var rs = InputValidation.ValidateTitle(p, "mẫu xe"); ;
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
                 var brand = await _unitOfWork.MotorBrandService.GetFirst(c => c.BrandId == brandID);
                 if (brand == null)
                 {

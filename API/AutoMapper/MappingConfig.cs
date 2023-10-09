@@ -34,6 +34,8 @@ namespace API.AutoMapper
 				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap().ForSourceMember(source => source.File, opt => opt.DoNotValidate());
 
                 config.CreateMap<Motorbike, MotorRegisterDTO>().ReverseMap();
+                config.CreateMap<Motorbike, MotorUpdateDTO>().ReverseMap();
+                config.CreateMap<MotorRegisterDTO, MotorUpdateDTO>().ReverseMap();
                 config.CreateMap<Motorbike, MotorResponseDTO>().ReverseMap()
                     .ForMember(dest => dest.Model, opt => opt.MapFrom(src => src.Model))
                     .ForMember(dest => dest.MotorStatus, opt => opt.MapFrom(src => src.MotorStatus))
@@ -43,7 +45,7 @@ namespace API.AutoMapper
                     .ForMember(dest => dest.MotorbikeImages, opt => opt.MapFrom(src => src.MotorbikeImages));
 
 
-                config.CreateMap<MotorbikeBrand, BrandRegisterDTO>().ReverseMap();
+                config.CreateMap<MotorbikeBrand, BrandRegisterDTO>().ReverseMap().ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Title)); ;
                 config.CreateMap<MotorbikeModel, ModelRegisterDTO>().ReverseMap();
                 config.CreateMap<MotorbikeModel, ModelResponseDTO>().ReverseMap().ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Brand));                
                 config.CreateMap<MotorbikeStatus, StatusRegisterDTO>().ReverseMap();

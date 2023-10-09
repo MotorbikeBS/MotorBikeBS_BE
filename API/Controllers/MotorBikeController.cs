@@ -2,6 +2,7 @@
 using API.DTO.MotorbikeDTO;
 using API.DTO.UserDTO;
 using API.Utility;
+using API.Validation;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -248,10 +249,25 @@ namespace API.Controllers
         [HttpPut]
         [Authorize(Roles = "Store,Owner")]
         [Route("UpdateMotor")]
-        public async Task<IActionResult> UpdateMotor(int MotorID, [FromForm] MotorRegisterDTO motor, List<IFormFile> images)
+        public async Task<IActionResult> UpdateMotor(int MotorID, [FromForm] MotorUpdateDTO motor, List<IFormFile> images)
         {
             try
             {
+                var rs = InputValidation.MotorValidation(motor);
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
+                if (motor.MotorStatusId == 1 && motor.StoreId == null)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add("Xe được đăng bán cần có thông tin cửa hàng!");
+                    return BadRequest(_response);
+                }
                 var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == MotorID);
                 if (obj == null)
                 {
@@ -324,6 +340,14 @@ namespace API.Controllers
         {
             try
             {
+                var rs = InputValidation.MotorValidation(_mapper.Map<MotorUpdateDTO>(motor));
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
                 var CertNum = await _unitOfWork.MotorBikeService.GetFirst(c => c.CertificateNumber == motor.CertificateNumber);
                 if (CertNum != null)
                 {
