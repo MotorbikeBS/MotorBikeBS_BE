@@ -10,5 +10,6 @@ namespace API.DTO.UserDTO
         public string? Address { get; set; }
 		public string? TaxCode { get; set; }
 		public IFormFile? File { get; set; }
+        public IFormFile? License { get; set; }
 	}
 }
