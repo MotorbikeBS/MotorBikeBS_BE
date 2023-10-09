@@ -2,7 +2,7 @@
 
 namespace API.DTO.MotorbikeDTO
 { 
-    public partial class MotorRegisterDTO
+    public partial class MotorUpdateDTO
     {
         public string CertificateNumber { get; set; } = null!;
         public string? MotorName { get; set; }
@@ -11,7 +11,9 @@ namespace API.DTO.MotorbikeDTO
         public DateTime? Year { get; set; }
         public decimal? Price { get; set; }
         public string? Description { get; set; }
+        public int? MotorStatusId { get; set; }
         public int? MotorTypeId { get; set; }
+        public int? StoreId { get; set; }
     }
 }
 

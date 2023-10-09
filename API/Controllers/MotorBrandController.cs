@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.DTO.MotorbikeDTO;
+using API.Validation;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -99,6 +100,14 @@ namespace API.Controllers
         {
             try
             {
+                var rs = InputValidation.ValidateTitle(p, "hãng xe"); ;
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
                 var obj = await _unitOfWork.MotorBrandService.GetFirst(e => e.BrandId == id);
                 if (obj == null)
                 {
@@ -135,12 +144,20 @@ namespace API.Controllers
         {
             try
             {
-                var CertNum = await _unitOfWork.MotorBrandService.GetFirst(c => c.BrandName == Brand.BrandName);
+                var rs = InputValidation.ValidateTitle(Brand, "hãng xe"); ;
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
+                var CertNum = await _unitOfWork.MotorBrandService.GetFirst(c => c.BrandName == Brand.Title);
                 if (CertNum != null)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Hãng xe \"" + Brand.BrandName + "\" đã tồn tại");
+                    _response.ErrorMessages.Add("Hãng xe \"" + Brand.Title + "\" đã tồn tại");
                     return BadRequest(_response);
                 }
                 else

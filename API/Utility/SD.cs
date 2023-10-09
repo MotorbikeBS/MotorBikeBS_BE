@@ -7,7 +7,11 @@
 		public const int Role_Owner_Id = 3;
 		public const int Role_Customer_Id = 4;
 
+		public const int Status_Posting = 1;
+		public const int Status_SaleRequest = 2;
 		public const int Status_Storage = 3;
+		public const int Status_Consignment = 4;
+		public const int Status_Livelihood = 5;
 
 		public const string not_verify = "NOT VERIFY";
 		public const string active = "ACTIVE";

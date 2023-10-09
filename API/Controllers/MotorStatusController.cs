@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.DTO.MotorbikeDTO;
+using API.Validation;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -94,10 +95,18 @@ namespace API.Controllers
         }
         [HttpPut]
         [Authorize]
-        public async Task<IActionResult> UpdateStatus([FromQuery] int id, StatusRegisterDTO p)
+        public async Task<IActionResult> UpdateStatus([FromQuery] int id, StatusRegisterDTO status)
         {
             try
             {
+                var rs = InputValidation.ValidateTitle(status, "trạng thái"); ;
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
                 var obj = await _unitOfWork.MotorStatusService.GetFirst(e => e.MotorStatusId == id);
                 if (obj == null)
                 {
@@ -108,7 +117,7 @@ namespace API.Controllers
                 }
                 else
                 {
-                    _mapper.Map(p, obj);
+                    _mapper.Map(status, obj);
                     await _unitOfWork.MotorStatusService.Update(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
@@ -134,6 +143,14 @@ namespace API.Controllers
         {
             try
             {
+                var rs = InputValidation.ValidateTitle(status, "trạng thái"); ;
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
                 var CertNum = await _unitOfWork.MotorStatusService.GetFirst(c => c.Title == status.Title);
                 if (CertNum != null)
                 {

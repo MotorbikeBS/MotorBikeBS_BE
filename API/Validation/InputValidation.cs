@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using API.DTO.MotorbikeDTO;
+using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -213,5 +215,71 @@ namespace API.Validation
 
 			return "";
 		}
-	}
+		//MotorBike
+        public static string MotorValidation(MotorUpdateDTO motorRegisterDTO)
+        {
+            if (motorRegisterDTO.CertificateNumber == null || motorRegisterDTO.MotorName == null ||
+                motorRegisterDTO.ModelId == null || motorRegisterDTO.Odo == null ||
+                motorRegisterDTO.Year == null || motorRegisterDTO.Price == null)
+            {
+                return "Vui lòng nhập đầy đủ thông tin!";
+            }
+
+            if (motorRegisterDTO.MotorName.Length < 6)
+            {
+                return "Tên phải từ 6 ký tự trở lên!";
+            }
+
+            string phonePattern = @"^[0-9]{10}$";
+            if (!Regex.IsMatch(motorRegisterDTO.CertificateNumber, phonePattern))
+            {
+                return "Số điện thoại không hợp lệ!";
+            }
+
+            if (motorRegisterDTO.Year < DateTime.Now)
+            {
+                return "Năm đăng ký không được lớn hơn năm hiện tại!";
+            }
+			
+			if (motorRegisterDTO.Price < 0)
+            {
+                return "Giá tiền không hợp lệ!";
+            }
+
+            // Add other validation checks for ModelId, Odo, Price, and other properties as needed
+
+            return "";
+        }
+        public static string ValidateTitle<TEntity>(TEntity entity, string entityName = "", int minLength = 4)
+        {
+            PropertyInfo titleProperty = entity.GetType().GetProperty("Title");
+
+            if (titleProperty == null)
+            {
+                throw new ArgumentException("The 'Title' property does not exist on the entity.");
+            }
+
+            var titleValue = titleProperty.GetValue(entity, null);
+
+            if (titleValue == null)
+            {
+                string entityDisplayName = string.IsNullOrEmpty(entityName) ? "entity" : entityName;
+                return $"Tên {entityDisplayName} không được bỏ trống!";
+            }
+
+            string title = titleValue.ToString();
+
+            if (title.Length < minLength)
+            {
+                string entityDisplayName = string.IsNullOrEmpty(entityName) ? "entity" : entityName;
+                return $"Tên {entityDisplayName} phải có ít nhất {minLength} ký tự!";
+            }
+
+            return string.Empty;
+        }
+
+
+
+
+    }
 }
