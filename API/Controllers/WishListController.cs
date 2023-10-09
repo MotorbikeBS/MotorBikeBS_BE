@@ -34,7 +34,7 @@ namespace API.Controllers
 			try
 			{
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				var list = await _unitOfWork.WishListService.Get(x => x.UserId == userId, includeProperties: new string[] { "Motor", "Motor.MotorbikeImages" });
+				var list = await _unitOfWork.WishListService.Get(x => x.UserId == userId, includeProperties: new string[] { "Motor", "Motor.MotorbikeImages", "Motor.Store", "Motor.MotorType" });
 				if (list == null || list.Count()<1)
 				{
 					_response.IsSuccess = false;
@@ -62,12 +62,12 @@ namespace API.Controllers
 		[Authorize(Roles = "Customer")]
 		[HttpPost]
 		[Route("AddToWishList")]
-		public async Task<IActionResult> AddToWishList(int id)
+		public async Task<IActionResult> AddToWishList(int motorId)
 		{
 			try
 			{
-				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == id);
-				if (motor == null)
+				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == motorId);
+				if (motor == null || motor.MotorStatus.MotorStatusId != 1)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
@@ -83,12 +83,22 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy thương hiệu xe máy!");
 					return NotFound(_response);
 				}
-				string name = motorBrand.BrandName + " " + motorModel.ModelName;
+
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
+				IEnumerable<Wishlist> list = await _unitOfWork.WishListService.Get(x => x.UserId == userId);
+				var duplicateWishList = list.FirstOrDefault(x => x.MotorId == motorId);
+				if(duplicateWishList != null)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add("Xe máy này đã có trong mục yêu thích!");
+					return BadRequest(_response);
+				}
+				string name = motorBrand.BrandName + " " + motorModel.ModelName;
 				Wishlist wishlist = new Wishlist()
 				{
 					UserId = userId,
-					MotorId = id,
+					MotorId = motorId,
 					MotorbikeName = name,
 				};
 				await _unitOfWork.WishListService.Add(wishlist);
@@ -112,7 +122,7 @@ namespace API.Controllers
 		[Authorize(Roles ="Customer")]
 		[HttpDelete]
 		[Route("DeleteWishList")]
-		public async Task<IActionResult> DeleteWishList(int id)
+		public async Task<IActionResult> DeleteWishList(int motorId)
 		{
 			try
 			{
@@ -125,7 +135,7 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Mục yêu thích đang trống!");
 					return NotFound(_response);
 				}
-				var wishList = list.FirstOrDefault(x => x.MotorId == id);
+				var wishList = list.FirstOrDefault(x => x.MotorId == motorId);
 				if (wishList == null)
 				{
 					_response.IsSuccess = false;
