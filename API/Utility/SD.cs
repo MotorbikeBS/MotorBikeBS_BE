@@ -13,6 +13,10 @@
 		public const int Status_Consignment = 4;
 		public const int Status_Livelihood = 5;
 
+		public const int Request_Booking_Id = 6;
+
+		public const string Request_Booking_Pending = "PENDING";
+
 		public const string not_verify = "NOT VERIFY";
 		public const string active = "ACTIVE";
 		public const string in_active = "INACTIVE";
