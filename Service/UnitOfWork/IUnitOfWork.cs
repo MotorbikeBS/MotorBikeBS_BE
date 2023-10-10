@@ -17,5 +17,6 @@ namespace Service.UnitOfWork
         public IStoreDescriptionService StoreDescriptionService { get; }
 		public IStoreImageService StoreImageService { get; }
 		public IWishListService WishListService { get; }
+		public IBookingService BookingService { get; }
 	}
 }

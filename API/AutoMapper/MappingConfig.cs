@@ -1,4 +1,5 @@
-﻿using API.DTO.MotorbikeDTO;
+﻿using API.DTO.BookingDTO;
+using API.DTO.MotorbikeDTO;
 using API.DTO.OwnerDTO;
 using API.DTO.RequestDTO;
 using API.DTO.Role;
@@ -32,6 +33,8 @@ namespace API.AutoMapper
 				config.CreateMap<Role, RoleResponseDTO>().ReverseMap();
 				config.CreateMap<StoreDesciption, StoreDescriptionResponseDTO>().ReverseMap();
 
+                config.CreateMap<Booking, BookingCreateDTO>().ReverseMap().ForSourceMember(source => source.MotorId, opt => opt.DoNotValidate());
+
 				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap().ForSourceMember(source => source.File, opt => opt.DoNotValidate())
 				                                                                  .ForSourceMember(source => source.License, opt => opt.DoNotValidate());
 
@@ -60,7 +63,8 @@ namespace API.AutoMapper
                 config.CreateMap<MotorbikeImage, ImageResponseDTO>().ReverseMap();
 
                 config.CreateMap<RequestType, Type_RequestRegisterDTO>().ReverseMap();
-                config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
+				config.CreateMap<Request, BookingResponseRequestDTO>().ReverseMap();
+				config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
                 config.CreateMap<Request, RequestResponseDTO>().ReverseMap()
                     .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver))
                     .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
