@@ -10,7 +10,7 @@ namespace API.DTO.WishlistDTO
 		public int WishlistId { get; set; }
 		public int UserId { get; set; }
 		public int MotorId { get; set; }
-		public string? MotorbikeName { get; set; }
+		public string? MotorName { get; set; }
 
 		public virtual MotorResponseDTO Motor { get; set; } = null!;
 	}
