@@ -1,4 +1,5 @@
 ﻿using API.DTO;
+using API.DTO.FilterDTO;
 using API.DTO.MotorbikeDTO;
 using API.DTO.UserDTO;
 using API.Utility;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.BlobImageService;
 using Service.UnitOfWork;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using static System.Net.Mime.MediaTypeNames;
@@ -244,6 +246,113 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
+        [Authorize]
+        [HttpGet("search-MotorName")]
+        public async Task<IActionResult> SearchByMotorName(string motorName)
+        {
+            try
+            {
+                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                var results = await _unitOfWork.MotorBikeService.Get();
+                switch (roleId)
+                {
+                    case SD.Role_Customer_Id:
+                        results = await _unitOfWork.MotorBikeService.Get(
+                        expression: motor => motor.MotorName.Contains(motorName) && motor.MotorStatusId == SD.Status_Posting,
+                        includeProperties: SD.GetMotorArray
+                        );
+                        break;
+                    default:
+                        results = await _unitOfWork.MotorBikeService.Get(
+                       expression: motor => motor.MotorName.Contains(motorName) && (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_Livelihood),
+                       includeProperties: SD.GetMotorArray
+                       );
+                        break;
+                }
+
+                var listResponse = _mapper.Map<List<MotorResponseDTO>>(results);
+                if (results != null && results.Any())
+                {
+                    return Ok(listResponse);
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào.");
+                    return NotFound(_response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
+            }
+        }
+
+        //[Authorize(Roles = "Store,Owner")]
+        [HttpGet("filter")]
+        public async Task<IActionResult> FilterMotorbikes([FromQuery] MotorFilterDTO filter)
+        {
+            try
+            {
+                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                IEnumerable<Motorbike>? motorbikes;
+                switch (roleId)
+                {
+                    case SD.Role_Customer_Id:
+                        motorbikes = await _unitOfWork.MotorBikeService.Get(
+                        expression: motor => motor.MotorStatusId == SD.Status_Posting,
+                        includeProperties: SD.GetMotorArray
+                        );
+                        break;
+                    default:
+                         motorbikes = await _unitOfWork.MotorBikeService.Get(
+                        expression: motor => motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_Livelihood,
+                        includeProperties: SD.GetMotorArray
+                        );
+                        break;
+                }
+                
+                if (filter.ModelId != null && filter.ModelId.Any())
+                {
+                    motorbikes = motorbikes.Where(m => (filter.ModelId).Contains((int) m.ModelId)).ToList();
+                }
+
+                if (filter.minPrice.HasValue)
+                {
+                    motorbikes = motorbikes.Where(m => m.Price >= filter.minPrice.Value).ToList();
+                }
+
+                if (filter.maxPrice.HasValue)
+                {
+                    motorbikes = motorbikes.Where(m => m.Price <= filter.maxPrice.Value).ToList();
+                }
+
+                if (filter.MotorTypeId.HasValue)
+                {
+                    motorbikes = motorbikes.Where(m => m.MotorTypeId == filter.MotorTypeId).ToList();
+                }
+
+                var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
+
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                return Ok(listResponse);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
+            }
+        }
+
+
 
         [HttpPut]
         [Authorize(Roles = "Store,Owner")]

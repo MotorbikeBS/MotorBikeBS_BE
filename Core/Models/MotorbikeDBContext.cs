@@ -52,7 +52,6 @@ namespace Core.Models
         //                optionsBuilder.UseSqlServer("Server=(local);Uid=sa;Pwd=1234567890;Database=MotorbikeDB");
         //            }
         //        }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
@@ -63,7 +62,6 @@ namespace Core.Models
             string connectionString = configuration.GetConnectionString("DefaultConnection");
             optionsBuilder.UseSqlServer(connectionString);
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
@@ -900,9 +898,9 @@ namespace Core.Models
 
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
-                entity.Property(e => e.MotorName)
+                entity.Property(e => e.MotorbikeName)
                     .HasMaxLength(50)
-                    .HasColumnName("motor_name");
+                    .HasColumnName("motorbike_name");
 
                 entity.Property(e => e.UserId).HasColumnName("user_id");
 
