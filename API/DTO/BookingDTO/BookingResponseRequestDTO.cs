@@ -12,7 +12,6 @@ namespace API.DTO.BookingDTO
 		public int? RequestTypeId { get; set; }
 		public string? Status { get; set; }
 
-		public virtual Motorbike? Motor { get; set; }
-		public virtual ICollection<Booking> Bookings { get; set; }
+		public virtual ICollection<BookingResponseDTO> Bookings { get; set; }
 	}
 }
