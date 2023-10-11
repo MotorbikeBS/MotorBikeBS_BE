@@ -31,12 +31,12 @@ namespace API.Controllers
 		[Authorize(Roles = "Store")]
 		[HttpPost]
 		[Route("StoreBookingOwner")]
-		public async Task<IActionResult> StoreBookingOwner(BookingCreateDTO dto)
+		public async Task<IActionResult> StoreBookingOwner(int motorId, BookingCreateDTO dto)
 		{
 			try
 			{
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == dto.MotorId);
+				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == motorId);
 				if (motor == null)
 				{
 					_response.IsSuccess = false;
@@ -44,7 +44,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
-				if (motor.MotorStatusId != SD.Status_Storage)
+				if (motor.MotorStatusId != SD.Status_Consignment)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn không thể đặt lịch xem xe này!");
@@ -53,7 +53,7 @@ namespace API.Controllers
 				}
 				Request request = new()
 				{
-					MotorId = dto.MotorId,
+					MotorId = motorId,
 					ReceiverId = motor.OwnerId,
 					SenderId = userId,
 					Time = DateTime.Now,
