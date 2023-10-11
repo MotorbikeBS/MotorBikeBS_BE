@@ -33,7 +33,7 @@ namespace API.AutoMapper
 				config.CreateMap<Role, RoleResponseDTO>().ReverseMap();
 				config.CreateMap<StoreDesciption, StoreDescriptionResponseDTO>().ReverseMap();
 
-                config.CreateMap<Booking, BookingCreateDTO>().ReverseMap().ForSourceMember(source => source.MotorId, opt => opt.DoNotValidate());
+                config.CreateMap<Booking, BookingCreateDTO>().ReverseMap();
                 config.CreateMap<Booking, BookingResponseDTO>().ReverseMap();
 
 				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap().ForSourceMember(source => source.File, opt => opt.DoNotValidate())
