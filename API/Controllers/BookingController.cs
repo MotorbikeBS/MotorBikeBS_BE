@@ -84,7 +84,6 @@ namespace API.Controllers
 				return BadRequest();
 			}
 		}
-
 		[Authorize]
 		[HttpGet]
 		[Route("GetBookingRequest")]
@@ -93,7 +92,7 @@ namespace API.Controllers
 			try
 			{
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId, includeProperties:"Bookings");
+				IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId, includeProperties: new string[] { "Bookings", "Motor" });
 				IEnumerable<Request> requestBooking = list.Where(x => x.RequestTypeId == SD.Request_Booking_Id);
 				if (requestBooking == null)
 				{
@@ -102,7 +101,17 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
-				var response = _mapper.Map<IEnumerable<BookingResponseRequestDTO>>(requestBooking);
+
+				var response = new List<BookingResponseRequestDTO>();
+
+				foreach (var rs in requestBooking)
+				{
+					var bookingResponse = _mapper.Map<BookingResponseRequestDTO>(rs);
+					var sender = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == bookingResponse.SenderId);
+					bookingResponse.Sender = sender;
+					response.Add(bookingResponse);
+				}
+
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Result = response;
@@ -113,9 +122,9 @@ namespace API.Controllers
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
 				_response.ErrorMessages = new List<string>()
-				{
-					ex.ToString()
-				};
+		{
+			ex.ToString()
+		};
 				return BadRequest();
 			}
 		}
