@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.DTO.MotorbikeDTO;
+using API.Utility;
 using API.Validation;
 using AutoMapper;
 using Core.Models;
@@ -138,7 +139,7 @@ namespace API.Controllers
             }
         }
         [HttpPost]
-        [Authorize(Roles = "Store,Owner")]
+        [Authorize(Roles = "Store,Owner,Admin")]
         [Route("BrandRegister")]
         public async Task<IActionResult> BrandRegister(BrandRegisterDTO Brand)
         {
@@ -163,6 +164,9 @@ namespace API.Controllers
                 else
                 {
                     var newBrand = _mapper.Map<MotorbikeBrand>(Brand);
+                    var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                    InputValidation.StatusIfAdmin(newBrand, roleId);
+
                     await _unitOfWork.MotorBrandService.Add(newBrand);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;

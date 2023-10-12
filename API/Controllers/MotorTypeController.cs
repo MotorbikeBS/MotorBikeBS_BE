@@ -93,8 +93,9 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
         [HttpPut]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateType([FromQuery] int id, TypeRegisterDTO type)
         {
             try
@@ -162,6 +163,8 @@ namespace API.Controllers
                 else
                 {
                     var newType = _mapper.Map<MotorbikeType>(type);
+                    var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                    InputValidation.StatusIfAdmin(newType, roleId);
                     await _unitOfWork.MotorTypeService.Add(newType);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
