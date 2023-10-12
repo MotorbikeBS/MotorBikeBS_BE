@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Service.Service;
 using Service.UnitOfWork;
 using System.Net;
+using System.Runtime.CompilerServices;
 
 namespace API.Controllers
 {
@@ -65,13 +66,13 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 
-				if (motor.MotorStatusId != SD.Status_Consignment)
-				{
-					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Bạn không thể đặt lịch xem xe này!");
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					return BadRequest(_response);
-				}
+				//if (motor.MotorStatusId != SD.Status_Consignment)
+				//{
+				//	_response.IsSuccess = false;
+				//	_response.ErrorMessages.Add("Bạn không thể đặt lịch xem xe này!");
+				//	_response.StatusCode = HttpStatusCode.BadRequest;
+				//	return BadRequest(_response);
+				//}
 				Request request = new()
 				{
 					MotorId = motorId,
@@ -106,46 +107,8 @@ namespace API.Controllers
 			}
 		}
 
-		[Authorize]
-		[HttpGet("{id:int}")]
-		public async Task<IActionResult>Get(int id)
-		{
-			try
-			{
-				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				Request request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == id, includeProperties: "Bookings");
-				if(request == null)
-				{
-					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Không tìm thấy yêu cầu nào!");
-					_response.StatusCode = HttpStatusCode.NotFound;
-					return NotFound(_response);
-				}
-				if(request.RequestTypeId != SD.Request_Booking_Id)
-				{
-					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Đây không phải là yêu cầu đặt lịch!");
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					return BadRequest(_response);
-				}
-				_response.IsSuccess = true;
-				_response.StatusCode = HttpStatusCode.OK;
-				_response.Result = request;
-				return Ok(_response);
-			}
-			catch (Exception ex)
-			{
-				_response.IsSuccess = false;
-				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages = new List<string>()
-				{
-					ex.ToString()
-				};
-				return BadRequest();
-			}
-		}
 
-		[Authorize]
+		[Authorize(Roles = "Store, Owner")]
 		[HttpGet]
 		[Route("GetBookingRequest")]
 		public async Task<IActionResult> GetBookingRequest()
@@ -183,9 +146,115 @@ namespace API.Controllers
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
 				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return BadRequest();
+			}
+		}
+
+		[Authorize(Roles ="Owner")]
+		[HttpPut]
+		[Route("AcceptBooking")]
+		public async Task<IActionResult>AcceptBooking(int bookingId)
 		{
-			ex.ToString()
-		};
+			try
+			{
+				var booking = await _unitOfWork.BookingService.GetFirst(x => x.BookingId == bookingId);
+				if(booking == null)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không tìm thấy lịch hẹn!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					return NotFound(_response);
+				}
+				if(booking.Status != SD.Request_Booking_Pending)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không thể đồng ý lịch hẹn!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
+				booking.Status = SD.Request_Booking_Accept;
+				var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == booking.RequestId);
+				if(request == null)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					return NotFound(_response);
+				}
+				request.Status = SD.Request_Booking_Accept;
+
+				await _unitOfWork.RequestService.Update(request);
+				await _unitOfWork.BookingService.Update(booking);
+
+				_response.IsSuccess = true;
+				_response.StatusCode = HttpStatusCode.OK;
+				_response.Message = "Đồng ý lịch hẹn thành công!";
+				return Ok(_response);
+			}
+			catch (Exception ex)
+			{
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return BadRequest();
+			}
+		}
+
+		[Authorize(Roles = "Owner")]
+		[HttpPut]
+		[Route("RejectBooking")]
+		public async Task<IActionResult> RejectBooking(int bookingId)
+		{
+			try
+			{
+				var booking = await _unitOfWork.BookingService.GetFirst(x => x.BookingId == bookingId);
+				if (booking == null)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không tìm thấy lịch hẹn!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					return NotFound(_response);
+				}
+				if (booking.Status != SD.Request_Booking_Pending)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không thể từ chối lịch hẹn!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
+				booking.Status = SD.Request_Booking_Reject;
+				var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == booking.RequestId);
+				if (request == null)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					return NotFound(_response);
+				}
+				request.Status = SD.Request_Booking_Reject;
+
+				await _unitOfWork.RequestService.Update(request);
+				await _unitOfWork.BookingService.Update(booking);
+
+				_response.IsSuccess = true;
+				_response.StatusCode = HttpStatusCode.OK;
+				_response.Message = "Từ chối lịch hẹn thành công!";
+				return Ok(_response);
+			}
+			catch (Exception ex)
+			{
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
 				return BadRequest();
 			}
 		}

@@ -18,6 +18,8 @@
 		public const int Request_Booking_Id = 6;
 
 		public const string Request_Booking_Pending = "PENDING";
+		public const string Request_Booking_Accept = "ACCEPT";
+		public const string Request_Booking_Reject = "REJECT";
 
 		public const string not_verify = "NOT VERIFY";
 		public const string active = "ACTIVE";
