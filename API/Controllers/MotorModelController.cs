@@ -1,10 +1,13 @@
 ﻿using API.DTO;
 using API.DTO.MotorbikeDTO;
+using API.Utility;
 using API.Validation;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.Repository;
+using Service.Service;
 using Service.UnitOfWork;
 using System.Data;
 using System.Net;
@@ -18,12 +21,13 @@ namespace API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
         private readonly IMapper _mapper;
-
-        public MotorModelController(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IRequestService _repo;
+        public MotorModelController(IRequestService repo,IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _response = new ApiResponse();
             _mapper = mapper;
+            _repo = repo;
         }
 
         [HttpGet]
@@ -120,6 +124,7 @@ namespace API.Controllers
                 }
                 else
                 {
+                    var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
                     _mapper.Map(model, obj);
                     await _unitOfWork.MotorModelService.Update(obj);
                     _response.IsSuccess = true;
@@ -139,6 +144,7 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
         [HttpPost]
         [Authorize(Roles = "Store,Owner")]
         [Route("ModelRegister")]
@@ -175,11 +181,14 @@ namespace API.Controllers
                     else
                     {
                         var newModel = _mapper.Map<MotorbikeModel>(model);
+                        var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                        InputValidation.StatusIfAdmin(newModel, roleId);
+
                         await _unitOfWork.MotorModelService.Add(newModel);
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
                         _response.Result = newModel;
-                    }                    
+                    }
                     return Ok(_response);
                 }
             }

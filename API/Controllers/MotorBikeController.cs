@@ -293,7 +293,7 @@ namespace API.Controllers
             }
         }
 
-        //[Authorize(Roles = "Store,Owner")]
+        //[Authorize]
         [HttpGet("filter")]
         public async Task<IActionResult> FilterMotorbikes([FromQuery] MotorFilterDTO filter)
         {
@@ -316,7 +316,7 @@ namespace API.Controllers
                         );
                         break;
                 }
-                
+
                 if (filter.ModelId != null && filter.ModelId.Any())
                 {
                     motorbikes = motorbikes.Where(m => (filter.ModelId).Contains((int) m.ModelId)).ToList();
@@ -338,10 +338,19 @@ namespace API.Controllers
                 }
 
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
-
-                _response.IsSuccess = true;
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(listResponse);
+                if (motorbikes == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    return Ok(listResponse);
+                }
             }
             catch (Exception ex)
             {

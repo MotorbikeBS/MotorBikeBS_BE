@@ -94,7 +94,7 @@ namespace API.Controllers
             }
         }
         [HttpPut]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateStatus([FromQuery] int id, StatusRegisterDTO status)
         {
             try
@@ -162,6 +162,8 @@ namespace API.Controllers
                 else
                 {
                     var newstatus = _mapper.Map<MotorbikeStatus>(status);
+                    var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                    InputValidation.StatusIfAdmin(newstatus, roleId);
                     await _unitOfWork.MotorStatusService.Add(newstatus);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;

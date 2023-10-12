@@ -6,6 +6,7 @@ namespace API.DTO.RequestDTO
 {
     public partial class RequestRegisterDTO
     {
+        public int? MotorId { get; set; }
         public int? ReceiverId { get; set; }
         public int? SenderId { get; set; }
         public DateTime? Time { get; set; }

@@ -1,4 +1,6 @@
 ﻿using API.DTO.MotorbikeDTO;
+using API.Utility;
+using Core.Models;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -276,6 +278,25 @@ namespace API.Validation
             }
 
             return string.Empty;
+        }
+        public static void StatusIfAdmin<TEntity>(TEntity entity, int roleid)
+        {
+            PropertyInfo statusProperty = entity.GetType().GetProperty("Status");
+
+            if (statusProperty == null)
+            {
+                throw new ArgumentException("The 'Status' property does not exist on the entity.");
+            }
+            switch (roleid)
+            {
+				case SD.Role_Admin_Id:
+					statusProperty.SetValue(entity, SD.active);
+					break;
+				default:
+                    statusProperty.SetValue(entity, SD.pending);
+                    break;
+            }
+
         }
 
 
