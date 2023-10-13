@@ -217,8 +217,33 @@ namespace API.Validation
 
 			return "";
 		}
+
+		public static string BookingTimeValidation(DateTime bookingDate)
+		{
+			if (bookingDate == null)
+			{
+				return "Vui lòng chọn ngày hẹn!";
+			}
+
+			TimeSpan time = bookingDate.TimeOfDay;
+
+			TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
+			TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
+
+			if (bookingDate < DateTime.Now)
+			{
+				return "Vui lòng chọn thời gian trong tương lai!";
+			}
+
+			if (time <= startTime || time >= endTime)
+			{
+				return "Vui lòng chọn thời gian trong khung giờ 7h-21h!";
+			}
+			return "";
+		}
+
 		//MotorBike
-        public static string MotorValidation(MotorUpdateDTO motorRegisterDTO)
+		public static string MotorValidation(MotorUpdateDTO motorRegisterDTO)
         {
             if (motorRegisterDTO.CertificateNumber == null || motorRegisterDTO.MotorName == null ||
                 motorRegisterDTO.ModelId == null || motorRegisterDTO.Odo == null ||
