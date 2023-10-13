@@ -122,12 +122,12 @@ namespace API.Controllers
 
 				if (roleId == SD.Role_Owner_Id)
 				{
-					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId, includeProperties: new string[] { "Bookings", "Motor" });
+					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId, includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
 				}
 				
 				if(roleId == SD.Role_Store_Id)
 				{
-					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId, includeProperties: new string[] { "Bookings", "Motor" });
+					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId, includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
 				}
 				IEnumerable<Request> requestBooking = list.Where(x => x.RequestTypeId == SD.Request_Booking_Id);
 				if (requestBooking == null)
