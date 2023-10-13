@@ -58,7 +58,7 @@ namespace API.Controllers
 				}
 
 				var bookingInDb = await _unitOfWork.RequestService.GetFirst(x => x.SenderId == userId);
-				if (bookingInDb != null && bookingInDb.RequestTypeId == SD.Request_Booking_Id && bookingInDb.MotorId == motorId && bookingInDb.Status != SD.Request_Booking_Reject)
+				if (bookingInDb != null && bookingInDb.RequestTypeId == SD.Request_Booking_Id && bookingInDb.MotorId == motorId && bookingInDb.Status != SD.Request_Booking_Cancel)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn đã đặt lịch cho xe này, vui lòng chờ xác nhận!");
@@ -66,13 +66,13 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 
-				//if (motor.MotorStatusId != SD.Status_Consignment)
-				//{
-				//	_response.IsSuccess = false;
-				//	_response.ErrorMessages.Add("Bạn không thể đặt lịch xem xe này!");
-				//	_response.StatusCode = HttpStatusCode.BadRequest;
-				//	return BadRequest(_response);
-				//}
+				if (motor.MotorStatusId != SD.Status_Consignment)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Bạn không thể đặt lịch xem xe này!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
 				Request request = new()
 				{
 					MotorId = motorId,
@@ -274,6 +274,59 @@ namespace API.Controllers
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Message = "Từ chối lịch hẹn thành công!";
+				return Ok(_response);
+			}
+			catch (Exception ex)
+			{
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return BadRequest();
+			}
+		}
+
+		[Authorize(Roles = "Owner")]
+		[HttpPut]
+		[Route("CancelBooking")]
+		public async Task<IActionResult> CancelBooking(int bookingId)
+		{
+			try
+			{
+				var booking = await _unitOfWork.BookingService.GetFirst(x => x.BookingId == bookingId);
+				if (booking == null)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không tìm thấy lịch hẹn!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					return NotFound(_response);
+				}
+				if (booking.Status != SD.Request_Booking_Pending)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không thể hủy lịch hẹn!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
+				booking.Status = SD.Request_Booking_Cancel;
+				var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == booking.RequestId);
+				if (request == null)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					return NotFound(_response);
+				}
+				request.Status = SD.Request_Booking_Cancel;
+
+				await _unitOfWork.RequestService.Update(request);
+				await _unitOfWork.BookingService.Update(booking);
+
+				_response.IsSuccess = true;
+				_response.StatusCode = HttpStatusCode.OK;
+				_response.Message = "Hủy lịch hẹn thành công!";
 				return Ok(_response);
 			}
 			catch (Exception ex)
