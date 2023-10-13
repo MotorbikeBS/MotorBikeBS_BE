@@ -58,10 +58,10 @@ namespace API.Controllers
 				}
 
 				var bookingInDb = await _unitOfWork.RequestService.GetFirst(x => x.SenderId == userId);
-				if (bookingInDb != null && bookingInDb.RequestTypeId == SD.Request_Booking_Id && bookingInDb.MotorId == motorId)
+				if (bookingInDb != null && bookingInDb.RequestTypeId == SD.Request_Booking_Id && bookingInDb.MotorId == motorId && bookingInDb.Status != SD.Request_Booking_Reject)
 				{
 					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Bạn đã đặt lịch, vui lòng chờ xác nhận!");
+					_response.ErrorMessages.Add("Bạn đã đặt lịch cho xe này, vui lòng chờ xác nhận!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
@@ -115,8 +115,20 @@ namespace API.Controllers
 		{
 			try
 			{
+				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId, includeProperties: new string[] { "Bookings", "Motor" });
+
+				IEnumerable<Request> list = null;
+
+				if (roleId == SD.Role_Owner_Id)
+				{
+					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId, includeProperties: new string[] { "Bookings", "Motor" });
+				}
+				
+				if(roleId == SD.Role_Store_Id)
+				{
+					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId, includeProperties: new string[] { "Bookings", "Motor" });
+				}
 				IEnumerable<Request> requestBooking = list.Where(x => x.RequestTypeId == SD.Request_Booking_Id);
 				if (requestBooking == null)
 				{
@@ -133,9 +145,26 @@ namespace API.Controllers
 					var bookingResponse = _mapper.Map<BookingResponseRequestDTO>(rs);
 					var sender = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == bookingResponse.SenderId);
 					bookingResponse.Sender = sender;
-					response.Add(bookingResponse);
-				}
+					if (bookingResponse.Bookings != null)
+					{
+						var filteredBookings = bookingResponse.Bookings
+							.Where(b => b.BookingDate.HasValue && b.BookingDate.Value > DateTime.Now)
+							.ToList();
 
+						if (filteredBookings.Any())
+						{
+							bookingResponse.Bookings = filteredBookings;
+							response.Add(bookingResponse);
+						}
+					}
+				}
+				if(response == null || response.Count <1)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Hiện không có lịch hẹn nào đang chờ!");
+					return NotFound(_response);
+				}
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Result = response;
