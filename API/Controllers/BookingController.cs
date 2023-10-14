@@ -66,7 +66,7 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 
-				if (motor.MotorStatusId != SD.Status_Consignment)
+				if (motor.MotorStatusId != SD.Status_Consignment || motor.MotorStatusId != SD.Status_Livelihood)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn không thể đặt lịch xem xe này!");
