@@ -7,6 +7,7 @@ using API.Validation;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.BlobImageService;
 using Service.UnitOfWork;
@@ -274,6 +275,8 @@ namespace API.Controllers
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(results);
                 if (results != null && results.Any())
                 {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
                     return Ok(listResponse);
                 }
                 else
@@ -338,18 +341,18 @@ namespace API.Controllers
                 }
 
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
-                if (motorbikes == null)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(_response);
-                }
-                else
-                {
+                if (motorbikes != null && motorbikes.Any())
+                {                    
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     return Ok(listResponse);
+                }
+                else
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
                 }
             }
             catch (Exception ex)
