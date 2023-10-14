@@ -21,13 +21,11 @@ namespace API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
         private readonly IMapper _mapper;
-        private readonly IRequestService _repo;
-        public MotorModelController(IRequestService repo,IUnitOfWork unitOfWork, IMapper mapper)
+        public MotorModelController(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _response = new ApiResponse();
             _mapper = mapper;
-            _repo = repo;
         }
 
         [HttpGet]
