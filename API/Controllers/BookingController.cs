@@ -63,7 +63,7 @@ namespace API.Controllers
 				&& x.Status != SD.Request_Booking_Cancel 
 				&& x.Status != SD.Request_Booking_Reject);
 
-				if (list != null || list.Count() > 0)
+				if (list.Count() > 0)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn đã đặt lịch cho xe này, vui lòng chờ xác nhận!");
@@ -127,18 +127,20 @@ namespace API.Controllers
 				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
-				IEnumerable<Request> list = null;
+				IEnumerable<Request> requestBooking = null;
 
 				if (roleId == SD.Role_Owner_Id)
 				{
-					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId, includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
+					requestBooking = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId 
+					&& x.RequestTypeId == SD.Request_Booking_Id, includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
 				}
 				
 				if(roleId == SD.Role_Store_Id)
 				{
-					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId, includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
+					requestBooking = await _unitOfWork.RequestService.Get(x => x.SenderId == userId 
+					&& x.RequestTypeId == SD.Request_Booking_Id, includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
 				}
-				IEnumerable<Request> requestBooking = list.Where(x => x.RequestTypeId == SD.Request_Booking_Id);
+
 				if (requestBooking == null)
 				{
 					_response.IsSuccess = false;
