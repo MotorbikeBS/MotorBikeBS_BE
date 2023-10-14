@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Core.Models
 {
-    public partial class ConsignmentContract
+    public partial class Contract
     {
-        public ConsignmentContract()
+        public Contract()
         {
-            ConsignmentContractImages = new HashSet<ConsignmentContractImage>();
+            ContractImages = new HashSet<ContractImage>();
         }
 
         public int ContractId { get; set; }
@@ -18,9 +18,9 @@ namespace Core.Models
         public string? Content { get; set; }
         public DateTime? CreatedAt { get; set; }
         public string? Status { get; set; }
-        public int? NegotiationId { get; set; }
+        public int? BookingId { get; set; }
 
-        public virtual Negotiation? Negotiation { get; set; }
-        public virtual ICollection<ConsignmentContractImage> ConsignmentContractImages { get; set; }
+        public virtual Booking? Booking { get; set; }
+        public virtual ICollection<ContractImage> ContractImages { get; set; }
     }
 }

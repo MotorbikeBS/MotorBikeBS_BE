@@ -64,8 +64,7 @@ namespace API.AutoMapper
 				config.CreateMap<MotorbikeImage, ImageResponseDTO>().ReverseMap();
 
 				config.CreateMap<RequestType, Type_RequestRegisterDTO>().ReverseMap();
-				config.CreateMap<Request, BookingResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Bookings, opt => opt.MapFrom(src => src.Bookings))
-																				   .ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
+				config.CreateMap<Request, BookingResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
 																				   .ForSourceMember(source => source.Sender, opt => opt.DoNotValidate());
 				config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
 				config.CreateMap<Request, RequestResponseDTO>().ReverseMap()

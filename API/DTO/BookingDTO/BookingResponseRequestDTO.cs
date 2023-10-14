@@ -14,7 +14,6 @@ namespace API.DTO.BookingDTO
 		public string? Status { get; set; }
 		public virtual MotorResponseDTO? Motor { get; set; }
 
-		public virtual ICollection<BookingResponseDTO> Bookings { get; set; }
 		public virtual StoreDesciption? Sender { get; set; }
 	}
 }
