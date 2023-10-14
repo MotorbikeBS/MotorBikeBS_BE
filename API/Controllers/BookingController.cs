@@ -58,7 +58,7 @@ namespace API.Controllers
 				}
 
 				var bookingInDb = await _unitOfWork.RequestService.GetFirst(x => x.SenderId == userId);
-				if (bookingInDb != null && bookingInDb.RequestTypeId == SD.Request_Booking_Id && bookingInDb.MotorId == motorId && bookingInDb.Status != SD.Request_Booking_Cancel)
+				if (bookingInDb != null && bookingInDb.RequestTypeId == SD.Request_Booking_Id && bookingInDb.MotorId == motorId && bookingInDb.Status != SD.Request_Booking_Cancel && bookingInDb.Status != SD.Request_Booking_Reject)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn đã đặt lịch cho xe này, vui lòng chờ xác nhận!");
@@ -66,34 +66,38 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 
-				if (motor.MotorStatusId != SD.Status_Consignment || motor.MotorStatusId != SD.Status_Livelihood)
+				if (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_Livelihood)
+				{
+					Request request = new()
+					{
+						MotorId = motorId,
+						ReceiverId = motor.OwnerId,
+						SenderId = userId,
+						Time = DateTime.Now,
+						RequestTypeId = SD.Request_Booking_Id,
+						Status = SD.Request_Booking_Pending
+					};
+					await _unitOfWork.RequestService.Add(request);
+
+					var bookingCreate = _mapper.Map<Booking>(dto);
+					bookingCreate.RequestId = request.RequestId;
+					bookingCreate.DateCreate = DateTime.Now;
+					bookingCreate.Status = SD.Request_Booking_Pending;
+
+					await _unitOfWork.BookingService.Add(bookingCreate);
+					_response.IsSuccess = true;
+					_response.Message = "Đặt lịch thành công, vui lòng chờ người bán xác nhận!";
+					_response.StatusCode = HttpStatusCode.OK;
+					return Ok(_response);
+				}
+				else
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn không thể đặt lịch xem xe này!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
-				Request request = new()
-				{
-					MotorId = motorId,
-					ReceiverId = motor.OwnerId,
-					SenderId = userId,
-					Time = DateTime.Now,
-					RequestTypeId = SD.Request_Booking_Id,
-					Status = SD.Request_Booking_Pending
-				};
-				await _unitOfWork.RequestService.Add(request);
-
-				var bookingCreate = _mapper.Map<Booking>(dto);
-				bookingCreate.RequestId = request.RequestId;
-				bookingCreate.DateCreate = DateTime.Now;
-				bookingCreate.Status = SD.Request_Booking_Pending;
-
-				await _unitOfWork.BookingService.Add(bookingCreate);
-				_response.IsSuccess = true;
-				_response.Message = "Đặt lịch thành công, vui lòng chờ người bán xác nhận!";
-				_response.StatusCode = HttpStatusCode.OK;
-				return Ok(_response);
+				
 			}
 			catch (Exception ex)
 			{
