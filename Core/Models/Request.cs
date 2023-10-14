@@ -8,8 +8,8 @@ namespace Core.Models
         public Request()
         {
             BillConfirms = new HashSet<BillConfirm>();
-            Bookings = new HashSet<Booking>();
             Negotiations = new HashSet<Negotiation>();
+            Notifications = new HashSet<Notification>();
             PointHistoryRequests = new HashSet<PointHistory>();
             PointHistoryStores = new HashSet<PointHistory>();
         }
@@ -27,8 +27,8 @@ namespace Core.Models
         public virtual RequestType? RequestType { get; set; }
         public virtual User? Sender { get; set; }
         public virtual ICollection<BillConfirm> BillConfirms { get; set; }
-        public virtual ICollection<Booking> Bookings { get; set; }
         public virtual ICollection<Negotiation> Negotiations { get; set; }
+        public virtual ICollection<Notification> Notifications { get; set; }
         public virtual ICollection<PointHistory> PointHistoryRequests { get; set; }
         public virtual ICollection<PointHistory> PointHistoryStores { get; set; }
     }
