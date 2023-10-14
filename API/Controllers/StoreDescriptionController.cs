@@ -156,6 +156,14 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 
+				if (!InputValidation.IsImage(store.File) || !InputValidation.IsImage(store.License))
+				{
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.Result = false;
+					_response.ErrorMessages.Add("Vui lòng tải lên hình ảnh hợp lệ!");
+					return BadRequest(_response);
+				}
+
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
 				var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == userId);
 				var taxCodeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.TaxCode == store.TaxCode);

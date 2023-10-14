@@ -218,6 +218,25 @@ namespace API.Validation
 			return "";
 		}
 
+		public static bool IsImage(IFormFile file)
+		{
+			if (file != null)
+			{
+				// Check the file's content type
+				if (file.ContentType.StartsWith("image/"))
+				{
+					return true;
+				}
+
+				// Check the file extension (you can add more image extensions if needed)
+				var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+				var fileExtension = Path.GetExtension(file.FileName);
+				return allowedExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase);
+			}
+
+			return false;
+		}
+
 		public static string BookingTimeValidation(DateTime bookingDate)
 		{
 			if (bookingDate == null)

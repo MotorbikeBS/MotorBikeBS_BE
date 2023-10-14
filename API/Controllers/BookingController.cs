@@ -57,8 +57,13 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 
-				var bookingInDb = await _unitOfWork.RequestService.GetFirst(x => x.SenderId == userId);
-				if (bookingInDb != null && bookingInDb.RequestTypeId == SD.Request_Booking_Id && bookingInDb.MotorId == motorId && bookingInDb.Status != SD.Request_Booking_Cancel)
+				IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId 
+				&& x.RequestTypeId == SD.Request_Booking_Id
+				&& x.MotorId == motorId 
+				&& x.Status != SD.Request_Booking_Cancel 
+				&& x.Status != SD.Request_Booking_Reject);
+
+				if (list.Count() > 0)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn đã đặt lịch cho xe này, vui lòng chờ xác nhận!");
@@ -66,34 +71,38 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 
-				if (motor.MotorStatusId != SD.Status_Consignment)
+				if (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_Livelihood)
+				{
+					Request request = new()
+					{
+						MotorId = motorId,
+						ReceiverId = motor.OwnerId,
+						SenderId = userId,
+						Time = DateTime.Now,
+						RequestTypeId = SD.Request_Booking_Id,
+						Status = SD.Request_Booking_Pending
+					};
+					await _unitOfWork.RequestService.Add(request);
+
+					var bookingCreate = _mapper.Map<Booking>(dto);
+					bookingCreate.RequestId = request.RequestId;
+					bookingCreate.DateCreate = DateTime.Now;
+					bookingCreate.Status = SD.Request_Booking_Pending;
+
+					await _unitOfWork.BookingService.Add(bookingCreate);
+					_response.IsSuccess = true;
+					_response.Message = "Đặt lịch thành công, vui lòng chờ người bán xác nhận!";
+					_response.StatusCode = HttpStatusCode.OK;
+					return Ok(_response);
+				}
+				else
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn không thể đặt lịch xem xe này!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
-				Request request = new()
-				{
-					MotorId = motorId,
-					ReceiverId = motor.OwnerId,
-					SenderId = userId,
-					Time = DateTime.Now,
-					RequestTypeId = SD.Request_Booking_Id,
-					Status = SD.Request_Booking_Pending
-				};
-				await _unitOfWork.RequestService.Add(request);
-
-				var bookingCreate = _mapper.Map<Booking>(dto);
-				bookingCreate.RequestId = request.RequestId;
-				bookingCreate.DateCreate = DateTime.Now;
-				bookingCreate.Status = SD.Request_Booking_Pending;
-
-				await _unitOfWork.BookingService.Add(bookingCreate);
-				_response.IsSuccess = true;
-				_response.Message = "Đặt lịch thành công, vui lòng chờ người bán xác nhận!";
-				_response.StatusCode = HttpStatusCode.OK;
-				return Ok(_response);
+				
 			}
 			catch (Exception ex)
 			{
@@ -118,18 +127,20 @@ namespace API.Controllers
 				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
-				IEnumerable<Request> list = null;
+				IEnumerable<Request> requestBooking = null;
 
 				if (roleId == SD.Role_Owner_Id)
 				{
-					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId, includeProperties: new string[] { "Bookings", "Motor" });
+					requestBooking = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId 
+					&& x.RequestTypeId == SD.Request_Booking_Id, includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
 				}
 				
 				if(roleId == SD.Role_Store_Id)
 				{
-					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId, includeProperties: new string[] { "Bookings", "Motor" });
+					requestBooking = await _unitOfWork.RequestService.Get(x => x.SenderId == userId 
+					&& x.RequestTypeId == SD.Request_Booking_Id, includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
 				}
-				IEnumerable<Request> requestBooking = list.Where(x => x.RequestTypeId == SD.Request_Booking_Id);
+
 				if (requestBooking == null)
 				{
 					_response.IsSuccess = false;
@@ -288,7 +299,7 @@ namespace API.Controllers
 			}
 		}
 
-		[Authorize(Roles = "Owner")]
+		[Authorize(Roles = "Store")]
 		[HttpPut]
 		[Route("CancelBooking")]
 		public async Task<IActionResult> CancelBooking(int bookingId)
