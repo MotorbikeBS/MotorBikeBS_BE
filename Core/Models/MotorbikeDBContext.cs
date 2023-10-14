@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 namespace Core.Models
 {
@@ -20,10 +18,8 @@ namespace Core.Models
 
         public virtual DbSet<BillConfirm> BillConfirms { get; set; } = null!;
         public virtual DbSet<Booking> Bookings { get; set; } = null!;
-        public virtual DbSet<ConsignmentContract> ConsignmentContracts { get; set; } = null!;
-        public virtual DbSet<ConsignmentContractImage> ConsignmentContractImages { get; set; } = null!;
-        public virtual DbSet<EarnAlivingContract> EarnAlivingContracts { get; set; } = null!;
-        public virtual DbSet<EarnAlivingContractImage> EarnAlivingContractImages { get; set; } = null!;
+        public virtual DbSet<Contract> Contracts { get; set; } = null!;
+        public virtual DbSet<ContractImage> ContractImages { get; set; } = null!;
         public virtual DbSet<Motorbike> Motorbikes { get; set; } = null!;
         public virtual DbSet<MotorbikeBrand> MotorbikeBrands { get; set; } = null!;
         public virtual DbSet<MotorbikeImage> MotorbikeImages { get; set; } = null!;
@@ -45,18 +41,18 @@ namespace Core.Models
         public virtual DbSet<Ward> Wards { get; set; } = null!;
         public virtual DbSet<Wishlist> Wishlists { get; set; } = null!;
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            var d = Directory.GetCurrentDirectory();
-            IConfigurationRoot configuration = builder.Build();
-            string connectionString = configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseSqlServer(connectionString);
-        }
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+			var d = Directory.GetCurrentDirectory();
+			IConfigurationRoot configuration = builder.Build();
+			string connectionString = configuration.GetConnectionString("DefaultConnection");
+			optionsBuilder.UseSqlServer(connectionString);
+		}
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -105,6 +101,8 @@ namespace Core.Models
                     .HasColumnType("datetime")
                     .HasColumnName("date_create");
 
+                entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
+
                 entity.Property(e => e.Note)
                     .HasMaxLength(100)
                     .HasColumnName("note");
@@ -115,81 +113,15 @@ namespace Core.Models
                     .HasMaxLength(10)
                     .HasColumnName("status");
 
-                entity.HasOne(d => d.Request)
-                    .WithMany(p => p.Bookings)
-                    .HasForeignKey(d => d.RequestId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Booking_Request");
-            });
-
-            modelBuilder.Entity<ConsignmentContract>(entity =>
-            {
-                entity.HasKey(e => e.ContractId);
-
-                entity.ToTable("Consignment_Contract");
-
-                entity.Property(e => e.ContractId).HasColumnName("contract_id");
-
-                entity.Property(e => e.Content)
-                    .HasMaxLength(100)
-                    .HasColumnName("content");
-
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnType("datetime")
-                    .HasColumnName("created_at");
-
-                entity.Property(e => e.MotorId).HasColumnName("motor_id");
-
-                entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
-
-                entity.Property(e => e.NewOwner).HasColumnName("new_owner");
-
-                entity.Property(e => e.Price)
-                    .HasColumnType("money")
-                    .HasColumnName("price");
-
-                entity.Property(e => e.Status)
-                    .HasMaxLength(10)
-                    .HasColumnName("status");
-
-                entity.Property(e => e.StoreId).HasColumnName("store_id");
-
                 entity.HasOne(d => d.Negotiation)
-                    .WithMany(p => p.ConsignmentContracts)
+                    .WithMany(p => p.Bookings)
                     .HasForeignKey(d => d.NegotiationId)
-                    .HasConstraintName("FK_Consignment_Contract_Negotiation");
+                    .HasConstraintName("FK_Booking_Negotiation");
             });
 
-            modelBuilder.Entity<ConsignmentContractImage>(entity =>
+            modelBuilder.Entity<Contract>(entity =>
             {
-                entity.HasKey(e => e.ContractImageId);
-
-                entity.ToTable("Consignment_ContractImage");
-
-                entity.Property(e => e.ContractImageId).HasColumnName("contract_image_id");
-
-                entity.Property(e => e.ContractId).HasColumnName("contract_id");
-
-                entity.Property(e => e.Description)
-                    .HasMaxLength(200)
-                    .HasColumnName("description");
-
-                entity.Property(e => e.ImageLink)
-                    .HasMaxLength(100)
-                    .HasColumnName("image_link");
-
-                entity.HasOne(d => d.Contract)
-                    .WithMany(p => p.ConsignmentContractImages)
-                    .HasForeignKey(d => d.ContractId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Consignment_ContractImage_Consignment_Contract");
-            });
-
-            modelBuilder.Entity<EarnAlivingContract>(entity =>
-            {
-                entity.HasKey(e => e.ContractId);
-
-                entity.ToTable("EarnALiving_Contract");
+                entity.ToTable("Contract");
 
                 entity.Property(e => e.ContractId).HasColumnName("contract_id");
 
@@ -205,8 +137,6 @@ namespace Core.Models
 
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
-                entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
-
                 entity.Property(e => e.NewOwner).HasColumnName("new_owner");
 
                 entity.Property(e => e.Price)
@@ -220,21 +150,14 @@ namespace Core.Models
                 entity.Property(e => e.StoreId).HasColumnName("store_id");
 
                 entity.HasOne(d => d.Booking)
-                    .WithMany(p => p.EarnAlivingContracts)
+                    .WithMany(p => p.Contracts)
                     .HasForeignKey(d => d.BookingId)
                     .HasConstraintName("FK_EarnALiving_Contract_Booking");
-
-                entity.HasOne(d => d.Negotiation)
-                    .WithMany(p => p.EarnAlivingContracts)
-                    .HasForeignKey(d => d.NegotiationId)
-                    .HasConstraintName("FK_EarnALiving_Contract_Negotiation");
             });
 
-            modelBuilder.Entity<EarnAlivingContractImage>(entity =>
+            modelBuilder.Entity<ContractImage>(entity =>
             {
-                entity.HasKey(e => e.ContractImageId);
-
-                entity.ToTable("EarnALiving_ContractImage");
+                entity.ToTable("ContractImage");
 
                 entity.Property(e => e.ContractImageId).HasColumnName("contract_image_id");
 
@@ -249,7 +172,7 @@ namespace Core.Models
                     .HasColumnName("image_link");
 
                 entity.HasOne(d => d.Contract)
-                    .WithMany(p => p.EarnAlivingContractImages)
+                    .WithMany(p => p.ContractImages)
                     .HasForeignKey(d => d.ContractId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_EarnALiving_ContractImage_EarnALiving_Contract");
@@ -449,11 +372,9 @@ namespace Core.Models
                     .HasColumnType("datetime")
                     .HasColumnName("end_time");
 
-                entity.Property(e => e.FromSeller).HasColumnName("from_Seller");
-
-                entity.Property(e => e.Price)
-                    .HasColumnType("money")
-                    .HasColumnName("price");
+                entity.Property(e => e.OwnerPrice)
+                    .HasColumnType("decimal(15, 4)")
+                    .HasColumnName("owner_price");
 
                 entity.Property(e => e.RequestId).HasColumnName("request_id");
 
@@ -464,6 +385,10 @@ namespace Core.Models
                 entity.Property(e => e.Status)
                     .HasMaxLength(50)
                     .HasColumnName("status");
+
+                entity.Property(e => e.StorePrice)
+                    .HasColumnType("decimal(15, 4)")
+                    .HasColumnName("store_price");
 
                 entity.HasOne(d => d.Request)
                     .WithMany(p => p.Negotiations)
@@ -478,8 +403,6 @@ namespace Core.Models
 
                 entity.Property(e => e.NotificationId).HasColumnName("notification_id");
 
-                entity.Property(e => e.BookingId).HasColumnName("booking_id");
-
                 entity.Property(e => e.Content)
                     .HasMaxLength(200)
                     .HasColumnName("content");
@@ -487,6 +410,8 @@ namespace Core.Models
                 entity.Property(e => e.IsRead).HasColumnName("is_read");
 
                 entity.Property(e => e.NotificationTypeId).HasColumnName("notification_type_id");
+
+                entity.Property(e => e.RequestId).HasColumnName("request_id");
 
                 entity.Property(e => e.Time)
                     .HasColumnType("datetime")
@@ -498,16 +423,16 @@ namespace Core.Models
 
                 entity.Property(e => e.UserId).HasColumnName("user_id");
 
-                entity.HasOne(d => d.Booking)
-                    .WithMany(p => p.Notifications)
-                    .HasForeignKey(d => d.BookingId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Notification_Booking");
-
                 entity.HasOne(d => d.NotificationType)
                     .WithMany(p => p.Notifications)
                     .HasForeignKey(d => d.NotificationTypeId)
                     .HasConstraintName("FK_Notification_NotificationType");
+
+                entity.HasOne(d => d.Request)
+                    .WithMany(p => p.Notifications)
+                    .HasForeignKey(d => d.RequestId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Notification_Request");
             });
 
             modelBuilder.Entity<NotificationType>(entity =>
@@ -515,8 +440,6 @@ namespace Core.Models
                 entity.ToTable("NotificationType");
 
                 entity.Property(e => e.NotificationTypeId).HasColumnName("notification_type_id");
-
-                entity.Property(e => e.Status).HasColumnName("status");
 
                 entity.Property(e => e.Title)
                     .HasMaxLength(50)
