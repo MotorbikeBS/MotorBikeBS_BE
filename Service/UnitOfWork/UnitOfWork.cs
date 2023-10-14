@@ -21,6 +21,7 @@ namespace Service.UnitOfWork
 		public IStoreImageService StoreImageService { get; private set; } = null!;
 		public IWishListService WishListService { get; private set; } = null!;
 		public IBookingService BookingService { get; private set; } = null!;
+        public INegotiationService NegotiationService { get; private set; } = null!;
 
 
 		private readonly MotorbikeDBContext _context;
@@ -48,6 +49,7 @@ namespace Service.UnitOfWork
 			StoreImageService = new StoreImageRepository(_context, this);
             WishListService = new WishListRepository(_context, this);
             BookingService = new BookingRepository(_context, this);
+            NegotiationService = new NegotiationRepository(_context, this);
 		}
     }
 }

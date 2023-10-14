@@ -1,5 +1,6 @@
 ﻿using API.DTO.BookingDTO;
 using API.DTO.MotorbikeDTO;
+using API.DTO.NegotiationDTO;
 using API.DTO.OwnerDTO;
 using API.DTO.RequestDTO;
 using API.DTO.Role;
@@ -32,6 +33,9 @@ namespace API.AutoMapper
 
 				config.CreateMap<Role, RoleResponseDTO>().ReverseMap();
 				config.CreateMap<StoreDesciption, StoreDescriptionResponseDTO>().ReverseMap();
+
+				config.CreateMap<Negotiation, NegotiationCreateDTO>().ReverseMap();
+				config.CreateMap<Negotiation, NegotiationResponseDTO>().ReverseMap();
 
 				config.CreateMap<Booking, BookingCreateDTO>().ReverseMap();
 				config.CreateMap<Booking, BookingResponseDTO>().ReverseMap();
@@ -66,6 +70,9 @@ namespace API.AutoMapper
 				config.CreateMap<RequestType, Type_RequestRegisterDTO>().ReverseMap();
 				config.CreateMap<Request, BookingResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
 																				   .ForSourceMember(source => source.Sender, opt => opt.DoNotValidate());
+				config.CreateMap<Request, NegotiationResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
+																				   .ForSourceMember(source => source.Sender, opt => opt.DoNotValidate());
+
 				config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
 				config.CreateMap<Request, RequestResponseDTO>().ReverseMap()
 					.ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver))
