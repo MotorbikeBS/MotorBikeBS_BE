@@ -12,6 +12,7 @@ namespace Service.UnitOfWork
         public IMotorTypeService MotorTypeService { get; }
         public IRequestService RequestService { get; }
         public IRequestTypeService RequestTypeService { get; }
+        public IBillService BillService { get; }
         public IUserService UserService { get; }
         public IRoleService RoleService { get; }
         public IStoreDescriptionService StoreDescriptionService { get; }
