@@ -255,7 +255,7 @@ namespace API.Controllers
             try
             {
                 var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
-                var results = await _unitOfWork.MotorBikeService.Get();
+                IEnumerable<Motorbike>? results;
                 switch (roleId)
                 {
                     case SD.Role_Customer_Id:
@@ -277,7 +277,8 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    return Ok(listResponse);
+                    _response.Result = listResponse;
+                    return Ok(_response);
                 }
                 else
                 {
@@ -296,9 +297,9 @@ namespace API.Controllers
             }
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("filter")]
-        public async Task<IActionResult> FilterMotorbikes([FromQuery] MotorFilterDTO filter)
+        public async Task<IActionResult> FilterMotorbikes([FromForm] MotorFilterDTO filter)
         {
             try
             {
@@ -342,10 +343,11 @@ namespace API.Controllers
 
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
                 if (motorbikes != null && motorbikes.Any())
-                {                    
+                {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    return Ok(listResponse);
+                    _response.Result = listResponse;
+                    return Ok(_response);
                 }
                 else
                 {
