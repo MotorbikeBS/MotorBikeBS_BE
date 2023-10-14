@@ -57,8 +57,13 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 
-				var bookingInDb = await _unitOfWork.RequestService.GetFirst(x => x.SenderId == userId);
-				if (bookingInDb != null && bookingInDb.RequestTypeId == SD.Request_Booking_Id && bookingInDb.MotorId == motorId && bookingInDb.Status != SD.Request_Booking_Cancel && bookingInDb.Status != SD.Request_Booking_Reject)
+				IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId 
+				&& x.RequestTypeId == SD.Request_Booking_Id
+				&& x.MotorId == motorId 
+				&& x.Status != SD.Request_Booking_Cancel 
+				&& x.Status != SD.Request_Booking_Reject);
+
+				if (list != null || list.Count() > 0)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn đã đặt lịch cho xe này, vui lòng chờ xác nhận!");
