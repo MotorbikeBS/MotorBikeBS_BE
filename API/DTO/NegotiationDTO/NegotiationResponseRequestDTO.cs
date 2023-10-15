@@ -1,4 +1,5 @@
-﻿using Core.Models;
+﻿using API.DTO.UserDTO;
+using Core.Models;
 
 namespace API.DTO.NegotiationDTO
 {
@@ -14,6 +15,6 @@ namespace API.DTO.NegotiationDTO
 
 		public virtual Motorbike? Motor { get; set; }
 		public virtual ICollection<NegotiationResponseDTO> Negotiations { get; set; }
-		public virtual StoreDesciption? Sender { get; set; }
+		//public virtual UserResponseDTO? Sender { get; set; }
 	}
 }

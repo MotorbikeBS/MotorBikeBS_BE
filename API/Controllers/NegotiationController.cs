@@ -1,5 +1,7 @@
 ﻿using API.DTO;
+using API.DTO.BookingDTO;
 using API.DTO.NegotiationDTO;
+using API.DTO.UserDTO;
 using API.Utility;
 using AutoMapper;
 using Core.Models;
@@ -122,13 +124,13 @@ namespace API.Controllers
 				if (roleId == SD.Role_Owner_Id)
 				{
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
-					&& x.RequestTypeId == SD.Request_Booking_Id, includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.Owner" });
+					&& x.RequestTypeId == SD.Request_Negotiation_Id, includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus"});
 				}
 
 				if (roleId == SD.Role_Store_Id)
 				{
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
-					&& x.RequestTypeId == SD.Request_Booking_Id, includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.Owner" });
+					&& x.RequestTypeId == SD.Request_Negotiation_Id, includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus"});
 				}
 
 				if (requestNegotiation == null)
@@ -139,10 +141,10 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 
-				
+				var negotiationResponse = _mapper.Map<IEnumerable<NegotiationResponseRequestDTO>>(requestNegotiation);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
-				_response.Result = requestNegotiation;
+				_response.Result = negotiationResponse;
 				return Ok(_response);
 			}
 			catch (Exception ex)
