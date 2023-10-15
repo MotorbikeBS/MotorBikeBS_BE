@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Service;
 using Service.UnitOfWork;
+using System.Linq;
 using System.Net;
 
 namespace API.Controllers
@@ -32,7 +33,7 @@ namespace API.Controllers
 		[Authorize(Roles = ("Owner, Store"))]
 		[HttpPost]
 		[Route("StartNegotitaion")]
-		public async Task<IActionResult> StartNegotitaion(int motorId, NegotiationCreateDTO dto)
+		public async Task<IActionResult> StartNegotiation(int motorId, NegotiationCreateDTO dto)
 		{
 			try
 			{
@@ -132,39 +133,28 @@ namespace API.Controllers
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id, includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Receiver" });
 				}
+				var negotiationResponse = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
+				
+				negotiationResponse.ForEach(item =>
+				{
+					item.Negotiations = item.Negotiations.Where(n => n.EndTime == null).ToList();
+				});
 
-				if (requestNegotiation == null)
+				if (negotiationResponse.Any(item => item.Negotiations == null || item.Negotiations.Count == 0))
 				{
 					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Không tìm thấy yêu cầu nào!");
+					_response.ErrorMessages.Add("Hiện tại không có xe nào đang thương lượng!");
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
 
 				if (roleId == SD.Role_Store_Id)
 				{
-					//var response = new List<NegotiationResponseRequestDTO>();
-					//foreach (var rs in requestNegotiation)
-					//{
-					//	var negotiationResponseRequest = _mapper.Map<NegotiationResponseRequestDTO>(rs);
-					//	var owner = await _unitOfWork.UserService.GetFirst(x => x.UserId == rs.ReceiverId);
-					//	var ownerResponse = _mapper.Map<UserResponseDTO>(owner);
-					//	if (owner != null && negotiationResponseRequest != null)
-					//	{
-					//		negotiationResponseRequest.Owner = ownerResponse;
-					//	}
-					//	response.Add(negotiationResponseRequest);
-					//}
-					var response = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
-					response.ForEach(item => item.Motor.Owner = null);
-					response.ForEach(item => item.Motor.Requests = null);
-					_response.IsSuccess = true;
-					_response.StatusCode = HttpStatusCode.OK;
-					_response.Result = response;
-					return Ok(_response);
+					negotiationResponse.ForEach(item => item.Motor.Owner = null);
 				}
-				var negotiationResponse = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
 				negotiationResponse.ForEach(item => item.Motor.Requests = null);
+				
+
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Result = negotiationResponse;
@@ -182,12 +172,25 @@ namespace API.Controllers
 			}
 		}
 
-		//[Authorize(Roles ="Owner, Store")]
-		//[HttpPut("{id:int}")]
+		//[Authorize(Roles = "Owner, Store")]
+		//[HttpPut]
 		//[Route("Bid")]
-		//public async Task<IActionResult>Bid(int id)
+		//public async Task<IActionResult> Bid(int NegotiationId)
 		//{
-		//	return Ok();
+		//	try
+		//	{
+		//		var negotiationInDb = await _unitOfWork.NegotiationService.Get(x => x.NegotiationId == NegotiationId);
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		_response.IsSuccess = false;
+		//		_response.StatusCode = HttpStatusCode.BadRequest;
+		//		_response.ErrorMessages = new List<string>()
+		//				{
+		//					ex.ToString()
+		//				};
+		//		return BadRequest();
+		//	}
 		//}
 	}
 }
