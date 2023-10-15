@@ -16,11 +16,14 @@
 		public const int Status_Livelihood = 5;
 
 		public const int Request_Booking_Id = 6;
+		public const int Request_Negotiation_Id = 8;
 
 		public const string Request_Booking_Pending = "PENDING";
 		public const string Request_Booking_Accept = "ACCEPT";
 		public const string Request_Booking_Reject = "REJECT";
 		public const string Request_Booking_Cancel = "CANCEL";
+
+		public const string Request_Negotiation_Pending = "PENDING";
 
 		public const string not_verify = "NOT VERIFY";
 		public const string active = "ACTIVE";
