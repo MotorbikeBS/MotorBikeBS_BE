@@ -36,7 +36,7 @@ namespace API.Controllers
 		{
 			try
 			{
-				if(dto.StorePrice == null)
+				if (dto.StorePrice == null)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
@@ -58,7 +58,7 @@ namespace API.Controllers
 				&& x.MotorId == motorId
 				&& x.Status == SD.Request_Negotiation_Pending);
 
-				if(list.Count() >0)
+				if (list.Count() > 0)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn đang thương lượng giá cả cho xe này!");
@@ -124,13 +124,13 @@ namespace API.Controllers
 				if (roleId == SD.Role_Owner_Id)
 				{
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
-					&& x.RequestTypeId == SD.Request_Negotiation_Id, includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus"});
+					&& x.RequestTypeId == SD.Request_Negotiation_Id, includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Sender.StoreDesciptions" });
 				}
 
 				if (roleId == SD.Role_Store_Id)
 				{
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
-					&& x.RequestTypeId == SD.Request_Negotiation_Id, includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus"});
+					&& x.RequestTypeId == SD.Request_Negotiation_Id, includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Receiver" });
 				}
 
 				if (requestNegotiation == null)
@@ -141,7 +141,30 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 
-				var negotiationResponse = _mapper.Map<IEnumerable<NegotiationResponseRequestDTO>>(requestNegotiation);
+				if (roleId == SD.Role_Store_Id)
+				{
+					//var response = new List<NegotiationResponseRequestDTO>();
+					//foreach (var rs in requestNegotiation)
+					//{
+					//	var negotiationResponseRequest = _mapper.Map<NegotiationResponseRequestDTO>(rs);
+					//	var owner = await _unitOfWork.UserService.GetFirst(x => x.UserId == rs.ReceiverId);
+					//	var ownerResponse = _mapper.Map<UserResponseDTO>(owner);
+					//	if (owner != null && negotiationResponseRequest != null)
+					//	{
+					//		negotiationResponseRequest.Owner = ownerResponse;
+					//	}
+					//	response.Add(negotiationResponseRequest);
+					//}
+					var response = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
+					response.ForEach(item => item.Motor.Owner = null);
+					response.ForEach(item => item.Motor.Requests = null);
+					_response.IsSuccess = true;
+					_response.StatusCode = HttpStatusCode.OK;
+					_response.Result = response;
+					return Ok(_response);
+				}
+				var negotiationResponse = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
+				negotiationResponse.ForEach(item => item.Motor.Requests = null);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Result = negotiationResponse;
@@ -158,5 +181,13 @@ namespace API.Controllers
 				return BadRequest();
 			}
 		}
+
+		//[Authorize(Roles ="Owner, Store")]
+		//[HttpPut("{id:int}")]
+		//[Route("Bid")]
+		//public async Task<IActionResult>Bid(int id)
+		//{
+		//	return Ok();
+		//}
 	}
 }
