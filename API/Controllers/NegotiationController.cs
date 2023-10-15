@@ -75,13 +75,14 @@ namespace API.Controllers
 						SenderId = userId,
 						Time = DateTime.Now,
 						RequestTypeId = SD.Request_Negotiation_Id,
-						Status = SD.Request_Booking_Pending
+						Status = SD.Request_Negotiation_Pending
 					};
 					await _unitOfWork.RequestService.Add(request);
 
 					var negotiationCreate = _mapper.Map<Negotiation>(dto);
 					negotiationCreate.RequestId = request.RequestId;
 					negotiationCreate.StartTime = DateTime.Now;
+					negotiationCreate.Status = SD.Request_Negotiation_Pending;
 
 					await _unitOfWork.NegotiationService.Add(negotiationCreate);
 
