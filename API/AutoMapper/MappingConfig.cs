@@ -70,9 +70,12 @@ namespace API.AutoMapper
 				config.CreateMap<RequestType, Type_RequestRegisterDTO>().ReverseMap();
 				config.CreateMap<Request, BookingResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
 																				   .ForSourceMember(source => source.Sender, opt => opt.DoNotValidate());
+
 				config.CreateMap<Request, NegotiationResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
-																					   .ForMember(dest => dest.Negotiations, opt => opt.MapFrom(src => src.Negotiations));
-				//.ForMember(source => source.Sender, opt => opt.MapFrom(src => src.Sender));
+																					   .ForMember(dest => dest.Negotiations, opt => opt.MapFrom(src => src.Negotiations))
+																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
+																					   .ForMember(source => source.Receiver, opt => opt.MapFrom(src => src.Receiver));
+
 
 				config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
 				config.CreateMap<Request, RequestResponseDTO>().ReverseMap()
