@@ -94,6 +94,8 @@ namespace Core.Models
 
                 entity.Property(e => e.BookingId).HasColumnName("booking_id");
 
+                entity.Property(e => e.BaseRequestId).HasColumnName("base_request_id");
+
                 entity.Property(e => e.BookingDate)
                     .HasColumnType("datetime")
                     .HasColumnName("booking_date");
@@ -125,6 +127,8 @@ namespace Core.Models
                 entity.ToTable("Contract");
 
                 entity.Property(e => e.ContractId).HasColumnName("contract_id");
+
+                entity.Property(e => e.BaseRequestId).HasColumnName("base_request_id");
 
                 entity.Property(e => e.BookingId).HasColumnName("booking_id");
 
@@ -364,6 +368,8 @@ namespace Core.Models
                 entity.ToTable("Negotiation");
 
                 entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
+
+                entity.Property(e => e.BaseRequestId).HasColumnName("base_request_id");
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)
