@@ -114,6 +114,7 @@ namespace API.Controllers
             try
             {
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == SD.Status_Consignment || e.MotorStatusId == SD.Status_nonConsignment, SD.GetMotorArray);
+                listDatabase = listDatabase.Where(m => m.StoreId != null).ToList();
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 listResponse.ForEach(item => item.Store = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
