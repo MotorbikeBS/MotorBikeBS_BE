@@ -73,7 +73,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
-				if (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_Livelihood)
+				if (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_nonConsignment)
 				{
 					Request request = new()
 					{
