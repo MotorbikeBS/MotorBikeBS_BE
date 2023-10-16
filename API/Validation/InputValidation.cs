@@ -291,9 +291,6 @@ namespace API.Validation
             {
                 return "Giá tiền không hợp lệ!";
             }
-
-            // Add other validation checks for ModelId, Odo, Price, and other properties as needed
-
             return "";
         }
         public static string ValidateTitle<TEntity>(TEntity entity, string entityName = "", int minLength = 4)
