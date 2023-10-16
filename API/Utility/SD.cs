@@ -10,20 +10,20 @@
 		public const int Role_Customer_Id = 4;
 
 		public const int Status_Posting = 1;
-		public const int Status_SaleRequest = 2;
 		public const int Status_Storage = 3;
 		public const int Status_Consignment = 4;
-		public const int Status_Livelihood = 5;
+		public const int Status_nonConsignment = 5;
 
 		public const int Request_Booking_Id = 6;
 		public const int Request_Negotiation_Id = 8;
+        public const int Request_MotorTranfer_Id = 9;
 
-		public const string Request_Booking_Pending = "PENDING";
+        public const string Request_Booking_Pending = "PENDING";
 		public const string Request_Booking_Accept = "ACCEPT";
 		public const string Request_Booking_Reject = "REJECT";
 		public const string Request_Booking_Cancel = "CANCEL";
 
-		public const string Request_Negotiation_Pending = "PENDING";
+		public const string Request_Negotiation_Pending = "PENDING";		
 
 		public const string not_verify = "NOT VERIFY";
 		public const string active = "ACTIVE";

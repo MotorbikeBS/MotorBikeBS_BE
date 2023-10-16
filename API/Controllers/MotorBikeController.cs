@@ -77,7 +77,7 @@ namespace API.Controllers
         {
             try
             {  
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId ==SD.Status_Posting, SD.GetMotorArray);
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId ==SD.Status_Posting || e.MotorStatusId == SD.Status_nonConsignment, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 listResponse.ForEach(item => item.Owner = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
@@ -113,7 +113,7 @@ namespace API.Controllers
         {
             try
             {
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == SD.Status_Consignment || e.MotorStatusId == SD.Status_Livelihood, SD.GetMotorArray);
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == SD.Status_Consignment || e.MotorStatusId == SD.Status_nonConsignment, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 listResponse.ForEach(item => item.Store = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
@@ -266,7 +266,7 @@ namespace API.Controllers
                         break;
                     default:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                        expression: motor => motor.MotorName.Contains(motorName) && (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_Livelihood),
+                        expression: motor => motor.MotorName.Contains(motorName) && (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_nonConsignment),
                         includeProperties: SD.GetMotorArray
                        );
                         break;
@@ -315,7 +315,7 @@ namespace API.Controllers
                         break;
                     default:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                       expression: motor => motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_Livelihood,
+                       expression: motor => motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_nonConsignment,
                        includeProperties: SD.GetMotorArray
                        );
                         break;
@@ -381,8 +381,67 @@ namespace API.Controllers
             }
         }
 
+        [HttpPut]
+        [Authorize(Roles = "Store,Owner")]
+        [Route("UpdateMotor-Owner")]
+        public async Task<IActionResult> Update_MotorOwner(int MotorID, int newUserID)
+        {
+            try
+            {
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == MotorID);
+                if (motor == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    if (userId != motor.StoreId && userId != motor.OwnerId)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
+                        return BadRequest(_response);
+                    }
+                    else
+                    {
+                        Request request = new()
+                        {
+                            MotorId = MotorID,
+                            ReceiverId = motor.OwnerId,
+                            SenderId = newUserID,
+                            Time = DateTime.Now,
+                            RequestTypeId = SD.Request_MotorTranfer_Id,
+                            Status = SD.pending
+                        };
+                        await _unitOfWork.RequestService.Add(request);
 
+                        motor.OwnerId = newUserID;
+                        motor.StoreId = null;
+                        motor.MotorStatusId = SD.Status_Storage;
 
+                        await _unitOfWork.MotorBikeService.Update(motor);
+                        _response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.Result = motor;
+                    }
+                    return Ok(_response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
 
         [HttpPut]
         [Authorize(Roles = "Store,Owner")]
