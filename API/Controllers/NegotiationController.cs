@@ -403,7 +403,13 @@ namespace API.Controllers
 					}
 					negotiationInDb.FinalPrice = negotiationInDb.OwnerPrice;
 				}
+
+				negotiationInDb.Status = SD.Request_Cancel;
 				await _unitOfWork.NegotiationService.Update(negotiationInDb);
+				
+				baseRequest.Status = SD.Request_Cancel;
+				await _unitOfWork.RequestService.Update(baseRequest);
+
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Message = ("Bạn đã hủy yêu cầu thành công!");
