@@ -42,18 +42,18 @@ namespace Core.Models
         public virtual DbSet<Ward> Wards { get; set; } = null!;
         public virtual DbSet<Wishlist> Wishlists { get; set; } = null!;
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            var d = Directory.GetCurrentDirectory();
-            IConfigurationRoot configuration = builder.Build();
-            string connectionString = configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseSqlServer(connectionString);
-        }
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+			var d = Directory.GetCurrentDirectory();
+			IConfigurationRoot configuration = builder.Build();
+			string connectionString = configuration.GetConnectionString("DefaultConnection");
+			optionsBuilder.UseSqlServer(connectionString);
+		}
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -372,6 +372,10 @@ namespace Core.Models
                 entity.Property(e => e.EndTime)
                     .HasColumnType("datetime")
                     .HasColumnName("end_time");
+
+                entity.Property(e => e.FinalPrice)
+                    .HasColumnType("decimal(15, 4)")
+                    .HasColumnName("final_price");
 
                 entity.Property(e => e.OwnerPrice)
                     .HasColumnType("decimal(15, 4)")

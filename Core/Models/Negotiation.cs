@@ -18,6 +18,7 @@ namespace Core.Models
         public DateTime? EndTime { get; set; }
         public string? Description { get; set; }
         public string? Status { get; set; }
+        public decimal? FinalPrice { get; set; }
 
         public virtual Request Request { get; set; } = null!;
         public virtual ICollection<Booking> Bookings { get; set; }
