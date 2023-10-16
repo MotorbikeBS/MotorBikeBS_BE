@@ -17,6 +17,7 @@ namespace Core.Models
         public DateTime? BookingDate { get; set; }
         public string? Note { get; set; }
         public string? Status { get; set; }
+        public int? BaseRequestId { get; set; }
 
         public virtual Negotiation? Negotiation { get; set; }
         public virtual ICollection<Contract> Contracts { get; set; }

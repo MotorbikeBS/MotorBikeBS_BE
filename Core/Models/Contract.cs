@@ -19,6 +19,7 @@ namespace Core.Models
         public DateTime? CreatedAt { get; set; }
         public string? Status { get; set; }
         public int? BookingId { get; set; }
+        public int? BaseRequestId { get; set; }
 
         public virtual Booking? Booking { get; set; }
         public virtual ICollection<ContractImage> ContractImages { get; set; }
