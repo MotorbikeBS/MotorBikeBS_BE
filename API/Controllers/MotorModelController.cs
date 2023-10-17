@@ -99,7 +99,7 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Store,Owner")]
+        [Authorize(Roles = "Store,Owner,Admin")]
         public async Task<IActionResult> UpdateModel([FromQuery] int id, ModelRegisterDTO model)
         {
             try
@@ -122,8 +122,9 @@ namespace API.Controllers
                 }
                 else
                 {
-                    var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
                     _mapper.Map(model, obj);
+                    var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                    InputValidation.StatusIfAdmin(model, roleId);
                     await _unitOfWork.MotorModelService.Update(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
@@ -144,7 +145,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Store,Owner")]
+        [Authorize(Roles = "Store,Owner,Admin")]
         [Route("ModelRegister")]
         public async Task<IActionResult> ModelRegister(int brandID, ModelRegisterDTO model)
         {
