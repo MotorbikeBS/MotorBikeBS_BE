@@ -76,8 +76,11 @@ namespace API.Controllers
         public async Task<IActionResult> GetAllOnExchange()
         {
             try
-            {  
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId ==SD.Status_Posting || e.MotorStatusId == SD.Status_nonConsignment, SD.GetMotorArray);
+            {
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e =>
+                    (e.MotorStatusId == SD.Status_Posting || (e.MotorStatusId == SD.Status_nonConsignment && e.StoreId != null)),
+                    SD.GetMotorArray
+                );
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 listResponse.ForEach(item => item.Owner = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
@@ -113,8 +116,7 @@ namespace API.Controllers
         {
             try
             {
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == SD.Status_Consignment || e.MotorStatusId == SD.Status_nonConsignment, SD.GetMotorArray);
-                listDatabase = listDatabase.Where(m => m.StoreId != null).ToList();
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == SD.Status_Posting || e.MotorStatusId == SD.Status_nonConsignment, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 listResponse.ForEach(item => item.Store = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
