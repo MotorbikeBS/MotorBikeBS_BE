@@ -116,7 +116,10 @@ namespace API.Controllers
         {
             try
             {
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == SD.Status_Posting || e.MotorStatusId == SD.Status_nonConsignment, SD.GetMotorArray);
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(
+                    expression: e => e.MotorStatusId == SD.Status_Consignment || (e.MotorStatusId == SD.Status_nonConsignment && e.StoreId == null),
+                    includeProperties: SD.GetMotorArray
+                );
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 listResponse.ForEach(item => item.Store = null);
                 if (listDatabase == null || listDatabase.Count() <= 0)
@@ -263,13 +266,15 @@ namespace API.Controllers
                 {
                     case SD.Role_Customer_Id:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                        expression: motor => motor.MotorName.Contains(motorName) && motor.MotorStatusId == SD.Status_Posting,
+                        expression: motor => motor.MotorName.Contains(motorName) &&
+                            (motor.MotorStatusId == SD.Status_Posting || ( motor.MotorStatusId == SD.Status_nonConsignment && motor.StoreId != null)),
                         includeProperties: SD.GetMotorArray
                         );
                         break;
                     default:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                        expression: motor => motor.MotorName.Contains(motorName) && (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_nonConsignment),
+                        expression: motor => motor.MotorName.Contains(motorName) && 
+                            (motor.MotorStatusId == SD.Status_Consignment || (motor.MotorStatusId == SD.Status_nonConsignment && motor.StoreId == null)),
                         includeProperties: SD.GetMotorArray
                        );
                         break;
@@ -312,14 +317,14 @@ namespace API.Controllers
                 {
                     case SD.Role_Customer_Id:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                        expression: motor => motor.MotorStatusId == SD.Status_Posting,
+                        expression: motor => motor.MotorStatusId == SD.Status_Posting || (motor.MotorStatusId == SD.Status_nonConsignment && motor.StoreId != null),
                         includeProperties: SD.GetMotorArray
                         );
                         break;
                     default:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                       expression: motor => motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_nonConsignment,
-                       includeProperties: SD.GetMotorArray
+                        expression: motor => motor.MotorStatusId == SD.Status_Consignment || (motor.MotorStatusId == SD.Status_nonConsignment && motor.StoreId == null),
+                        includeProperties: SD.GetMotorArray
                        );
                         break;
                 }
