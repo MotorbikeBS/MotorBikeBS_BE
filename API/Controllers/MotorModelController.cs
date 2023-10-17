@@ -70,7 +70,7 @@ namespace API.Controllers
             try
             {
                 var obj = await _unitOfWork.MotorModelService.GetFirst(e => e.ModelId == id, includeProperties: "Brand");
-                var objResponse = _mapper.Map<List<ModelResponseDTO>>(obj);
+                var objResponse = _mapper.Map<ModelResponseDTO>(obj);
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tồn tại mãu này!");
@@ -132,7 +132,7 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Store,Owner,Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateModel([FromQuery] int id, ModelRegisterDTO model)
         {
             try

@@ -3,6 +3,7 @@ using API.Utility;
 using Core.Models;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
@@ -295,7 +296,7 @@ namespace API.Validation
         }
         public static string ValidateTitle<TEntity>(TEntity entity, string entityName = "", int minLength = 4)
         {
-            PropertyInfo titleProperty = entity.GetType().GetProperty("Title") ?? entity.GetType().GetProperty("BrandName");
+            PropertyInfo titleProperty = entity.GetType().GetProperty("Title") ?? entity.GetType().GetProperty("BrandName") ?? entity.GetType().GetProperty("ModelName");
 
             if (titleProperty == null)
             {
@@ -323,7 +324,7 @@ namespace API.Validation
         public static void StatusIfAdmin<TEntity>(TEntity entity, int roleid)
         {
             PropertyInfo statusProperty = entity.GetType().GetProperty("Status");
-
+            string statusValue = (string)statusProperty.GetValue(entity);
             if (statusProperty == null)
             {
                 throw new ArgumentException("The 'Status' property does not exist on the entity.");
@@ -331,7 +332,7 @@ namespace API.Validation
             switch (roleid)
             {
 				case SD.Role_Admin_Id:
-					statusProperty.SetValue(entity, SD.active);
+					statusProperty.SetValue(entity, statusValue);
 					break;
 				default:
                     statusProperty.SetValue(entity, SD.pending);
