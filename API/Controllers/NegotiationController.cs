@@ -376,7 +376,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
-				var baseRequest = await _unitOfWork.RequestService.GetFirst();
+				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.BaseRequestId);
 				if (negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
@@ -449,7 +449,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
-				var baseRequest = await _unitOfWork.RequestService.GetFirst();
+				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.BaseRequestId);
 				if (negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
