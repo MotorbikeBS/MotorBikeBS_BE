@@ -95,6 +95,38 @@ namespace API.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet("search-BrandName")]
+        public async Task<IActionResult> SearchByBrandName(string brandName)
+        {
+            try
+            {
+
+                var obj = await _unitOfWork.MotorBrandService.Get(expression: m => m.BrandName.Contains(brandName));
+                if (obj != null && obj.Any())
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = obj;
+                    return Ok(_response);
+                }
+                else
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy hãng nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
+            }
+        }
+
         [HttpPut]
         [Authorize(Roles = "Store,Owner,Admin")]
         public async Task<IActionResult> UpdateBrand([FromQuery] int id, BrandRegisterDTO Brand)
