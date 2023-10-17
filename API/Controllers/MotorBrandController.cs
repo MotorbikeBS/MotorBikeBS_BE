@@ -128,7 +128,7 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Store,Owner,Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateBrand([FromQuery] int id, BrandRegisterDTO Brand)
         {
             try
