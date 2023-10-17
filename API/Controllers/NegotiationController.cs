@@ -121,6 +121,84 @@ namespace API.Controllers
 			}
 		}
 
+		[Authorize(Roles = ("Store"))]
+		[HttpPost]
+		[Route("AcceptDefaultPrice")]
+		public async Task<IActionResult> AcceptDefaultPrice(int motorId)
+		{
+			try
+			{
+				var userId = int.Parse(User.FindFirst("UserId")?.Value);
+				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == motorId);
+				if (motor == null)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không tìm thấy xe máy!");
+					_response.StatusCode = HttpStatusCode.NotFound;
+					return NotFound(_response);
+				}
+
+				IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+				&& x.RequestTypeId == SD.Request_Negotiation_Id
+				&& x.MotorId == motorId
+				&& x.Status == SD.Request_Pending);
+
+				if (list.Count() > 0)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Bạn đang trong quá trình làm việc cho xe này!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
+				if (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_nonConsignment)
+				{
+					Request request = new()
+					{
+						MotorId = motorId,
+						ReceiverId = motor.OwnerId,
+						SenderId = userId,
+						Time = DateTime.Now,
+						RequestTypeId = SD.Request_Negotiation_Id,
+						Status = SD.Request_Pending
+					};
+					await _unitOfWork.RequestService.Add(request);
+
+					var negotiationCreate = new Negotiation()
+					{
+						RequestId = request.RequestId,
+						StartTime = DateTime.Now,
+						Status = SD.Request_Pending,
+						BaseRequestId = request.RequestId,
+						FinalPrice = motor.Price
+					};
+
+					await _unitOfWork.NegotiationService.Add(negotiationCreate);
+
+					_response.IsSuccess = true;
+					_response.Message = "Thành công, vui lòng đặt lịch cho chủ xe!";
+					_response.StatusCode = HttpStatusCode.OK;
+					return Ok(_response);
+				}
+				else
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Bạn không thể thương lượng xe này!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
+			}
+			catch (Exception ex)
+			{
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+				{
+					ex.ToString()
+				};
+				return BadRequest();
+			}
+		}
+
 		[Authorize(Roles = "Store, Owner")]
 		[HttpGet]
 		[Route("GetNegotiationRequest")]
@@ -138,7 +216,7 @@ namespace API.Controllers
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
 					&& x.Status == SD.Request_Pending,
-					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Sender.StoreDesciptions" });
+					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
 				}
 
 				if (roleId == SD.Role_Store_Id)
@@ -146,7 +224,7 @@ namespace API.Controllers
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
 					&& x.Status == SD.Request_Pending,
-					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Receiver" });
+					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver" });
 				}
 				var negotiationResponse = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
 
@@ -198,8 +276,8 @@ namespace API.Controllers
 
 		[Authorize(Roles = "Owner, Store")]
 		[HttpPut]
-		[Route("Bid")]
-		public async Task<IActionResult> Bid(int NegotiationId, NegotiationUpdateDTO dto)
+		[Route("ChangePrice")]
+		public async Task<IActionResult> ChangePrice(int NegotiationId, NegotiationUpdateDTO dto)
 		{
 			try
 			{
@@ -216,14 +294,14 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.BaseRequestId);
-				if(negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
+				if (negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Không thể thương lượng, quá trình này đã kết thúc!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
-				
+
 				if (dto.Price == null)
 				{
 					_response.IsSuccess = false;
@@ -250,7 +328,6 @@ namespace API.Controllers
 						return BadRequest(_response);
 					}
 					negotiationInDb.OwnerPrice = dto.Price;
-					negotiationInDb.Description = dto.Description;
 				}
 				else if (roleId == SD.Role_Store_Id)
 				{
@@ -262,7 +339,6 @@ namespace API.Controllers
 						return BadRequest(_response);
 					}
 					negotiationInDb.StorePrice = dto.Price;
-					negotiationInDb.Description = dto.Description;
 				}
 				await _unitOfWork.NegotiationService.Update(negotiationInDb);
 				_response.IsSuccess = true;
@@ -406,7 +482,7 @@ namespace API.Controllers
 
 				negotiationInDb.Status = SD.Request_Cancel;
 				await _unitOfWork.NegotiationService.Update(negotiationInDb);
-				
+
 				baseRequest.Status = SD.Request_Cancel;
 				await _unitOfWork.RequestService.Update(baseRequest);
 
