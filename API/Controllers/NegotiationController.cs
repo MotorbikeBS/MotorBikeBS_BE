@@ -138,7 +138,7 @@ namespace API.Controllers
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
 					&& x.Status == SD.Request_Pending,
-					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Sender.StoreDesciptions" });
+					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
 				}
 
 				if (roleId == SD.Role_Store_Id)
@@ -146,7 +146,7 @@ namespace API.Controllers
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
 					&& x.Status == SD.Request_Pending,
-					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Receiver" });
+					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver" });
 				}
 				var negotiationResponse = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
 
@@ -198,8 +198,8 @@ namespace API.Controllers
 
 		[Authorize(Roles = "Owner, Store")]
 		[HttpPut]
-		[Route("Bid")]
-		public async Task<IActionResult> Bid(int NegotiationId, NegotiationUpdateDTO dto)
+		[Route("ChangePrice")]
+		public async Task<IActionResult> ChangePrice(int NegotiationId, NegotiationUpdateDTO dto)
 		{
 			try
 			{
