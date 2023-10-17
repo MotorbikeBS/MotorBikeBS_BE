@@ -167,7 +167,7 @@ namespace API.Controllers
 					{
 						RequestId = request.RequestId,
 						StartTime = DateTime.Now,
-						Status = SD.Request_Pending,
+						Status = SD.Request_Accept,
 						BaseRequestId = request.RequestId,
 						FinalPrice = motor.Price
 					};
@@ -453,7 +453,7 @@ namespace API.Controllers
 				if (negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Không thể đồng ý yêu cầu, quá trình này đã kết thúc!");
+					_response.ErrorMessages.Add("Không thể từ chối yêu cầu, quá trình này đã kết thúc!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
