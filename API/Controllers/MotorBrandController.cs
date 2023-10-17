@@ -96,7 +96,7 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Store,Owner")]
+        [Authorize(Roles = "Store,Owner,Admin")]
         public async Task<IActionResult> UpdateBrand([FromQuery] int id, BrandRegisterDTO Brand)
         {
             try
@@ -120,6 +120,8 @@ namespace API.Controllers
                 else
                 {
                     _mapper.Map(Brand, obj);
+                    var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                    InputValidation.StatusIfAdmin(Brand, roleId);
                     await _unitOfWork.MotorBrandService.Update(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
