@@ -71,7 +71,24 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 				var duplicateBooking = await _unitOfWork.BookingService.Get(x => x.BaseRequestId == negotiationInDb.BaseRequestId);
-				return Ok();
+				if(duplicateBooking.Count() >1)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Bạn đã đặt lịch cho xe này!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
+				var newBooking = _mapper.Map<Booking>(dto);
+				newBooking.DateCreate = DateTime.Now;
+				newBooking.BaseRequestId = negotiationInDb.BaseRequestId;
+				newBooking.NegotiationId = negotiationId;
+				newBooking.Status = SD.Request_Pending;
+
+				await _unitOfWork.BookingService.Add(newBooking);
+				_response.IsSuccess = true;
+				_response.StatusCode = HttpStatusCode.OK;
+				_response.Message = ("Đặt lịch thành công, vui lòng chờ người bán duyệt!");
+				return Ok(_response);
 			}
 			catch (Exception ex)
 			{
