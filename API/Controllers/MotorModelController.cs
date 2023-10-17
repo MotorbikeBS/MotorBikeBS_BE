@@ -98,6 +98,39 @@ namespace API.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet("search-ModelName")]
+        public async Task<IActionResult> SearchByModelName(string modelName)
+        {
+            try
+            {
+
+                var obj = await _unitOfWork.MotorModelService.Get(expression: m => m.ModelName.Contains(modelName), includeProperties: "Brand");
+                var objResponse = _mapper.Map<List<ModelResponseDTO>>(obj);
+                if (obj != null && obj.Any())
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = objResponse;
+                    return Ok(_response);
+                }
+                else
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy mẫu nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
+            }
+        }
+
         [HttpPut]
         [Authorize(Roles = "Store,Owner,Admin")]
         public async Task<IActionResult> UpdateModel([FromQuery] int id, ModelRegisterDTO model)
