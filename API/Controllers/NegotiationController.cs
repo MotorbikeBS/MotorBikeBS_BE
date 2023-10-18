@@ -226,7 +226,7 @@ namespace API.Controllers
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
 					&& x.Status == SD.Request_Pending,
-					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver" });
+					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Receiver" });
 				}
 				var negotiationResponse = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
 
@@ -257,6 +257,7 @@ namespace API.Controllers
 				}
 				negotiationResponse.ForEach(item => item.Motor.Requests = null);
 				negotiationResponse.ForEach(item => item.Motor.MotorStatus.Motorbikes = null);
+				negotiationResponse.ForEach(item => item.Motor.MotorType.Motorbikes = null);
 
 
 				_response.IsSuccess = true;
