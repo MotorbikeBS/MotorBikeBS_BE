@@ -19,6 +19,7 @@ namespace Core.Models
 
         public virtual DbSet<BillConfirm> BillConfirms { get; set; } = null!;
         public virtual DbSet<Booking> Bookings { get; set; } = null!;
+        public virtual DbSet<BuyerBooking> BuyerBookings { get; set; } = null!;
         public virtual DbSet<Contract> Contracts { get; set; } = null!;
         public virtual DbSet<ContractImage> ContractImages { get; set; } = null!;
         public virtual DbSet<Motorbike> Motorbikes { get; set; } = null!;
@@ -120,6 +121,41 @@ namespace Core.Models
                     .WithMany(p => p.Bookings)
                     .HasForeignKey(d => d.NegotiationId)
                     .HasConstraintName("FK_Booking_Negotiation");
+            });
+
+            modelBuilder.Entity<BuyerBooking>(entity =>
+            {
+                entity.HasKey(e => e.BookingId);
+
+                entity.ToTable("BuyerBooking");
+
+                entity.Property(e => e.BookingId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("booking_id");
+
+                entity.Property(e => e.BookingDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("booking_date");
+
+                entity.Property(e => e.DateCreate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("date_create");
+
+                entity.Property(e => e.Note)
+                    .HasMaxLength(100)
+                    .HasColumnName("note");
+
+                entity.Property(e => e.RequestId).HasColumnName("request_id");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(10)
+                    .HasColumnName("status");
+
+                entity.HasOne(d => d.Request)
+                    .WithMany(p => p.BuyerBookings)
+                    .HasForeignKey(d => d.RequestId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_BuyerBooking_Request");
             });
 
             modelBuilder.Entity<Contract>(entity =>
