@@ -20,6 +20,8 @@ namespace Core.Models
         public string? Status { get; set; }
         public decimal? FinalPrice { get; set; }
         public int? BaseRequestId { get; set; }
+        public DateTime? ExpiredTime { get; set; }
+        public int? LastChangeUserId { get; set; }
 
         public virtual Request Request { get; set; } = null!;
         public virtual ICollection<Booking> Bookings { get; set; }
