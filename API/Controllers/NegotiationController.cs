@@ -91,9 +91,10 @@ namespace API.Controllers
 					var negotiationCreate = _mapper.Map<Negotiation>(dto);
 					negotiationCreate.RequestId = request.RequestId;
 					negotiationCreate.StartTime = DateTime.Now;
-					negotiationCreate.EndTime = DateTime.Now.AddDays(3);
+					negotiationCreate.ExpiredTime = DateTime.Now.AddDays(3);
 					negotiationCreate.Status = SD.Request_Pending;
 					negotiationCreate.BaseRequestId = request.RequestId;
+					negotiationCreate.LastChangeUserId = userId;
 
 					await _unitOfWork.NegotiationService.Add(negotiationCreate);
 
@@ -302,7 +303,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
-				if(negotiationInDb.EndTime < DateTime.Now)
+				if(negotiationInDb.ExpiredTime < DateTime.Now)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Không thể thương lượng, đã quá thời gian thương lượng, vui lòng hủy yêu cầu!");
@@ -334,6 +335,13 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						return BadRequest(_response);
 					}
+					if(userId == negotiationInDb.LastChangeUserId)
+					{
+						_response.IsSuccess = false;
+						_response.ErrorMessages.Add("Kết quả trả giá trước đó chưa được phản hồi ! Vui lòng đợi phản hồi trước khi thực hiện trả giá kế tiếp!");
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						return BadRequest(_response);
+					}
 					negotiationInDb.OwnerPrice = dto.Price;
 				}
 				else if (roleId == SD.Role_Store_Id)
@@ -342,6 +350,13 @@ namespace API.Controllers
 					{
 						_response.IsSuccess = false;
 						_response.ErrorMessages.Add("Bạn không có quyền này!");
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						return BadRequest(_response);
+					}
+					if (userId == negotiationInDb.LastChangeUserId)
+					{
+						_response.IsSuccess = false;
+						_response.ErrorMessages.Add("Kết quả trả giá trước đó chưa được phản hồi ! Vui lòng đợi phản hồi trước khi thực hiện trả giá kế tiếp!");
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						return BadRequest(_response);
 					}
@@ -391,7 +406,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
-				if (negotiationInDb.EndTime < DateTime.Now)
+				if (negotiationInDb.ExpiredTime < DateTime.Now)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Không thể đồng ý, đã quá thời gian thương lượng, vui lòng hủy yêu cầu!");
@@ -428,6 +443,7 @@ namespace API.Controllers
 					negotiationInDb.FinalPrice = negotiationInDb.StorePrice;
 				}
 				negotiationInDb.Status = SD.Request_Accept;
+				negotiationInDb.EndTime = DateTime.Now;
 				await _unitOfWork.NegotiationService.Update(negotiationInDb);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
@@ -502,6 +518,7 @@ namespace API.Controllers
 				}
 
 				negotiationInDb.Status = SD.Request_Cancel;
+				negotiationInDb.EndTime = DateTime.Now;
 				await _unitOfWork.NegotiationService.Update(negotiationInDb);
 
 				baseRequest.Status = SD.Request_Cancel;
