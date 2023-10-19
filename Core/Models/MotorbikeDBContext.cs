@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 namespace Core.Models
 {
@@ -379,9 +378,15 @@ namespace Core.Models
                     .HasColumnType("datetime")
                     .HasColumnName("end_time");
 
+                entity.Property(e => e.ExpiredTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("expired_time");
+
                 entity.Property(e => e.FinalPrice)
                     .HasColumnType("decimal(15, 4)")
                     .HasColumnName("final_price");
+
+                entity.Property(e => e.LastChangeUserId).HasColumnName("last_change_user_id");
 
                 entity.Property(e => e.OwnerPrice)
                     .HasColumnType("decimal(15, 4)")
