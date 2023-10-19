@@ -10,5 +10,6 @@
 		public DateTime? EndTime { get; set; }
 		public string? Description { get; set; }
 		public string? Status { get; set; }
+		public decimal? FinalPrice { get; set; }
 	}
 }

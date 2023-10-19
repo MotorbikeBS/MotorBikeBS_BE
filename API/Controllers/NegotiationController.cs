@@ -91,6 +91,7 @@ namespace API.Controllers
 					var negotiationCreate = _mapper.Map<Negotiation>(dto);
 					negotiationCreate.RequestId = request.RequestId;
 					negotiationCreate.StartTime = DateTime.Now;
+					negotiationCreate.EndTime = DateTime.Now.AddDays(3);
 					negotiationCreate.Status = SD.Request_Pending;
 					negotiationCreate.BaseRequestId = request.RequestId;
 
@@ -146,7 +147,7 @@ namespace API.Controllers
 				if (list.Count() > 0)
 				{
 					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Bạn đang trong quá trình làm việc cho xe này!");
+					_response.ErrorMessages.Add(" Bạn đã xác nhận mua với giá mặc định. Vui lòng thể tiến hành đặt lịch.!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
@@ -167,7 +168,8 @@ namespace API.Controllers
 					{
 						RequestId = request.RequestId,
 						StartTime = DateTime.Now,
-						Status = SD.Request_Pending,
+						EndTime = DateTime.Now,
+						Status = SD.Request_Accept,
 						BaseRequestId = request.RequestId,
 						FinalPrice = motor.Price
 					};
@@ -216,7 +218,7 @@ namespace API.Controllers
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
 					&& x.Status == SD.Request_Pending,
-					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
+					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
 				}
 
 				if (roleId == SD.Role_Store_Id)
@@ -224,7 +226,7 @@ namespace API.Controllers
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
 					&& x.Status == SD.Request_Pending,
-					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver" });
+					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Receiver" });
 				}
 				var negotiationResponse = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
 
@@ -255,6 +257,7 @@ namespace API.Controllers
 				}
 				negotiationResponse.ForEach(item => item.Motor.Requests = null);
 				negotiationResponse.ForEach(item => item.Motor.MotorStatus.Motorbikes = null);
+				negotiationResponse.ForEach(item => item.Motor.MotorType.Motorbikes = null);
 
 
 				_response.IsSuccess = true;
@@ -281,8 +284,6 @@ namespace API.Controllers
 		{
 			try
 			{
-
-
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
 				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
 				var negotiationInDb = await _unitOfWork.NegotiationService.GetFirst(x => x.NegotiationId == NegotiationId);
@@ -301,7 +302,13 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
-
+				if(negotiationInDb.EndTime < DateTime.Now)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không thể thương lượng, đã quá thời gian thương lượng, vui lòng hủy yêu cầu!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
 				if (dto.Price == null)
 				{
 					_response.IsSuccess = false;
@@ -376,11 +383,18 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
-				var baseRequest = await _unitOfWork.RequestService.GetFirst();
+				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.BaseRequestId);
 				if (negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Không thể đồng ý yêu cầu, quá trình này đã kết thúc!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
+				if (negotiationInDb.EndTime < DateTime.Now)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không thể đồng ý, đã quá thời gian thương lượng, vui lòng hủy yêu cầu!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
@@ -449,11 +463,18 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
-				var baseRequest = await _unitOfWork.RequestService.GetFirst();
+				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.BaseRequestId);
 				if (negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Không thể đồng ý yêu cầu, quá trình này đã kết thúc!");
+					_response.ErrorMessages.Add("Không thể từ chối yêu cầu, quá trình này đã kết thúc!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
+				if (negotiationInDb.EndTime < DateTime.Now)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Không thể từ chối, đã quá thời gian thương lượng, vui lòng hủy yêu cầu!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
