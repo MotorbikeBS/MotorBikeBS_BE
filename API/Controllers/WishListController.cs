@@ -70,7 +70,14 @@ namespace API.Controllers
 			try
 			{
 				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == motorId);
-				if (motor == null || motor.MotorStatusId != SD.Status_Posting || motor.MotorStatusId != SD.Status_nonConsignment)
+				if (motor == null)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy xe máy!");
+					return NotFound(_response);
+				}
+				if (motor.MotorStatusId != SD.Status_Posting && motor.MotorStatusId != SD.Status_nonConsignment)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
