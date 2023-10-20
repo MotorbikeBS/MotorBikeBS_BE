@@ -1,5 +1,6 @@
 ﻿using API.DTO.UserDTO;
 using Core.Models;
+using System.Data;
 
 namespace API.DTO.MotorbikeDTO
 {
@@ -20,5 +21,6 @@ namespace API.DTO.MotorbikeDTO
         public virtual StoreRegisterDTO? Store { get; set; }
         public virtual UserResponseDTO? Owner { get; set; }
         public virtual ICollection<ImageResponseDTO> MotorbikeImages { get; set; }
+        public DateTime? PostingAt { get; set; }
     }
 }

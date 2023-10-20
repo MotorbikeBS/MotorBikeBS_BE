@@ -35,41 +35,40 @@ namespace API.Controllers
             _blobService = blobService;
         }
 
-       
-        [HttpGet("GetAllWithSpecificStatus")]
-        [Authorize(Roles = "Store,Owner")]
-        public async Task<IActionResult> GetAllWithSpecificStatus(int StatusID )
-        {
-            try
-            {
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == StatusID, SD.GetMotorArray);
-                var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
-                if (listDatabase == null || listDatabase.Count() <= 0)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    return NotFound(_response);
-                }
-                else
-                {
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = listResponse;
-                }
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessages = new List<string>()
-                {
-                    ex.ToString()
-                };
-                return BadRequest(_response);
-            }
-        }
+        //[HttpGet("GetAllWithSpecificStatus")]
+        //[Authorize(Roles = "Store,Owner")]
+        //public async Task<IActionResult> GetAllWithSpecificStatus(int StatusID )
+        //{
+        //    try
+        //    {
+        //        var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId == StatusID, SD.GetMotorArray);
+        //        var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+        //        if (listDatabase == null || listDatabase.Count() <= 0)
+        //        {
+        //            _response.ErrorMessages.Add("Không tìm thấy xe nào!");
+        //            _response.IsSuccess = false;
+        //            _response.StatusCode = HttpStatusCode.BadRequest;
+        //            return NotFound(_response);
+        //        }
+        //        else
+        //        {
+        //            _response.IsSuccess = true;
+        //            _response.StatusCode = HttpStatusCode.OK;
+        //            _response.Result = listResponse;
+        //        }
+        //        return Ok(_response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _response.IsSuccess = false;
+        //        _response.StatusCode = HttpStatusCode.BadRequest;
+        //        _response.ErrorMessages = new List<string>()
+        //        {
+        //            ex.ToString()
+        //        };
+        //        return BadRequest(_response);
+        //    }
+        //}
 
         [Authorize]
         [HttpGet("GetAllOnExchange")]
@@ -82,7 +81,17 @@ namespace API.Controllers
                     SD.GetMotorArray
                 );
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
-                listResponse.ForEach(item => item.Owner = null);
+                foreach (var r in listResponse)
+                {
+                    r.Owner = null;
+                    foreach (var PostingType in SD.RequestPostingTypeArray)
+                    {
+                        var request = await _unitOfWork.RequestService.GetLast(
+                                e => e.MotorId == r.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                        );
+                        if (request != null) { r.PostingAt = request?.Time; }
+                    }                    
+                }
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -121,7 +130,17 @@ namespace API.Controllers
                     includeProperties: SD.GetMotorArray
                 );
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
-                listResponse.ForEach(item => item.Store = null);
+                foreach (var r in listResponse)
+                {
+                    r.Store = null;
+                    foreach (var PostingType in SD.RequestPostingTypeArray)
+                    {
+                        var request = await _unitOfWork.RequestService.GetLast(
+                                e => e.MotorId == r.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                        );
+                        if (request != null) { r.PostingAt = request?.Time; }
+                    }
+                }
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -157,6 +176,16 @@ namespace API.Controllers
             {
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.StoreId == StoreID,SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                foreach (var r in listResponse)
+                {
+                    foreach (var PostingType in SD.RequestPostingTypeArray)
+                    {
+                        var request = await _unitOfWork.RequestService.GetLast(
+                                e => e.MotorId == r.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                        );
+                        if (request != null) { r.PostingAt = request?.Time; }
+                    }
+                }
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -192,6 +221,16 @@ namespace API.Controllers
             {
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.OwnerId == OwnerID,SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                foreach (var r in listResponse)
+                {
+                    foreach (var PostingType in SD.RequestPostingTypeArray)
+                    {
+                        var request = await _unitOfWork.RequestService.GetLast(
+                                e => e.MotorId == r.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                        );
+                        if (request != null) { r.PostingAt = request?.Time; }
+                    }
+                }
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -227,6 +266,13 @@ namespace API.Controllers
             {
                 var listDatabase = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id,SD.GetMotorArray);
                 var listResponse = _mapper.Map<MotorResponseDTO>(listDatabase);
+                foreach (var PostingType in SD.RequestPostingTypeArray)
+                {
+                    var request = await _unitOfWork.RequestService.GetLast(
+                            e => e.MotorId == listResponse.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                    );
+                    if (request != null) { listResponse.PostingAt = request?.Time; }
+                }
                 if (listDatabase == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -281,6 +327,16 @@ namespace API.Controllers
                 }
 
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
+                foreach (var r in listResponse)
+                {
+                    foreach (var PostingType in SD.RequestPostingTypeArray)
+                    {
+                        var request = await _unitOfWork.RequestService.GetLast(
+                                e => e.MotorId == r.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                        );
+                        if (request != null) { r.PostingAt = request?.Time; }
+                    }
+                }
                 if (motorbikes != null && motorbikes.Any())
                 {
                     _response.IsSuccess = true;
@@ -365,6 +421,16 @@ namespace API.Controllers
                 }
 
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
+                foreach (var r in listResponse)
+                {
+                    foreach (var PostingType in SD.RequestPostingTypeArray)
+                    {
+                        var request = await _unitOfWork.RequestService.GetLast(
+                                e => e.MotorId == r.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                        );
+                        if (request != null) { r.PostingAt = request?.Time; }
+                    }
+                }
                 if (motorbikes != null && motorbikes.Any())
                 {
                     _response.IsSuccess = true;
@@ -410,7 +476,7 @@ namespace API.Controllers
                     if (userId != motor.StoreId && userId != motor.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
-                        _response.Result = false;
+                        _response.IsSuccess = false;
                         _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
                         return BadRequest(_response);
                     }
@@ -423,7 +489,7 @@ namespace API.Controllers
                             SenderId = newUserID,
                             Time = DateTime.Now,
                             RequestTypeId = SD.Request_MotorTranfer_Id,
-                            Status = SD.pending
+                            Status = SD.Request_Accept
                         };
                         await _unitOfWork.RequestService.Add(request);
 
@@ -469,16 +535,131 @@ namespace API.Controllers
                 else
                 {
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
                     if (userId != obj.StoreId && userId != obj.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
-                        _response.Result = false;
+                        _response.IsSuccess = false;
+                        _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
+                        return BadRequest(_response);
+                    }
+                    else if (roleId == SD.Role_Store_Id && obj.StoreId == null && SD.Posting_MotorStatusArray.Contains(StatusID))
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.IsSuccess = false;
+                        _response.ErrorMessages.Add("Xe thiếu thông tin cửa hàng!");
+                        return BadRequest(_response);
+                    }                   
+                    else
+                    {
+                        var rs = InputValidation.PostingTypeByRole(roleId,StatusID);
+                        if (rs != null) 
+                        {
+                            _response.IsSuccess = false;
+                            _response.StatusCode = HttpStatusCode.BadRequest;
+                            _response.ErrorMessages.Add(rs);
+                            return BadRequest(_response);
+                        }
+                        Request request = new()
+                        {
+                            MotorId = MotorID,
+                            ReceiverId = SD.AdminID,
+                            SenderId = userId,
+                            Time = DateTime.Now,
+                            RequestTypeId = null,
+                            Status = SD.Request_Accept
+                        };
+                        
+                        switch (StatusID)
+                        {
+                            case SD.Status_Posting:
+                                request.RequestTypeId = SD.Request_Motor_Posting;
+                                break;
+                            case SD.Status_Consignment:
+                                request.RequestTypeId = SD.Status_Consignment;
+                                break;
+                            case SD.Status_nonConsignment:
+                                request.RequestTypeId = SD.Status_nonConsignment;
+                                break;
+                            default:
+                                break;
+                        }
+                        if (StatusID != SD.Status_Storage) 
+                        { 
+                            await _unitOfWork.RequestService.Add(request);
+                        }
+                        obj.MotorStatusId = StatusID;
+                        await _unitOfWork.MotorBikeService.Update(obj);
+                        _response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.Result = obj;
+                    }
+                    return Ok(_response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
+        [HttpPut]
+        [Authorize(Roles = "Store,Owner")]
+        [Route("CancelPosting")]
+        public async Task<IActionResult> CancelPosting(int MotorID)
+        {
+            try
+            {
+                var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == MotorID);
+                if (obj == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.IsSuccess = false;
                         _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
                         return BadRequest(_response);
                     }
                     else
                     {
-                        obj.MotorStatusId = StatusID;
+                        int check = 0;
+                        foreach (var PostingType in SD.RequestPostingTypeArray) 
+                        {
+                            var request = await _unitOfWork.RequestService.GetFirst(
+                                    e => e.MotorId == MotorID && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                            );
+                            if (request != null ) { check += 1; }
+                        }
+                        if (check == 0)
+                        {
+                            _response.StatusCode = HttpStatusCode.BadRequest;
+                            _response.IsSuccess = false;
+                            _response.ErrorMessages.Add("Xe chưa được đăng lên sàn!");
+                            return BadRequest(_response);
+                        }
+                        //Cancel all request except Register
+                        var requestEdit = await _unitOfWork.RequestService.Get( e => e.MotorId == MotorID && e.RequestTypeId != SD.Request_Motor_Register);
+                        foreach (var r in requestEdit)
+                        {
+                            r.Status = SD.Request_Cancel;
+                            await _unitOfWork.RequestService.Update(r);
+                        }
+                        //Update Motor
+                        obj.MotorStatusId = SD.Status_Storage;
                         await _unitOfWork.MotorBikeService.Update(obj);
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
@@ -509,15 +690,25 @@ namespace API.Controllers
                 var rs = InputValidation.MotorValidation(motor);
                 if (rs != "")
                 {
+                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Result = false;
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
+                //Check have any Negotiation request 
+                var requestEdit = await _unitOfWork.RequestService.Get(e => e.MotorId == MotorID && e.RequestTypeId == SD.Request_Negotiation_Id && e.Status == SD.Request_Pending);
+                if (requestEdit != null)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Xe đang trong quá trình thương lượng giá cả. Cần gỡ bài trước khi cập nhật xe!");
+                    return BadRequest(_response);
+                }
+                //-----------------------------------
                 if (motor.MotorStatusId == 1 && motor.StoreId == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Result = false;
+                    _response.IsSuccess = false;
                     _response.ErrorMessages.Add("Xe được đăng bán cần có thông tin cửa hàng!");
                     return BadRequest(_response);
                 }
@@ -535,7 +726,7 @@ namespace API.Controllers
                     if (userId != obj.StoreId && userId != obj.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
-                        _response.Result = false;
+                        _response.IsSuccess = false;
                         _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
                         return BadRequest(_response);
                     }
@@ -609,8 +800,8 @@ namespace API.Controllers
                 var rs = InputValidation.MotorValidation(_mapper.Map<MotorUpdateDTO>(motor));
                 if (rs != "")
                 {
+                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Result = false;
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
@@ -631,7 +822,8 @@ namespace API.Controllers
                     var imgLink = await _blobService.UploadBlob(rgtfileName, SD.Storage_Container, motor.RegistrationImage);
                     newMotor.RegistrationImage = imgLink;
                     //----------------
-                    newMotor.OwnerId = int.Parse(User.FindFirst("UserId")?.Value); 
+                    var userID = int.Parse(User.FindFirst("UserId")?.Value);
+                    newMotor.OwnerId = userID; 
                     await _unitOfWork.MotorBikeService.Add(newMotor);
                     //Add list Image
                     var motorInDb = await _unitOfWork.MotorBikeService.GetFirst(c => c.CertificateNumber == motor.CertificateNumber);
@@ -650,6 +842,18 @@ namespace API.Controllers
 
                         }
                     }
+                    //Add Request
+                    Request request = new()
+                    {
+                        MotorId = motorInDb.MotorId,
+                        ReceiverId = SD.AdminID,
+                        SenderId = userID,
+                        Time = DateTime.Now,
+                        RequestTypeId = SD.Request_Motor_Register,
+                        Status = SD.Request_Accept
+                    };
+                    await _unitOfWork.RequestService.Add(request);
+                    //-----------
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = newMotor;

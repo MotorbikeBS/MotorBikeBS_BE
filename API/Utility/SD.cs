@@ -9,11 +9,17 @@
 		public const int Role_Owner_Id = 3;
 		public const int Role_Customer_Id = 4;
 
-		public const int Status_Posting = 1;
+        public static readonly int[] Posting_MotorStatusArray = new int[] { 1, 4 };
+        public const int Status_Posting = 1;
 		public const int Status_Storage = 3;
 		public const int Status_Consignment = 4;
 		public const int Status_nonConsignment = 5;
 
+        public static readonly int[] RequestPostingTypeArray = new int[] {2,3,4}; //Posting - Consignment - nonConsignment
+        public const int Request_Motor_Register = 1;
+		public const int Request_Motor_Posting = 2;
+        public const int Request_Motor_Consignment = 3;
+		public const int Request_Motor_nonCosignment = 4;
 		public const int Request_Booking_Id = 6;
 		public const int Request_Negotiation_Id = 8;
         public const int Request_MotorTranfer_Id = 9;

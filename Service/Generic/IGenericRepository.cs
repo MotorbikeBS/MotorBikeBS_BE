@@ -9,5 +9,7 @@ namespace Service.Generic
         Task Delete(TEntity entity);
         Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, bool>>? expression = null, params string[] includeProperties);
         async Task<TEntity?> GetFirst(Expression<Func<TEntity, bool>>? expression = null, params string[] includeProperties) => (await Get(expression, includeProperties)).FirstOrDefault();
+        async Task<TEntity?> GetLast(Expression<Func<TEntity, bool>>? expression = null, params string[] includeProperties) => (await Get(expression, includeProperties)).LastOrDefault();
+
     }
 }
