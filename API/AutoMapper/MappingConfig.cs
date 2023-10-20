@@ -1,4 +1,5 @@
 ﻿using API.DTO.BookingDTO;
+using API.DTO.BookingNegotiationDTO;
 using API.DTO.MotorbikeDTO;
 using API.DTO.NegotiationDTO;
 using API.DTO.OwnerDTO;
@@ -39,6 +40,14 @@ namespace API.AutoMapper
 
 				config.CreateMap<Booking, BookingCreateDTO>().ReverseMap();
 				config.CreateMap<Booking, BookingResponseDTO>().ReverseMap();
+
+				//Booking for Negotiation
+				config.CreateMap<Booking, BookingNegoResponseDTO>().ReverseMap();
+				config.CreateMap<Request, BookingNegoRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Negotiations, opt => opt.MapFrom(src => src.Negotiations))
+																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
+																					   .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver));
+				config.CreateMap<Negotiation, NegotiationRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Bookings, opt => opt.MapFrom(src => src.Bookings));
+				//End
 
 				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap().ForSourceMember(source => source.File, opt => opt.DoNotValidate())
 																				  .ForSourceMember(source => source.License, opt => opt.DoNotValidate());
