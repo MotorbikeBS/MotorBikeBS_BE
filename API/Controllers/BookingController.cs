@@ -53,7 +53,7 @@ namespace API.Controllers
 				if (negotiationInDb == null || negotiationInDb.Status != SD.Request_Accept)
 				{
 					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Không thể đặt lịch!");
+					_response.ErrorMessages.Add("Không thể đặt lịch, quá trình thương lượng chưa kết thúc!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
@@ -62,6 +62,14 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Không thể đặt lịch, quá trình này đã kết thúc!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
+				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == requestInDb.MotorId);
+				if(motor == null || motor.MotorStatusId != SD.Status_Consignment && motor.MotorStatusId != SD.Status_nonConsignment)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Xe này đã bán hoặc đã bị xóa!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
@@ -117,19 +125,22 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
-					&& x.Status == SD.Request_Pending, 
+					&& x.Status == SD.Request_Pending
+					&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.Date)),
 					includeProperties: new string[] { "Negotiations", "Motor", "Negotiations.Bookings", "Receiver" });
 				}
 				else
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
-					&& x.Status == SD.Request_Pending,
+					&& x.Status == SD.Request_Pending
+					&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.Date)),
 					includeProperties: new string[] { "Negotiations", "Motor", "Negotiations.Bookings", "Sender", "Sender.StoreDesciptions" });
 				}
 				if(list.Count() > 0)
 				{
 					var response = _mapper.Map<List<BookingNegoRequestResponseDTO>>(list);
+					
 					response.ForEach(item => item.Motor.Owner = null);
 
 					_response.IsSuccess = true;
@@ -139,7 +150,7 @@ namespace API.Controllers
 				}
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.NotFound;
-				_response.Result = list;
+				_response.ErrorMessages.Add("Không có lịch hẹn nào đang chờ!");
 				return NotFound(_response);
 
 			}
