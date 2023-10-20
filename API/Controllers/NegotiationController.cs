@@ -148,7 +148,7 @@ namespace API.Controllers
 				if (list.Count() > 0)
 				{
 					_response.IsSuccess = false;
-					_response.ErrorMessages.Add(" Bạn đã xác nhận mua với giá mặc định. Vui lòng thể tiến hành đặt lịch.!");
+					_response.ErrorMessages.Add("Bạn đã xác nhận mua. Vui lòng thể tiến hành đặt lịch.!");
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
@@ -218,7 +218,8 @@ namespace API.Controllers
 				{
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
-					&& x.Status == SD.Request_Pending,
+					&& x.Status == SD.Request_Pending
+					&& x.Negotiations.Any(n => n.Status != SD.Request_Cancel),
 					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
 				}
 
@@ -226,7 +227,8 @@ namespace API.Controllers
 				{
 					requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
-					&& x.Status == SD.Request_Pending,
+					&& x.Status == SD.Request_Pending
+					&& x.Negotiations.Any(n => n.Status != SD.Request_Cancel),
 					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Receiver" });
 				}
 				var negotiationResponse = _mapper.Map<List<NegotiationResponseRequestDTO>>(requestNegotiation);
