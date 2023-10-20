@@ -111,8 +111,6 @@ namespace Core.Models
                     .HasMaxLength(100)
                     .HasColumnName("note");
 
-                entity.Property(e => e.RequestId).HasColumnName("request_id");
-
                 entity.Property(e => e.Status)
                     .HasMaxLength(10)
                     .HasColumnName("status");
