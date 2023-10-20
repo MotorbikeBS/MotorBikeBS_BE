@@ -338,12 +338,20 @@ namespace API.Validation
                     statusProperty.SetValue(entity, SD.pending);
                     break;
             }
-
         }
-
-
-
-
+        public static string PostingTypeByRole(int roleid, int StatusID)
+        {
+            switch (roleid)
+            {
+                case SD.Role_Store_Id:
+                    if (StatusID == SD.Status_Consignment) { return "Cửa hàng không được có quyền này"; }
+					break;
+                default:
+                    if (StatusID == SD.Status_Posting) { return "Người sở hữu không được có quyền này"; }
+                    break;
+            }
+			return string.Empty;
+        }
 
     }
 }
