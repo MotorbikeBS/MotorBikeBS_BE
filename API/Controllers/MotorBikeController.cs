@@ -576,10 +576,10 @@ namespace API.Controllers
                                 request.RequestTypeId = SD.Request_Motor_Posting;
                                 break;
                             case SD.Status_Consignment:
-                                request.RequestTypeId = SD.Status_Consignment;
+                                request.RequestTypeId = SD.Request_Motor_Consignment;
                                 break;
                             case SD.Status_nonConsignment:
-                                request.RequestTypeId = SD.Status_nonConsignment;
+                                request.RequestTypeId = SD.Request_Motor_nonConsignment;
                                 break;
                             default:
                                 break;

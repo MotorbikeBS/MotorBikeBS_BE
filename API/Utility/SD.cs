@@ -19,7 +19,7 @@
         public const int Request_Motor_Register = 1;
 		public const int Request_Motor_Posting = 2;
         public const int Request_Motor_Consignment = 3;
-		public const int Request_Motor_nonCosignment = 4;
+		public const int Request_Motor_nonConsignment = 4;
 		public const int Request_Booking_Id = 6;
 		public const int Request_Negotiation_Id = 8;
         public const int Request_MotorTranfer_Id = 9;
