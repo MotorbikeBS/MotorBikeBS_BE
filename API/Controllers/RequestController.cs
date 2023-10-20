@@ -62,6 +62,76 @@ namespace API.Controllers
         }
 
         [Authorize]
+        [HttpGet("GetBySenderID")]
+        public async Task<IActionResult> GetBySenderID(int SenderID)
+        {
+            try
+            {
+                var listDatabase = await _unitOfWork.RequestService.Get(e => e.SenderId == SenderID, includeProperties: SD.GetRequestArray);
+                var listResponse = _mapper.Map<List<RequestResponseDTO>>(listDatabase);
+                if (listDatabase == null || listDatabase.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy yêu cầu nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = listResponse;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("GetByReceiverID")]
+        public async Task<IActionResult> GetByReceiverID(int ReceiverID)
+        {
+            try
+            {
+                var listDatabase = await _unitOfWork.RequestService.Get(e => e.ReceiverId == ReceiverID, includeProperties: SD.GetRequestArray);
+                var listResponse = _mapper.Map<List<RequestResponseDTO>>(listDatabase);
+                if (listDatabase == null || listDatabase.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy yêu cầu nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = listResponse;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetByRequestId(int id)
         {
