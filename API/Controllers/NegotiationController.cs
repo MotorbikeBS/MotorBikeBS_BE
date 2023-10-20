@@ -362,6 +362,7 @@ namespace API.Controllers
 					}
 					negotiationInDb.StorePrice = dto.Price;
 				}
+				negotiationInDb.LastChangeUserId = userId;
 				await _unitOfWork.NegotiationService.Update(negotiationInDb);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;

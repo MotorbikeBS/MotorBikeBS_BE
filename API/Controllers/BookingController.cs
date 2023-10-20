@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.DTO.BookingDTO;
+using API.DTO.BookingNegotiationDTO;
 using API.DTO.UserDTO;
 using API.Utility;
 using API.Validation;
@@ -8,6 +9,7 @@ using Azure;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc;
 using Service.Service;
 using Service.UnitOfWork;
@@ -71,7 +73,7 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 				var duplicateBooking = await _unitOfWork.BookingService.Get(x => x.BaseRequestId == negotiationInDb.BaseRequestId);
-				if(duplicateBooking.Count() >1)
+				if(duplicateBooking.Count() > 0)
 				{
 					_response.IsSuccess = false;
 					_response.ErrorMessages.Add("Bạn đã đặt lịch cho xe này!");
@@ -89,6 +91,57 @@ namespace API.Controllers
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Message = ("Đặt lịch thành công, vui lòng chờ người bán duyệt!");
 				return Ok(_response);
+			}
+			catch (Exception ex)
+			{
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+						{
+							ex.ToString()
+						};
+				return BadRequest();
+			}
+		}
+
+		[Authorize(Roles ="Store, Owner")]
+		[HttpGet]
+		public async Task<IActionResult>Get()
+		{
+			try
+			{
+				var userId = int.Parse(User.FindFirst("UserId")?.Value);
+				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+				IEnumerable<Request> list;
+				if(roleId == SD.Role_Store_Id)
+				{
+					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+					&& x.RequestTypeId == SD.Request_Negotiation_Id
+					&& x.Status == SD.Request_Pending, 
+					includeProperties: new string[] { "Negotiations", "Motor", "Negotiations.Bookings", "Receiver" });
+				}
+				else
+				{
+					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
+					&& x.RequestTypeId == SD.Request_Negotiation_Id
+					&& x.Status == SD.Request_Pending,
+					includeProperties: new string[] { "Negotiations", "Motor", "Negotiations.Bookings", "Sender", "Sender.StoreDesciptions" });
+				}
+				if(list.Count() > 0)
+				{
+					var response = _mapper.Map<List<BookingNegoRequestResponseDTO>>(list);
+					response.ForEach(item => item.Motor.Owner = null);
+
+					_response.IsSuccess = true;
+					_response.StatusCode = HttpStatusCode.OK;
+					_response.Result = response;
+					return Ok(_response);
+				}
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.NotFound;
+				_response.Result = list;
+				return NotFound(_response);
+
 			}
 			catch (Exception ex)
 			{
