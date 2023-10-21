@@ -553,7 +553,7 @@ namespace API.Controllers
                     else
                     {
                         var rs = InputValidation.PostingTypeByRole(roleId,StatusID);
-                        if (rs != null) 
+                        if (rs != "") 
                         {
                             _response.IsSuccess = false;
                             _response.StatusCode = HttpStatusCode.BadRequest;
@@ -695,9 +695,25 @@ namespace API.Controllers
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
+                //Check if Motor is Posting
+                int check = 0;
+                foreach (var PostingType in SD.RequestPostingTypeArray)
+                {
+                    var request = await _unitOfWork.RequestService.GetFirst(
+                            e => e.MotorId == MotorID && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                    );
+                    if (request != null) { check += 1; }
+                }
+                if (check > 0)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Xe đang được đăng bán. Cần gỡ bài trước khi cập nhật xe!");
+                    return BadRequest(_response);
+                }
                 //Check have any Negotiation request 
                 var requestEdit = await _unitOfWork.RequestService.Get(e => e.MotorId == MotorID && e.RequestTypeId == SD.Request_Negotiation_Id && e.Status == SD.Request_Pending);
-                if (requestEdit != null)
+                if (requestEdit.Count() > 0)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.IsSuccess = false;
