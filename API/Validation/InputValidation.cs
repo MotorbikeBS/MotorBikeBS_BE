@@ -1,13 +1,16 @@
 ﻿using API.DTO.MotorbikeDTO;
 using API.Utility;
+using Azure;
 using Core.Models;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Validation
 {
@@ -216,6 +219,26 @@ namespace API.Validation
 				return ("Ngày sinh không hợp lệ!");
 			}
 
+			return "";
+		}
+
+		public static string ContractValidation(string content, List<IFormFile> images)
+		{
+			if(content == null)
+			{
+				return "Vui lòng nhập nội dung hợp đồng!";
+			}
+			if(images.Count() < 1)
+			{
+				return "Vui lòng chọn hình ảnh hợp đồng!";
+			}
+			foreach (var img in images)
+			{
+				if (!IsImage(img))
+				{
+					return "Vui lòng chọn ảnh hợp lệ";
+				}
+			}
 			return "";
 		}
 
