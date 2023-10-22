@@ -738,6 +738,21 @@ namespace API.Controllers
                 }
                 else
                 {
+                    bool allFilesAreImages = images.All(file => InputValidation.IsImage(file));
+                    if (!allFilesAreImages || !InputValidation.IsImage(motor.RegistrationImage))
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Vui lòng tải lên hình ảnh hợp lệ!");
+                        return BadRequest(_response);
+                    }
+                    else if (images.Count > 30)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Bạn chỉ được tải lên tối đa 30 hình ảnh.");
+                        return BadRequest(_response);
+                    }
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
                     if (userId != obj.StoreId && userId != obj.OwnerId)
                     {
@@ -831,6 +846,21 @@ namespace API.Controllers
                 }
                 else
                 {
+                    bool allFilesAreImages = images.All(file => InputValidation.IsImage(file));
+                    if (!allFilesAreImages || !InputValidation.IsImage(motor.RegistrationImage))
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Vui lòng tải lên hình ảnh hợp lệ!");
+                        return BadRequest(_response);
+                    }
+                    else if (images.Count > 30)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Bạn chỉ được tải lên tối đa 30 hình ảnh.");
+                        return BadRequest(_response);
+                    }
                     var newMotor = _mapper.Map<Motorbike>(motor);
                     newMotor.MotorStatusId = SD.Status_Storage;
                     //Registration-Img

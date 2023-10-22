@@ -34,7 +34,7 @@ namespace Service.BlobImageService
 
 		public async Task<string> UploadBlob(string blobName, string containerName, IFormFile file)
 		{
-			BlobContainerClient blobContainerClient = _blobClient.GetBlobContainerClient(containerName);
+            		BlobContainerClient blobContainerClient = _blobClient.GetBlobContainerClient(containerName);
 			BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
 			var httpHeaders = new BlobHttpHeaders()
 			{
