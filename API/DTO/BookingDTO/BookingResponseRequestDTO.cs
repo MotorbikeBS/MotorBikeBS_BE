@@ -1,4 +1,5 @@
 ﻿using API.DTO.MotorbikeDTO;
+using API.DTO.UserDTO;
 using Core.Models;
 
 namespace API.DTO.BookingDTO
@@ -13,8 +14,8 @@ namespace API.DTO.BookingDTO
         public int? RequestTypeId { get; set; }
         public string? Status { get; set; }
         public virtual MotorResponseDTO? Motor { get; set; }
-
-
-        public virtual StoreDesciption? Sender { get; set; }
-    }
+		public virtual ICollection<BookingResponseDTO> BuyerBookings { get; set; }
+		public virtual UserResponseDTO? Receiver { get; set; }
+		public virtual UserResponseDTO? Sender { get; set; }
+	}
 }
