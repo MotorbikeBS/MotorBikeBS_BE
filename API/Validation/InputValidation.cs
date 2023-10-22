@@ -1,13 +1,16 @@
 ﻿using API.DTO.MotorbikeDTO;
 using API.Utility;
+using Azure;
 using Core.Models;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Validation
 {
@@ -219,6 +222,30 @@ namespace API.Validation
 			return "";
 		}
 
+		public static string ContractValidation(string content, List<IFormFile> images)
+		{
+			if(content == null)
+			{
+				return "Vui lòng nhập nội dung hợp đồng!";
+			}
+			if(images.Count() < 1)
+			{
+				return "Vui lòng chọn hình ảnh hợp đồng!";
+			}
+			if(images.Count() > 5)
+			{
+				return "Vui lòng chọn tối đa 5 ảnh!";
+			}
+			foreach (var img in images)
+			{
+				if (!IsImage(img))
+				{
+					return "Vui lòng chọn ảnh hợp lệ";
+				}
+			}
+			return "";
+		}
+
 		public static bool IsImage(IFormFile file)
 		{
 			if (file != null)
@@ -250,7 +277,7 @@ namespace API.Validation
 			//TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
 			//TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
 
-			if (bookingDate < DateTime.Now)
+			if (bookingDate.Date < DateTime.Now.Date)
 			{
 				return "Vui lòng chọn thời gian trong tương lai!";
 			}
@@ -259,6 +286,30 @@ namespace API.Validation
 			//{
 			//	return "Vui lòng chọn thời gian trong khung giờ 7h-21h!";
 			//}
+			return "";
+		}
+
+		public static string BookingNonConsignmentTimeValidation(DateTime bookingDate)
+		{
+			if (bookingDate == null)
+			{
+				return "Vui lòng chọn ngày hẹn!";
+			}
+
+			TimeSpan time = bookingDate.TimeOfDay;
+
+			TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
+			TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
+
+			if (bookingDate < DateTime.Now)
+			{
+				return "Vui lòng chọn thời gian trong tương lai!";
+			}
+
+			if (time <= startTime || time >= endTime)
+			{
+				return "Vui lòng chọn thời gian trong khung giờ 7h-21h!";
+			}
 			return "";
 		}
 
