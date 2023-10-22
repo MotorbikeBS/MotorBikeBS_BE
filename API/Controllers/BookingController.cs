@@ -97,7 +97,7 @@ namespace API.Controllers
 				await _unitOfWork.BookingService.Add(newBooking);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
-				_response.Message = ("Đặt lịch thành công, vui lòng chờ người bán duyệt!");
+				_response.Message = ("Đặt lịch thành công!");
 				return Ok(_response);
 			}
 			catch (Exception ex)
