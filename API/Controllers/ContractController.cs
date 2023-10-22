@@ -233,12 +233,16 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 				IEnumerable<ContractImage> img = await _unitOfWork.ContractImageService.Get(x => x.ContractId == contractId);
-				foreach(var item in  img)
+				if(img.Count() > 0)
 				{
-					await _unitOfWork.ContractImageService.Delete(item);
+					foreach (var item in img)
+					{
+						var oldLisenceImg = item.ImageLink.Split('/').Last();
+						await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
+						await _unitOfWork.ContractImageService.Delete(item);
+					}
 				}
 				await _unitOfWork.ContractService.Delete(contract);
-
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Message = "Từ chối thành công!";

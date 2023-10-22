@@ -232,6 +232,10 @@ namespace API.Validation
 			{
 				return "Vui lòng chọn hình ảnh hợp đồng!";
 			}
+			if(images.Count() > 5)
+			{
+				return "Vui lòng chọn tối đa 5 ảnh!";
+			}
 			foreach (var img in images)
 			{
 				if (!IsImage(img))
@@ -273,7 +277,7 @@ namespace API.Validation
 			//TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
 			//TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
 
-			if (bookingDate < DateTime.Now)
+			if (bookingDate.Date < DateTime.Now.Date)
 			{
 				return "Vui lòng chọn thời gian trong tương lai!";
 			}
