@@ -285,6 +285,30 @@ namespace API.Validation
 			return "";
 		}
 
+		public static string BookingNonConsignmentTimeValidation(DateTime bookingDate)
+		{
+			if (bookingDate == null)
+			{
+				return "Vui lòng chọn ngày hẹn!";
+			}
+
+			TimeSpan time = bookingDate.TimeOfDay;
+
+			TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
+			TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
+
+			if (bookingDate < DateTime.Now)
+			{
+				return "Vui lòng chọn thời gian trong tương lai!";
+			}
+
+			if (time <= startTime || time >= endTime)
+			{
+				return "Vui lòng chọn thời gian trong khung giờ 7h-21h!";
+			}
+			return "";
+		}
+
 		//MotorBike
 		public static string MotorValidation(MotorUpdateDTO motorRegisterDTO)
         {
