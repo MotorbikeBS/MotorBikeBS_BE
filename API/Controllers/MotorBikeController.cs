@@ -869,6 +869,16 @@ namespace API.Controllers
                     newMotor.RegistrationImage = imgLink;
                     //----------------
                     var userID = int.Parse(User.FindFirst("UserId")?.Value);
+                    //Add StoreID
+                    var store = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == userID);
+                    if (store != null)
+                    {
+                        newMotor.StoreId = store.StoreId;
+                    }
+                    else
+                    {
+                        newMotor.StoreId = null;
+                    }
                     newMotor.OwnerId = userID; 
                     await _unitOfWork.MotorBikeService.Add(newMotor);
                     //Add list Image
