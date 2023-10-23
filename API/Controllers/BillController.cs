@@ -134,9 +134,9 @@ namespace API.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPost]
         [Authorize(Roles = "Store")]
-        [Route("BillforInStock")]
+        [Route("CreateBill-InStock")]
         public async Task<IActionResult> BillforInStock(int MotorID, int newUser)
         {
             try
@@ -151,6 +151,7 @@ namespace API.Controllers
                 }
                 else
                 {
+                    int requestPost = 0;
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
                     if (userId != obj.StoreId && userId != obj.OwnerId)
                     {
@@ -161,13 +162,21 @@ namespace API.Controllers
                     }
                     else
                     {
+                        // If newUser is null, send Ownership to AdminID which can't access this motor anymore
+                        if (newUser == 0) { newUser = SD.AdminID; }
+                        //-----------
                         int check = 0;
                         foreach (var PostingType in SD.RequestPostingTypeArray)
                         {
                             var request = await _unitOfWork.RequestService.GetFirst(
                                     e => e.MotorId == MotorID && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
                             );
-                            if (request != null) { check += 1; }
+                            if (request != null) 
+                            {
+                                check += 1;
+                                //Get requestPost to cancel Posting
+                                requestPost = request.RequestId;
+                            }
                         }
                         if (check == 0)
                         {
@@ -211,11 +220,16 @@ namespace API.Controllers
                         RequestId = requestCus.RequestId
                     };
                     await _unitOfWork.BillService.Add(CusBill);
-                    //Update request to done
+                    //Update Bill-request to done
                     requestCus.Status = SD.Request_Accept;
                     await _unitOfWork.RequestService.Update(requestCus);
+                    //Cancel Posting-request
+                    var requestPosting = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == requestPost);
+                    requestPosting.Status = SD.Request_Accept;
+                    await _unitOfWork.RequestService.Update(requestPosting);
                     //Update Motor Ownership
                     obj.MotorStatusId = SD.Status_Storage;
+                    obj.StoreId = null;
                     obj.OwnerId = newUser;
                     await _unitOfWork.MotorBikeService.Update(obj);
                     //---------------------
