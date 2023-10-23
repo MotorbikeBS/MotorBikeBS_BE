@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Service.BlobImageService;
 using Service.Service;
 using Service.UnitOfWork;
+using System.Collections.Generic;
 using System.Net;
 
 namespace API.Controllers
@@ -75,13 +76,20 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
 					return NotFound(_response);
 				}
-				var contract = await _unitOfWork.ContractService.GetFirst(x => x.BaseRequestId == request.RequestId);
-				if(contract != null && contract.Status == SD.Request_Pending)
+				var list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+						&& x.RequestTypeId == SD.Request_Negotiation_Id
+						&& x.MotorId == request.MotorId
+						//&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
+						|| s.Status == SD.Request_Accept))));
+
+
+				if (list.Count() > 0)
 				{
 					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.StatusCode = HttpStatusCode.BadRequest;
 					_response.ErrorMessages.Add("Bạn đã tạo hợp đồng!");
-					return NotFound(_response);
+					return BadRequest(_response);
 				}
 				if (booking.Status == SD.Request_Cancel || request.Status == SD.Request_Cancel)
 				{
@@ -105,9 +113,9 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Xe này đã bán hoặc đã bị xóa!");
 					return BadRequest(_response);
 				}
-				
+				var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
 				var newContract = _mapper.Map<Contract>(dto);
-				newContract.StoreId = userId;
+				newContract.StoreId = store.StoreId;
 				newContract.CreatedAt = DateTime.Now;
 				newContract.BookingId = bookingId;
 				newContract.BaseRequestId = booking.BaseRequestId;
@@ -158,8 +166,8 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						&& x.Status == SD.Request_Pending
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending))),
+						//&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())),
 						includeProperties: new string[]
 						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
 					  "Receiver", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
@@ -168,8 +176,9 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						&& x.Status == SD.Request_Pending
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending))),
+						//&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
+						|| s.Status == SD.Request_Accept))),
 						includeProperties: new string[]
 						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
 					  "Receiver", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
@@ -307,16 +316,18 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
 					return NotFound(_response);
 				}
+		
 				contract.Status = SD.Request_Accept;
 				await _unitOfWork.ContractService.Update(contract);
 				motor.MotorStatusId = SD.Status_Storage;
-				motor.StoreId = (int)contract.StoreId;
+				motor.StoreId = contract.StoreId;
 				motor.Price = negotiation.FinalPrice;
 				await _unitOfWork.MotorBikeService.Update(motor);
 				request.Status = SD.Request_Accept;
 				await _unitOfWork.RequestService.Update(request);
 
 				IEnumerable<Request> requestList = await _unitOfWork.RequestService.Get(x => x.MotorId == motor.MotorId
+				&& x.SenderId != userId
 				&& x.Status == SD.Request_Pending
 				&& x.RequestTypeId == SD.Request_Negotiation_Id);
 				if(requestList.Count() > 0)
