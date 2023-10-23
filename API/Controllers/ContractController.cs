@@ -310,9 +310,11 @@ namespace API.Controllers
 				contract.Status = SD.Request_Accept;
 				await _unitOfWork.ContractService.Update(contract);
 				motor.MotorStatusId = SD.Status_Storage;
-				motor.OwnerId = (int)contract.StoreId;
+				motor.StoreId = (int)contract.StoreId;
 				motor.Price = negotiation.FinalPrice;
 				await _unitOfWork.MotorBikeService.Update(motor);
+				request.Status = SD.Request_Accept;
+				await _unitOfWork.RequestService.Update(request);
 
 				IEnumerable<Request> requestList = await _unitOfWork.RequestService.Get(x => x.MotorId == motor.MotorId
 				&& x.Status == SD.Request_Pending
