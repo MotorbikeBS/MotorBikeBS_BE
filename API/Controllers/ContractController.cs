@@ -75,13 +75,13 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
 					return NotFound(_response);
 				}
-				if(request.Status == SD.Request_Pending)
+				var contract = await _unitOfWork.ContractService.GetFirst(x => x.BaseRequestId == request.RequestId);
+				if(contract != null && contract.Status == SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.NotFound;
 					_response.ErrorMessages.Add("Bạn đã tạo hợp đồng!");
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					return BadRequest(_response);
-
+					return NotFound(_response);
 				}
 				if (booking.Status == SD.Request_Cancel || request.Status == SD.Request_Cancel)
 				{
