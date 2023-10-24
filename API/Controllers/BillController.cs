@@ -137,7 +137,7 @@ namespace API.Controllers
         [HttpPost]
         [Authorize(Roles = "Store")]
         [Route("CreateBill-InStock")]
-        public async Task<IActionResult> BillforInStock(int MotorID, int newUser)
+        public async Task<IActionResult> BillforInStock(int newUser, int MotorID)
         {
             try
             {
@@ -225,7 +225,7 @@ namespace API.Controllers
                     await _unitOfWork.RequestService.Update(requestCus);
                     //Cancel Posting-request
                     var requestPosting = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == requestPost);
-                    requestPosting.Status = SD.Request_Accept;
+                    requestPosting.Status = SD.Request_Cancel;
                     await _unitOfWork.RequestService.Update(requestPosting);
                     //Update Motor Ownership
                     obj.MotorStatusId = SD.Status_Storage;
@@ -356,7 +356,7 @@ namespace API.Controllers
                     await _unitOfWork.RequestService.Update(requestCus);
                     //Cancel Posting-request
                     var requestPosting = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == requestPost);
-                    requestPosting.Status = SD.Request_Accept;
+                    requestPosting.Status = SD.Request_Cancel;
                     await _unitOfWork.RequestService.Update(requestPosting);
                     //*** Add OwnerBill ***
                     var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegotiationRequestID);
@@ -364,7 +364,7 @@ namespace API.Controllers
                     {
                         MotorId = (int)NegoRequest.MotorId,
                         UserId = (int)NegoRequest.ReceiverId,
-                        StoreId = (int)NegoRequest.SenderId,
+                        StoreId = (int)obj.StoreId,
                         Price = Negotiation.FinalPrice,
                         CreateAt = DateTime.Now,
                         Status = SD.Request_Accept,
@@ -381,6 +381,177 @@ namespace API.Controllers
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = CusBill;
                     return Ok(_response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+        
+        [HttpPost]
+        [Authorize(Roles = "Store")]
+        [Route("CreateBill-nonConsignment")]
+        public async Task<IActionResult> BillforNonConsignment(int NegotiationRequestID, int BuyerBookingID)
+        {
+            try
+            {
+                //Check Negotiation request
+                var NegoRequest = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == NegotiationRequestID);
+                if (NegoRequest == null)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Giá xe chưa được thương lượng với chủ sở hữu!");
+                    return BadRequest(_response);
+                }
+                else if (NegoRequest.Status != SD.Request_Accept)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Xe đang trong quá trình thương lượng giá cả!");
+                    return BadRequest(_response);
+                }
+                //Check BuyerBooking request
+                var BuyerBooking = await _unitOfWork.BuyerBookingService.GetFirst(e => e.BookingId == BuyerBookingID);
+                if (BuyerBooking == null)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Không tìm thấy lịch hẹn!");
+                    return BadRequest(_response);
+                }
+                else if (NegoRequest.Status != SD.Request_Accept)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Lịch xem xe chưa được duyệt!");
+                    return BadRequest(_response);
+                }
+                var BuyerRequest = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == BuyerBooking.RequestId);
+                //Check the same motor
+                if (NegoRequest.MotorId != BuyerRequest.MotorId)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Xe đang chọn và xe được đặt lịch không trùng khớp!");
+                    return BadRequest(_response);
+                }
+                //Check MotorBike
+                var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == NegoRequest.MotorId);
+                if (obj == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    int requestPost = 0;
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.IsSuccess = false;
+                        _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
+                        return BadRequest(_response);
+                    }
+                    else
+                    {
+                        // Get UserID from BuyerBooking request
+                        var newUser = BuyerRequest.SenderId; 
+                        //-----------
+                        int check = 0;
+                        foreach (var PostingType in SD.RequestPostingTypeArray)
+                        {
+                            var request = await _unitOfWork.RequestService.GetFirst(
+                                    e => e.MotorId == NegoRequest.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                            );
+                            if (request != null) 
+                            {
+                                check += 1;
+                                //Get requestPost to cancel Posting
+                                requestPost = request.RequestId;
+                            }
+                        }
+                        if (check == 0)
+                        {
+                            _response.StatusCode = HttpStatusCode.BadRequest;
+                            _response.IsSuccess = false;
+                            _response.ErrorMessages.Add("Xe chưa được đăng lên sàn!");
+                            return BadRequest(_response);
+                        }
+                        //Add Request
+                        Request requestNew = new()
+                        {
+                            MotorId = NegoRequest.MotorId,
+                            ReceiverId = newUser,
+                            SenderId = userId,
+                            Time = DateTime.Now,
+                            RequestTypeId = SD.Request_MotorTranfer_Id,
+                            Status = SD.Request_Pending
+                        };
+                        await _unitOfWork.RequestService.Add(requestNew);
+                        //Add Cus Bill
+                        var requestCus = await _unitOfWork.RequestService.GetLast(
+                                        e => e.MotorId == NegoRequest.MotorId && e.RequestTypeId == SD.Request_MotorTranfer_Id && e.Status == SD.Request_Pending
+                        );
+                        if (requestCus == null)
+                        {
+                            _response.StatusCode = HttpStatusCode.BadRequest;
+                            _response.IsSuccess = false;
+                            _response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+                            return BadRequest(_response);
+                        }
+                        BillConfirm CusBill = new()
+                        {
+                            MotorId = (int)NegoRequest.MotorId,
+                            UserId = userId,
+                            StoreId = (int)obj.StoreId,
+                            Price = obj.Price,
+                            CreateAt = DateTime.Now,
+                            Status = SD.Request_Accept,
+                            RequestId = requestCus.RequestId
+                        };
+                        await _unitOfWork.BillService.Add(CusBill);
+                        //Update Bill-request to done
+                        requestCus.Status = SD.Request_Accept;
+                        await _unitOfWork.RequestService.Update(requestCus);
+                        //Cancel Posting-request
+                        var requestPosting = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == requestPost);
+                        requestPosting.Status = SD.Request_Cancel;
+                        await _unitOfWork.RequestService.Update(requestPosting);
+                        //*** Add OwnerBill ***
+                        var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegotiationRequestID);
+                        BillConfirm OwnerBill = new()
+                        {
+                            MotorId = (int)NegoRequest.MotorId,
+                            UserId = (int)NegoRequest.ReceiverId,
+                            StoreId = (int)obj.StoreId,
+                            Price = Negotiation.FinalPrice,
+                            CreateAt = DateTime.Now,
+                            Status = SD.Request_Accept,
+                            RequestId = NegoRequest.RequestId
+                        };
+                        //----------------
+                        //Update Motor Ownership
+                        obj.MotorStatusId = SD.Status_Storage;
+                        obj.StoreId = null;
+                        obj.OwnerId = (int) newUser;
+                        await _unitOfWork.MotorBikeService.Update(obj);
+                        //---------------------
+                        _response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.Result = CusBill;
+                        return Ok(_response);
+                    }                    
                 }
             }
             catch (Exception ex)
