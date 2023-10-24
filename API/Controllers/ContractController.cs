@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Service.BlobImageService;
 using Service.Service;
 using Service.UnitOfWork;
+using System.Collections.Generic;
 using System.Net;
 
 namespace API.Controllers
@@ -75,13 +76,26 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
 					return NotFound(_response);
 				}
-				var contract = await _unitOfWork.ContractService.GetFirst(x => x.BaseRequestId == request.RequestId);
-				if(contract != null && contract.Status == SD.Request_Pending)
+				if (request.SenderId != userId)
 				{
 					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add("Bạn không có quyền này!");
+					return BadRequest(_response);
+				}
+				var list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+						&& x.RequestTypeId == SD.Request_Negotiation_Id
+						&& x.MotorId == request.MotorId
+						//&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())));
+
+
+				if (list.Count() > 0)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadRequest;
 					_response.ErrorMessages.Add("Bạn đã tạo hợp đồng!");
-					return NotFound(_response);
+					return BadRequest(_response);
 				}
 				if (booking.Status == SD.Request_Cancel || request.Status == SD.Request_Cancel)
 				{
@@ -90,13 +104,7 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Bạn không thể tạo hợp đồng với xe này!");
 					return NotFound(_response);
 				}
-				if (request.SenderId != userId)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Bạn không có quyền này!");
-					return BadRequest(_response);
-				}
+				
 				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == request.MotorId);
 				if(motor == null || motor.MotorStatusId != SD.Status_Consignment && motor.MotorStatusId != SD.Status_nonConsignment)
 				{
@@ -105,9 +113,9 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Xe này đã bán hoặc đã bị xóa!");
 					return BadRequest(_response);
 				}
-				
+				var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
 				var newContract = _mapper.Map<Contract>(dto);
-				newContract.StoreId = userId;
+				newContract.StoreId = store.StoreId;
 				newContract.CreatedAt = DateTime.Now;
 				newContract.BookingId = bookingId;
 				newContract.BaseRequestId = booking.BaseRequestId;
@@ -144,6 +152,108 @@ namespace API.Controllers
 			}
 		}
 
+		[Authorize(Roles = "Store")]
+		[HttpPut]
+		[Route("ReUpContract")]
+		public async Task<IActionResult> ReUpContract(int contractId, [FromForm] ContractCreateDTO dto, List<IFormFile> images)
+		{
+			try
+			{
+				var userId = int.Parse(User.FindFirst("UserId")?.Value);
+				var rs = InputValidation.ContractValidation(dto.Content, images);
+				if (rs != "")
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add(rs);
+					return BadRequest(_response);
+				}
+
+				var contract = await _unitOfWork.ContractService.GetFirst(x => x.ContractId == contractId);
+				if(contract == null)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+					return NotFound(_response);
+				}
+				if(contract.Status != SD.Request_Cancel)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không thể tải lại hợp đồng!");
+					return NotFound(_response);
+				}
+
+				var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == contract.BaseRequestId);
+				if (request == null)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+					return NotFound(_response);
+				}
+				if (request.SenderId != userId)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add("Bạn không có quyền này!");
+					return BadRequest(_response);
+				}
+			
+				var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == request.MotorId);
+				if (motor == null || motor.MotorStatusId != SD.Status_Consignment && motor.MotorStatusId != SD.Status_nonConsignment)
+				{
+					_response.IsSuccess = false;
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					_response.ErrorMessages.Add("Xe này đã bán hoặc đã bị xóa!");
+					return BadRequest(_response);
+				}
+				var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
+				var oldImage = await _unitOfWork.ContractImageService.Get(x => x.ContractId == contractId);
+
+				if (oldImage.Count() > 0)
+				{
+					foreach (var item in oldImage)
+					{
+						var oldLisenceImg = item.ImageLink.Split('/').Last();
+						await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
+						await _unitOfWork.ContractImageService.Delete(item);
+					}
+				}
+
+				contract.Status = SD.Request_Pending;
+				contract.Content = dto.Content;
+				await _unitOfWork.ContractService.Update(contract);
+				
+				foreach (var item in images)
+				{
+					string file = $"{Guid.NewGuid()}{Path.GetExtension(item.FileName)}";
+					var img = await _blobService.UploadBlob(file, SD.Storage_Container, item);
+					ContractImage image = new()
+					{
+						ContractId = contract.ContractId,
+						ImageLink = img
+					};
+					await _unitOfWork.ContractImageService.Add(image);
+				}
+				_response.IsSuccess = true;
+				_response.Message = "Tải lại hợp đồng thành công, vui lòng chờ người bán xác nhận!";
+				_response.StatusCode = HttpStatusCode.OK;
+				return Ok(_response);
+			}
+			catch (Exception ex)
+			{
+				_response.IsSuccess = false;
+				_response.StatusCode = HttpStatusCode.BadRequest;
+				_response.ErrorMessages = new List<string>()
+						{
+							ex.ToString()
+						};
+				return BadRequest();
+			}
+		}
+
 		[Authorize(Roles =("Store, Owner"))]
 		[HttpGet]
 		[Route("GetContract")]
@@ -158,8 +268,8 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						&& x.Status == SD.Request_Pending
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending))),
+						//&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())),
 						includeProperties: new string[]
 						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
 					  "Receiver", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
@@ -168,8 +278,9 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						&& x.Status == SD.Request_Pending
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending))),
+						//&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
+						|| s.Status == SD.Request_Accept))),
 						includeProperties: new string[]
 						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
 					  "Receiver", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
@@ -232,17 +343,19 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Bạn không có quyền này!");
 					return BadRequest(_response);
 				}
-				IEnumerable<ContractImage> img = await _unitOfWork.ContractImageService.Get(x => x.ContractId == contractId);
-				if(img.Count() > 0)
-				{
-					foreach (var item in img)
-					{
-						var oldLisenceImg = item.ImageLink.Split('/').Last();
-						await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
-						await _unitOfWork.ContractImageService.Delete(item);
-					}
-				}
-				await _unitOfWork.ContractService.Delete(contract);
+				//IEnumerable<ContractImage> img = await _unitOfWork.ContractImageService.Get(x => x.ContractId == contractId);
+				//if(img.Count() > 0)
+				//{
+				//	foreach (var item in img)
+				//	{
+				//		var oldLisenceImg = item.ImageLink.Split('/').Last();
+				//		await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
+				//		await _unitOfWork.ContractImageService.Delete(item);
+				//	}
+				//}
+				//await _unitOfWork.ContractService.Delete(contract);
+				contract.Status = SD.Request_Cancel;
+				await _unitOfWork.ContractService.Update(contract);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Message = "Từ chối thành công!";
@@ -307,16 +420,18 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
 					return NotFound(_response);
 				}
+		
 				contract.Status = SD.Request_Accept;
 				await _unitOfWork.ContractService.Update(contract);
 				motor.MotorStatusId = SD.Status_Storage;
-				motor.StoreId = (int)contract.StoreId;
+				motor.StoreId = contract.StoreId;
 				motor.Price = negotiation.FinalPrice;
 				await _unitOfWork.MotorBikeService.Update(motor);
 				request.Status = SD.Request_Accept;
 				await _unitOfWork.RequestService.Update(request);
 
 				IEnumerable<Request> requestList = await _unitOfWork.RequestService.Get(x => x.MotorId == motor.MotorId
+				&& x.SenderId != userId
 				&& x.Status == SD.Request_Pending
 				&& x.RequestTypeId == SD.Request_Negotiation_Id);
 				if(requestList.Count() > 0)
