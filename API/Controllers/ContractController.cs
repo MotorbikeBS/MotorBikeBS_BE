@@ -283,7 +283,7 @@ namespace API.Controllers
 						|| s.Status == SD.Request_Accept))),
 						includeProperties: new string[]
 						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
-					  "Receiver", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
+					  "Sender", "Sender.StoreDesciptions", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
 				}
 				if (list.Count() > 0)
 				{
