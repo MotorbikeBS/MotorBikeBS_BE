@@ -194,7 +194,7 @@ namespace API.Controllers
 			}
 		}
 
-		[Authorize(Roles = "Owner")]
+		[Authorize(Roles = "Store")]
 		[HttpPut]
 		[Route("AcceptBooking")]
 		public async Task<IActionResult> AcceptBooking(int bookingId)
@@ -257,7 +257,7 @@ namespace API.Controllers
 			}
 		}
 
-		[Authorize(Roles = "Owner")]
+		[Authorize(Roles = "Store")]
 		[HttpPut]
 		[Route("RejectBooking")]
 		public async Task<IActionResult> RejectBooking(int bookingId)
