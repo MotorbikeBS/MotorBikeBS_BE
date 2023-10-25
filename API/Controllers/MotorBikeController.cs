@@ -473,7 +473,8 @@ namespace API.Controllers
                 else
                 {
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                    if (userId != motor.StoreId && userId != motor.OwnerId)
+                    var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
+                    if (Store.UserId != motor.StoreId && userId != motor.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.IsSuccess = false;
@@ -536,7 +537,9 @@ namespace API.Controllers
                 {
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
                     var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
-                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
+                    int StoreID = (Store == null) ? 0 : Store.StoreId;
+                    if (StoreID != obj.StoreId && userId != obj.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.IsSuccess = false;
@@ -627,7 +630,9 @@ namespace API.Controllers
                 else
                 {
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
+                    int StoreID = (Store == null) ? 0 : Store.StoreId;
+                    if (StoreID != obj.StoreId && userId != obj.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.IsSuccess = false;
@@ -653,7 +658,8 @@ namespace API.Controllers
                         }
                         //Cancel all request except Register and Negotiation
                         var requestEdit = await _unitOfWork.RequestService.Get( e => e.MotorId == MotorID 
-                                                                           && ( e.RequestTypeId != SD.Request_Motor_Register || e.RequestTypeId != SD.Request_Negotiation_Id )
+                                                                           && e.RequestTypeId != SD.Request_Motor_Register
+                                                                           && e.RequestTypeId != SD.Request_Negotiation_Id
                         );
                         foreach (var r in requestEdit)
                         {
@@ -745,7 +751,7 @@ namespace API.Controllers
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.Result = false;
-                        _response.ErrorMessages.Add("Vui lòng tải lên hình ảnh hợp lệ!");
+                        _response.ErrorMessages.Add("Ảnh không tồn tại hoặc định dạng không phù hợp!");
                         return BadRequest(_response);
                     }
                     else if (images.Count > 30)
@@ -756,7 +762,9 @@ namespace API.Controllers
                         return BadRequest(_response);
                     }
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
+                    int StoreID = (Store == null) ? 0 : Store.StoreId;
+                    if (StoreID != obj.StoreId && userId != obj.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.IsSuccess = false;
@@ -853,7 +861,7 @@ namespace API.Controllers
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.Result = false;
-                        _response.ErrorMessages.Add("Vui lòng tải lên hình ảnh hợp lệ!");
+                        _response.ErrorMessages.Add("Ảnh không tồn tại hoặc định dạng không phù hợp!");
                         return BadRequest(_response);
                     }
                     else if (images.Count > 30)

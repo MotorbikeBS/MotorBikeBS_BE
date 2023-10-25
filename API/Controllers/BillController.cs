@@ -153,7 +153,9 @@ namespace API.Controllers
                 {
                     int requestPost = 0;
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
+                    int StoreID = (Store == null) ? 0 : Store.StoreId;
+                    if (StoreID != obj.StoreId && userId != obj.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.IsSuccess = false;
@@ -283,9 +285,11 @@ namespace API.Controllers
                 }
                 else
                 {
-                    int requestPost = 0;
+                    int requestPost = 0;    
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
+                    int StoreID = (Store == null) ? 0 : Store.StoreId;
+                    if (StoreID != obj.StoreId && userId != obj.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.IsSuccess = false;
@@ -456,7 +460,9 @@ namespace API.Controllers
                 {
                     int requestPost = 0;
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                    if (userId != obj.StoreId && userId != obj.OwnerId)
+                    var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
+                    int StoreID = (Store == null) ? 0 : Store.StoreId;
+                    if (StoreID != obj.StoreId && userId != obj.OwnerId)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.IsSuccess = false;
