@@ -76,10 +76,7 @@ namespace API.Controllers
         {
             try
             {
-                var listDatabase = await _unitOfWork.MotorBikeService.Get(e =>
-                    (e.MotorStatusId == SD.Status_Posting || (e.MotorStatusId == SD.Status_nonConsignment && e.StoreId != null)),
-                    SD.GetMotorArray
-                );
+                var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId != SD.Status_Storage && e.StoreId != null, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 foreach (var r in listResponse)
                 {
@@ -455,68 +452,68 @@ namespace API.Controllers
             }
         }
 
-        [HttpPut]
-        [Authorize(Roles = "Store,Owner")]
-        [Route("UpdateMotor-Owner")]
-        public async Task<IActionResult> Update_MotorOwner(int MotorID, int newUserID)
-        {
-            try
-            {
-                var motor = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == MotorID);
-                if (motor == null)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(_response);
-                }
-                else
-                {
-                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                    var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
-                    if (Store.UserId != motor.StoreId && userId != motor.OwnerId)
-                    {
-                        _response.StatusCode = HttpStatusCode.BadRequest;
-                        _response.IsSuccess = false;
-                        _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
-                        return BadRequest(_response);
-                    }
-                    else
-                    {
-                        Request request = new()
-                        {
-                            MotorId = MotorID,
-                            ReceiverId = motor.OwnerId,
-                            SenderId = newUserID,
-                            Time = DateTime.Now,
-                            RequestTypeId = SD.Request_MotorTranfer_Id,
-                            Status = SD.Request_Accept
-                        };
-                        await _unitOfWork.RequestService.Add(request);
+        //[HttpPut]
+        //[Authorize(Roles = "Store,Owner")]
+        //[Route("UpdateMotor-Owner")]
+        //public async Task<IActionResult> Update_MotorOwner(int MotorID, int newUserID)
+        //{
+        //    try
+        //    {
+        //        var motor = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == MotorID);
+        //        if (motor == null)
+        //        {
+        //            _response.ErrorMessages.Add("Không tìm thấy xe này!");
+        //            _response.IsSuccess = false;
+        //            _response.StatusCode = HttpStatusCode.NotFound;
+        //            return NotFound(_response);
+        //        }
+        //        else
+        //        {
+        //            var userId = int.Parse(User.FindFirst("UserId")?.Value);
+        //            var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
+        //            if (Store.UserId != motor.StoreId && userId != motor.OwnerId)
+        //            {
+        //                _response.StatusCode = HttpStatusCode.BadRequest;
+        //                _response.IsSuccess = false;
+        //                _response.ErrorMessages.Add("Xe không thuộc quyền của người dùng!");
+        //                return BadRequest(_response);
+        //            }
+        //            else
+        //            {
+        //                Request request = new()
+        //                {
+        //                    MotorId = MotorID,
+        //                    ReceiverId = motor.OwnerId,
+        //                    SenderId = newUserID,
+        //                    Time = DateTime.Now,
+        //                    RequestTypeId = SD.Request_MotorTranfer_Id,
+        //                    Status = SD.Request_Accept
+        //                };
+        //                await _unitOfWork.RequestService.Add(request);
 
-                        motor.OwnerId = newUserID;
-                        motor.StoreId = null;
-                        motor.MotorStatusId = SD.Status_Storage;
+        //                motor.OwnerId = newUserID;
+        //                motor.StoreId = null;
+        //                motor.MotorStatusId = SD.Status_Storage;
 
-                        await _unitOfWork.MotorBikeService.Update(motor);
-                        _response.IsSuccess = true;
-                        _response.StatusCode = HttpStatusCode.OK;
-                        _response.Result = motor;
-                    }
-                    return Ok(_response);
-                }
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessages = new List<string>()
-                {
-                    ex.ToString()
-                };
-                return BadRequest(_response);
-            }
-        }
+        //                await _unitOfWork.MotorBikeService.Update(motor);
+        //                _response.IsSuccess = true;
+        //                _response.StatusCode = HttpStatusCode.OK;
+        //                _response.Result = motor;
+        //            }
+        //            return Ok(_response);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _response.IsSuccess = false;
+        //        _response.StatusCode = HttpStatusCode.BadRequest;
+        //        _response.ErrorMessages = new List<string>()
+        //        {
+        //            ex.ToString()
+        //        };
+        //        return BadRequest(_response);
+        //    }
+        //}
 
         [HttpPut]
         [Authorize(Roles = "Store,Owner")]
