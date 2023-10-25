@@ -651,8 +651,10 @@ namespace API.Controllers
                             _response.ErrorMessages.Add("Xe chưa được đăng lên sàn!");
                             return BadRequest(_response);
                         }
-                        //Cancel all request except Register
-                        var requestEdit = await _unitOfWork.RequestService.Get( e => e.MotorId == MotorID && e.RequestTypeId != SD.Request_Motor_Register);
+                        //Cancel all request except Register and Negotiation
+                        var requestEdit = await _unitOfWork.RequestService.Get( e => e.MotorId == MotorID 
+                                                                           && ( e.RequestTypeId != SD.Request_Motor_Register || e.RequestTypeId != SD.Request_Negotiation_Id )
+                        );
                         foreach (var r in requestEdit)
                         {
                             r.Status = SD.Request_Cancel;
