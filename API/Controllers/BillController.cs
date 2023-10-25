@@ -256,11 +256,14 @@ namespace API.Controllers
         [HttpPost]
         [Authorize(Roles = "Store")]
         [Route("CreateBill-Consignment")]
-        public async Task<IActionResult> BillforConsignment(int newUser, int NegotiationRequestID)
+        public async Task<IActionResult> BillforConsignment(int newUser, int MotorID)
         {
             try
-            {
-                var NegoRequest = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == NegotiationRequestID);
+            {                
+                var NegoRequest = await _unitOfWork.RequestService.GetLast(e => e.MotorId == MotorID
+                                                                        && e.RequestTypeId == SD.Request_Negotiation_Id
+                                                                        && e.Status == SD.Request_Accept
+                );
                 if (NegoRequest == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -363,7 +366,7 @@ namespace API.Controllers
                     requestPosting.Status = SD.Request_Cancel;
                     await _unitOfWork.RequestService.Update(requestPosting);
                     //*** Add OwnerBill ***
-                    var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegotiationRequestID);
+                    var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
                     BillConfirm OwnerBill = new()
                     {
                         MotorId = (int)NegoRequest.MotorId,
@@ -402,12 +405,15 @@ namespace API.Controllers
         [HttpPost]
         [Authorize(Roles = "Store")]
         [Route("CreateBill-nonConsignment")]
-        public async Task<IActionResult> BillforNonConsignment(int NegotiationRequestID, int BuyerBookingID)
+        public async Task<IActionResult> BillforNonConsignment(int MotorID)
         {
             try
             {
                 //Check Negotiation request
-                var NegoRequest = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == NegotiationRequestID);
+                var NegoRequest = await _unitOfWork.RequestService.GetLast(e => e.MotorId == MotorID
+                                                                        && e.RequestTypeId == SD.Request_Negotiation_Id
+                                                                        && e.Status == SD.Request_Accept
+                );
                 if (NegoRequest == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -423,7 +429,18 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
                 //Check BuyerBooking request
-                var BuyerBooking = await _unitOfWork.BuyerBookingService.GetFirst(e => e.BookingId == BuyerBookingID);
+                var BuyerRequest = await _unitOfWork.RequestService.GetLast(e => e.MotorId == MotorID
+                                                                        && e.RequestTypeId == SD.Request_Booking_Id
+                                                                        && e.Status == SD.Request_Accept
+                );
+                if (BuyerRequest == null)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Không tìm thấy yêu cầu đặt lịch xem xe!");
+                    return BadRequest(_response);
+                }
+                var BuyerBooking = await _unitOfWork.BuyerBookingService.GetFirst(e => e.RequestId == BuyerRequest.RequestId);
                 if (BuyerBooking == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -438,7 +455,6 @@ namespace API.Controllers
                     _response.ErrorMessages.Add("Lịch xem xe chưa được duyệt!");
                     return BadRequest(_response);
                 }
-                var BuyerRequest = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == BuyerBooking.RequestId);
                 //Check the same motor
                 if (NegoRequest.MotorId != BuyerRequest.MotorId)
                 {
@@ -535,7 +551,7 @@ namespace API.Controllers
                         requestPosting.Status = SD.Request_Cancel;
                         await _unitOfWork.RequestService.Update(requestPosting);
                         //*** Add OwnerBill ***
-                        var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegotiationRequestID);
+                        var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
                         BillConfirm OwnerBill = new()
                         {
                             MotorId = (int)NegoRequest.MotorId,
