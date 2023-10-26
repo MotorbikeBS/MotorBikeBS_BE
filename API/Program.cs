@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Service.BlobImageService;
+using Service.PagingUriGenerator;
 using Service.Repository;
 using Service.Service;
 using Service.UnitOfWork;
@@ -32,7 +33,14 @@ builder.Services.AddCors();
 builder.Services.AddSingleton(u => new BlobServiceClient(
     builder.Configuration.GetConnectionString("StorageAccount")));
 builder.Services.AddSingleton<IBlobService, BlobService>();
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IPagingUriService>(o =>
+{
+    var accessor = o.GetRequiredService<IHttpContextAccessor>();
+    var request = accessor.HttpContext.Request;
+    var uri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent());
+    return new PagingUriService(uri);
+});
 //Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {

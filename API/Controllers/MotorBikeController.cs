@@ -9,11 +9,16 @@ using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Service.BlobImageService;
+using Service.PagingUriGenerator;
 using Service.UnitOfWork;
+using Service.Wrappers;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
+using VOP_API.Helpers;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Controllers
@@ -26,13 +31,15 @@ namespace API.Controllers
         private ApiResponse _response;
         private readonly IMapper _mapper;
         private readonly IBlobService _blobService;
+        private readonly IPagingUriService _uriService;
 
-        public MotorBikeController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService)
+        public MotorBikeController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService, IPagingUriService pagingUriService)
         {
             _unitOfWork = unitOfWork;
             _response = new ApiResponse();
             _mapper = mapper;
             _blobService = blobService;
+            _uriService = pagingUriService;
         }
 
         //[HttpGet("GetAllWithSpecificStatus")]
@@ -72,10 +79,18 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("GetAllOnExchange")]
-        public async Task<IActionResult> GetAllOnExchange()
+        public async Task<IActionResult> GetAllOnExchange([FromQuery] PaginationFilter paginationFilter)
         {
             try
             {
+                // Paging
+                if (paginationFilter == null)
+                {
+                    paginationFilter = new PaginationFilter();
+                }
+                var route = Request.Path.Value;
+                var validFilter = new PaginationFilter(paginationFilter.PageNumber, paginationFilter.PageSize);
+                //----------------------
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId != SD.Status_Storage && e.StoreId != null, SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 foreach (var r in listResponse)
@@ -98,9 +113,14 @@ namespace API.Controllers
                 }
                 else
                 {
+                    // Paging
+                    var pagedData = listResponse.ToList().Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize);
+                    var totalRecords = listDatabase.Count();
+                    var pagedReponse = PaginationHelper.CreatePagedReponse<MotorResponseDTO>(pagedData.ToList(), validFilter, totalRecords, _uriService, route);
+                    //-------------------
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = listResponse;
+                    _response.Result = pagedReponse;
                 }
                 return Ok(_response);
             }
@@ -118,10 +138,18 @@ namespace API.Controllers
 
         [Authorize(Roles = "Store")]
         [HttpGet("GetAllOnStoreExchange")]
-        public async Task<IActionResult> GetAllOnStoreExchange()
+        public async Task<IActionResult> GetAllOnStoreExchange([FromQuery] PaginationFilter paginationFilter)
         {
             try
             {
+                // Paging
+                if (paginationFilter == null)
+                {
+                    paginationFilter = new PaginationFilter();
+                }
+                var route = Request.Path.Value;
+                var validFilter = new PaginationFilter(paginationFilter.PageNumber, paginationFilter.PageSize);
+                //----------------------
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(
                     expression: e => (e.MotorStatusId == SD.Status_Consignment || e.MotorStatusId == SD.Status_nonConsignment) && e.StoreId == null,
                     includeProperties: SD.GetMotorArray
@@ -147,9 +175,14 @@ namespace API.Controllers
                 }
                 else
                 {
+                    // Paging
+                    var pagedData = listResponse.ToList().Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize);
+                    var totalRecords = listDatabase.Count();
+                    var pagedReponse = PaginationHelper.CreatePagedReponse<MotorResponseDTO>(pagedData.ToList(), validFilter, totalRecords, _uriService, route);
+                    //-------------------
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = listResponse;
+                    _response.Result = pagedReponse;
                 }
                 return Ok(_response);
             }
@@ -309,8 +342,7 @@ namespace API.Controllers
                 {
                     case SD.Role_Customer_Id:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                        expression: motor => motor.MotorName.Contains(motorName) &&
-                            (motor.MotorStatusId == SD.Status_Posting || ( motor.MotorStatusId == SD.Status_nonConsignment && motor.StoreId != null)),
+                        expression: motor => motor.MotorName.Contains(motorName) && motor.StoreId != null,
                         includeProperties: SD.GetMotorArray
                         );
                         break;
@@ -370,7 +402,7 @@ namespace API.Controllers
                 {
                     case SD.Role_Customer_Id:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                        expression: motor => motor.MotorStatusId == SD.Status_Posting || (motor.MotorStatusId == SD.Status_nonConsignment && motor.StoreId != null),
+                        expression: motor =>  motor.StoreId != null,
                         includeProperties: SD.GetMotorArray
                         );
                         break;
