@@ -196,6 +196,14 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
+				var contract = await _unitOfWork.ContractService.GetFirst(x => x.BaseRequestId == request.RequestId);
+				if(contract != null && contract.Status == SD.Request_Accept)
+				{
+					_response.IsSuccess = false;
+					_response.ErrorMessages.Add("Đã tạo hợp đồng, không thể hủy lịch hẹn!");
+					_response.StatusCode = HttpStatusCode.BadRequest;
+					return BadRequest(_response);
+				}
 				if (booking.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
