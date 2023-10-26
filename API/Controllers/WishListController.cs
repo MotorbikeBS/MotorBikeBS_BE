@@ -77,7 +77,9 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy xe máy!");
 					return NotFound(_response);
 				}
-				if (motor.MotorStatusId != SD.Status_Posting && motor.MotorStatusId != SD.Status_nonConsignment)
+				if (motor.MotorStatusId != SD.Status_Posting 
+					&& motor.MotorStatusId != SD.Status_nonConsignment
+					&& motor.MotorStatusId != SD.Status_Consignment)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;

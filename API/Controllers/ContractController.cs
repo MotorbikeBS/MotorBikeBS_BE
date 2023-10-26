@@ -86,7 +86,7 @@ namespace API.Controllers
 				var list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
 						&& x.MotorId == request.MotorId
-						//&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+						&& x.Status != SD.Request_Cancel
 						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())));
 
 
@@ -268,7 +268,7 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						//&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+						&& x.Status != SD.Request_Cancel
 						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())),
 						includeProperties: new string[]
 						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
@@ -278,7 +278,7 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						//&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+						&& x.Status != SD.Request_Cancel
 						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
 						|| s.Status == SD.Request_Accept))),
 						includeProperties: new string[]
@@ -440,6 +440,12 @@ namespace API.Controllers
 					{
 						item.Status = SD.Request_Cancel;
 						await _unitOfWork.RequestService.Update(item);
+						var contractCancel = await _unitOfWork.ContractService.GetFirst(x => x.BaseRequestId == item.RequestId);
+						if(contractCancel != null)
+						{
+							contractCancel.Status = SD.Request_Cancel;
+							await _unitOfWork.ContractService.Update(contractCancel);
+						}
 					}
 				}
 				_response.IsSuccess = true;
