@@ -123,7 +123,7 @@ namespace API.Controllers
             try
             {
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(
-                    expression: e => e.MotorStatusId == SD.Status_Consignment || (e.MotorStatusId == SD.Status_nonConsignment && e.StoreId == null),
+                    expression: e => (e.MotorStatusId == SD.Status_Consignment || e.MotorStatusId == SD.Status_nonConsignment) && e.StoreId == null,
                     includeProperties: SD.GetMotorArray
                 );
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
