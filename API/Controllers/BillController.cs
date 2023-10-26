@@ -149,6 +149,13 @@ namespace API.Controllers
                     _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
+                else if (obj.MotorStatusId != SD.Status_Posting)
+                {
+                    _response.ErrorMessages.Add("Xe đã chọn không phải xe có sẵn tại cửa hàng!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 else
                 {
                     int requestPost = 0;
@@ -282,6 +289,13 @@ namespace API.Controllers
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else if (obj.MotorStatusId != SD.Status_Consignment)
+                {
+                    _response.ErrorMessages.Add("Xe đã chọn không phải xe ký gửi tại cửa hàng!");
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
@@ -468,6 +482,13 @@ namespace API.Controllers
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else if (obj.MotorStatusId != SD.Status_nonConsignment)
+                {
+                    _response.ErrorMessages.Add("Xe đã chọn không phải xe không ký gửi tại cửa hàng!");
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
