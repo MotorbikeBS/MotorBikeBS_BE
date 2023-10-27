@@ -306,7 +306,7 @@ namespace API.Controllers
 			}
 		}
 
-		[Authorize(Roles = "Store")]
+		[Authorize(Roles = "Customer")]
 		[HttpPut]
 		[Route("CancelBooking")]
 		public async Task<IActionResult> CancelBooking(int bookingId)
