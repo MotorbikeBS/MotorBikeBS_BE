@@ -444,9 +444,9 @@ namespace API.Controllers
                     motorbikes = motorbikes.Where(m => m.Price <= filter.maxPrice.Value).ToList();
                 }
 
-                if (filter.MotorTypeId.HasValue)
+                if (filter.MotorTypeId != null && filter.MotorTypeId.Any())
                 {
-                    motorbikes = motorbikes.Where(m => m.MotorTypeId == filter.MotorTypeId).ToList();
+                    motorbikes = motorbikes.Where(m => (filter.MotorTypeId).Contains((int)m.MotorTypeId)).ToList();
                 }
 
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);

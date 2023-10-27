@@ -8,7 +8,7 @@ namespace API.DTO.FilterDTO
         public List<int>? ModelId { get; set; }
         public decimal? minPrice { get; set; } 
         public decimal? maxPrice { get; set; }
-        public int? MotorTypeId { get; set; }
+        public List<int>? MotorTypeId { get; set; }
 
     }
 }
