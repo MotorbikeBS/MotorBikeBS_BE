@@ -342,14 +342,17 @@ namespace API.Controllers
                 {
                     case SD.Role_Customer_Id:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                        expression: motor => motor.MotorName.Contains(motorName) && motor.StoreId != null,
+                        expression: motor => motor.MotorName.Contains(motorName) 
+                            && motor.MotorStatusId != SD.Status_Storage
+                            && motor.StoreId != null,
                         includeProperties: SD.GetMotorArray
                         );
                         break;
                     default:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                        expression: motor => motor.MotorName.Contains(motorName) && 
-                            (motor.MotorStatusId == SD.Status_Consignment || (motor.MotorStatusId == SD.Status_nonConsignment && motor.StoreId == null)),
+                        expression: motor => motor.MotorName.Contains(motorName) 
+                            && (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_nonConsignment)
+                            && motor.StoreId == null ,
                         includeProperties: SD.GetMotorArray
                        );
                         break;
@@ -402,7 +405,7 @@ namespace API.Controllers
                 {
                     case SD.Role_Customer_Id:
                         motorbikes = await _unitOfWork.MotorBikeService.Get(
-                        expression: motor =>  motor.StoreId != null,
+                        expression: motor => motor.MotorStatusId != SD.Status_Storage && motor.StoreId != null,
                         includeProperties: SD.GetMotorArray
                         );
                         break;
