@@ -51,16 +51,15 @@ namespace API.Controllers
 				if (motor == null)
 				{
 					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Không tìm thấy xe máy!");
 					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy xe máy!");
 					return NotFound(_response);
 				}
 
 				IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 				&& x.RequestTypeId == SD.Request_Booking_Id
 				&& x.MotorId == motorId
-				&& x.Status != SD.Request_Cancel
-				&& x.Status != SD.Request_Reject);
+				&& x.Status == SD.Request_Pending);
 
 				if (list.Count() > 0)
 				{
@@ -72,10 +71,18 @@ namespace API.Controllers
 
 				if (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_nonConsignment)
 				{
+					var userIdStore = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == motor.StoreId);
+					if(userIdStore == null)
+					{
+						_response.IsSuccess = false;
+						_response.ErrorMessages.Add("Không tìm thấy người dùng!");
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						return BadRequest(_response);
+					}
 					Request request = new()
 					{
 						MotorId = motorId,
-						ReceiverId = motor.OwnerId,
+						ReceiverId = userIdStore.UserId,
 						SenderId = userId,
 						Time = DateTime.Now,
 						RequestTypeId = SD.Request_Booking_Id,
@@ -90,8 +97,8 @@ namespace API.Controllers
 
 					await _unitOfWork.BuyerBookingService.Add(bookingCreate);
 					_response.IsSuccess = true;
-					_response.Message = "Đặt lịch thành công, vui lòng chờ người bán xác nhận!";
 					_response.StatusCode = HttpStatusCode.OK;
+					_response.Message = "Đặt lịch thành công, vui lòng chờ người bán xác nhận!";
 					return Ok(_response);
 				}
 				else
