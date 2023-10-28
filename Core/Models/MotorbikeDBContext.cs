@@ -43,18 +43,18 @@ namespace Core.Models
         public virtual DbSet<Ward> Wards { get; set; } = null!;
         public virtual DbSet<Wishlist> Wishlists { get; set; } = null!;
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            var d = Directory.GetCurrentDirectory();
-            IConfigurationRoot configuration = builder.Build();
-            string connectionString = configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseSqlServer(connectionString);
-        }
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+			var d = Directory.GetCurrentDirectory();
+			IConfigurationRoot configuration = builder.Build();
+			string connectionString = configuration.GetConnectionString("DefaultConnection");
+			optionsBuilder.UseSqlServer(connectionString);
+		}
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -127,9 +127,7 @@ namespace Core.Models
 
                 entity.ToTable("BuyerBooking");
 
-                entity.Property(e => e.BookingId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("booking_id");
+                entity.Property(e => e.BookingId).HasColumnName("booking_id");
 
                 entity.Property(e => e.BookingDate)
                     .HasColumnType("datetime")
