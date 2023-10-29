@@ -139,15 +139,18 @@ namespace API.Controllers
 				{
 					requestBooking = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 					&& x.RequestTypeId == SD.Request_Booking_Id
-					&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now),
+					&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now)
+					&& x.Status != SD.Request_Cancel 
+					&& x.Status != SD.Request_Reject,
 					includeProperties: new string[] { "BuyerBookings", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Sender" });
 				}
 				else
 				{
 					requestBooking = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Booking_Id
+					&& x.Status != SD.Request_Cancel
 					&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now),
-					includeProperties: new string[] { "BuyerBookings", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver" });
+					includeProperties: new string[] { "BuyerBookings", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver", "Receiver.StoreDesciptions" });
 				}
 
 				//var response = new List<BookingResponseRequestDTO>();
