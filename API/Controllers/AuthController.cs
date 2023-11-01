@@ -135,7 +135,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Email hoặc mặt khẩu không đúng!");
+					_response.ErrorMessages.Add("Email hoặc mật khẩu không đúng!");
 					return NotFound(_response);
 				}
 				else if (!VerifyPasswordHash(obj.Password, user.PasswordHash, user.PasswordSalt))
@@ -156,7 +156,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Tài khoản đã bị khóa, do vi phạm, vui lòng liện hệ Admin để được hỗ trợ!");
+					_response.ErrorMessages.Add("Tài khoản đã bị khóa do vi phạm, vui lòng liên hệ Admin để được hỗ trợ!");
 					return BadRequest(_response);
 				}
 				else
@@ -329,7 +329,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Độ dài mật khẩu phải từ 6 kí tự trở lên!");
+					_response.ErrorMessages.Add("Độ dài mật khẩu phải từ 6 ký tự trở lên!");
 					return BadRequest(_response);
 				}
 				var user = await _unitOfWork.UserService.GetFirst(x => x.PasswordResetToken == token);

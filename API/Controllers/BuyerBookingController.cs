@@ -59,7 +59,8 @@ namespace API.Controllers
 				IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 				&& x.RequestTypeId == SD.Request_Booking_Id
 				&& x.MotorId == motorId
-				&& x.Status == SD.Request_Pending);
+				&& x.Status == SD.Request_Pending
+				&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now));
 
 				if (list.Count() > 0)
 				{
