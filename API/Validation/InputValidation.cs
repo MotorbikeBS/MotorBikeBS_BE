@@ -375,11 +375,11 @@ namespace API.Validation
         public static void StatusIfAdmin<TEntity>(TEntity entity, int roleid)
         {
             PropertyInfo statusProperty = entity.GetType().GetProperty("Status");
-            string statusValue = (string)statusProperty.GetValue(entity);
             if (statusProperty == null)
             {
                 throw new ArgumentException("The 'Status' property does not exist on the entity.");
             }
+            string statusValue = (string)statusProperty.GetValue(entity);
             switch (roleid)
             {
 				case SD.Role_Admin_Id:
@@ -399,6 +399,14 @@ namespace API.Validation
                     break;
             }
 			return string.Empty;
+        }
+        public static string RemoveExtraSpaces(string input)
+        {
+            if (input == null)
+            {
+                throw new ArgumentNullException("input");
+            }
+            return Regex.Replace(input.Trim(), @"\s+", " ");
         }
     }
 }

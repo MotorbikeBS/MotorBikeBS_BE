@@ -337,6 +337,7 @@ namespace API.Controllers
             try
             {
                 var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                motorName = InputValidation.RemoveExtraSpaces(motorName);
                 IEnumerable<Motorbike>? motorbikes;
                 switch (roleId)
                 {
