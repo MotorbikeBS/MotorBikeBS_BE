@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.DTO.BookingDTO;
+using API.DTO.BookingNegotiationDTO;
 using API.DTO.BuyerBookingDTO;
 using API.Utility;
 using API.Validation;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
+using System.Collections.Generic;
 using System.Net;
 
 namespace API.Controllers
@@ -49,16 +51,16 @@ namespace API.Controllers
 				if (motor == null)
 				{
 					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Không tìm thấy xe máy!");
 					_response.StatusCode = HttpStatusCode.NotFound;
+					_response.ErrorMessages.Add("Không tìm thấy xe máy!");
 					return NotFound(_response);
 				}
 
 				IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 				&& x.RequestTypeId == SD.Request_Booking_Id
 				&& x.MotorId == motorId
-				&& x.Status != SD.Request_Cancel
-				&& x.Status != SD.Request_Reject);
+				&& x.Status == SD.Request_Pending
+				&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now));
 
 				if (list.Count() > 0)
 				{
@@ -70,10 +72,18 @@ namespace API.Controllers
 
 				if (motor.MotorStatusId == SD.Status_Consignment || motor.MotorStatusId == SD.Status_nonConsignment)
 				{
+					var userIdStore = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == motor.StoreId);
+					if(userIdStore == null)
+					{
+						_response.IsSuccess = false;
+						_response.ErrorMessages.Add("Không tìm thấy người dùng!");
+						_response.StatusCode = HttpStatusCode.BadRequest;
+						return BadRequest(_response);
+					}
 					Request request = new()
 					{
 						MotorId = motorId,
-						ReceiverId = motor.OwnerId,
+						ReceiverId = userIdStore.UserId,
 						SenderId = userId,
 						Time = DateTime.Now,
 						RequestTypeId = SD.Request_Booking_Id,
@@ -88,8 +98,8 @@ namespace API.Controllers
 
 					await _unitOfWork.BuyerBookingService.Add(bookingCreate);
 					_response.IsSuccess = true;
-					_response.Message = "Đặt lịch thành công, vui lòng chờ người bán xác nhận!";
 					_response.StatusCode = HttpStatusCode.OK;
+					_response.Message = "Đặt lịch thành công, vui lòng chờ người bán xác nhận!";
 					return Ok(_response);
 				}
 				else
@@ -124,30 +134,24 @@ namespace API.Controllers
 				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
-				IEnumerable<Request> requestBooking = null;
+				IEnumerable<Request> requestBooking;
 
 				if (roleId == SD.Role_Store_Id)
 				{
 					requestBooking = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 					&& x.RequestTypeId == SD.Request_Booking_Id
-					&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now),
-					includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
+					&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now)
+					&& x.Status != SD.Request_Cancel 
+					&& x.Status != SD.Request_Reject,
+					includeProperties: new string[] { "BuyerBookings", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Sender" });
 				}
-
-				if (roleId == SD.Role_Customer_Id)
+				else
 				{
 					requestBooking = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Booking_Id
+					&& x.Status != SD.Request_Cancel
 					&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now),
-					includeProperties: new string[] { "Bookings", "Motor", "Motor.MotorStatus", "Motor.Owner" });
-				}
-
-				if (requestBooking == null)
-				{
-					_response.IsSuccess = false;
-					_response.ErrorMessages.Add("Không tìm thấy yêu cầu nào!");
-					_response.StatusCode = HttpStatusCode.NotFound;
-					return NotFound(_response);
+					includeProperties: new string[] { "BuyerBookings", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver", "Receiver.StoreDesciptions" });
 				}
 
 				//var response = new List<BookingResponseRequestDTO>();
@@ -170,16 +174,19 @@ namespace API.Controllers
 				//		}
 				//	}
 				//}
-				if (requestBooking == null || requestBooking.Count() < 1)
+				if (requestBooking.Count() < 1)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
 					_response.ErrorMessages.Add("Hiện không có lịch hẹn nào đang chờ!");
 					return NotFound(_response);
 				}
+
+				var response = _mapper.Map<List<BookingResponseRequestDTO>>(requestBooking);
+				response.ForEach(item => item.Motor.Owner = null);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
-				_response.Result = requestBooking;
+				_response.Result = response;
 				return Ok(_response);
 			}
 			catch (Exception ex)
@@ -310,7 +317,7 @@ namespace API.Controllers
 			}
 		}
 
-		[Authorize(Roles = "Store")]
+		[Authorize(Roles = "Customer")]
 		[HttpPut]
 		[Route("CancelBooking")]
 		public async Task<IActionResult> CancelBooking(int bookingId)

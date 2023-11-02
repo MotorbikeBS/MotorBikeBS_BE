@@ -35,7 +35,9 @@ namespace API.Controllers
 			try
 			{
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				var list = await _unitOfWork.WishListService.Get(x => x.UserId == userId, includeProperties: new string[] { "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Motor.Store", "Motor.MotorType" });
+				var list = await _unitOfWork.WishListService.Get(x => x.UserId == userId
+				&& x.Motor.MotorStatusId != SD.Status_Storage,
+				includeProperties: new string[] { "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Motor.Store", "Motor.MotorType" });
 				if (list == null || list.Count()<1)
 				{
 					_response.IsSuccess = false;
@@ -77,7 +79,9 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy xe máy!");
 					return NotFound(_response);
 				}
-				if (motor.MotorStatusId != SD.Status_Posting && motor.MotorStatusId != SD.Status_nonConsignment)
+				if (motor.MotorStatusId != SD.Status_Posting 
+					&& motor.MotorStatusId != SD.Status_nonConsignment
+					&& motor.MotorStatusId != SD.Status_Consignment)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
