@@ -43,7 +43,7 @@ namespace API.Controllers
 			{
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
 				var rs = InputValidation.ContractValidation(dto.Content, images);
-				if(rs != "")
+				if(!string.IsNullOrEmpty(rs))
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
@@ -78,9 +78,8 @@ namespace API.Controllers
 				var list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
 						&& x.MotorId == request.MotorId
-						&& x.Status != SD.Request_Cancel);
-						//&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())));
-
+						&& x.Status != SD.Request_Cancel
+						&& x.Negotiations.Any(m => m.Contracts.Any()));
 
 				if (list.Count() > 0)
 				{
@@ -93,7 +92,7 @@ namespace API.Controllers
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Bạn không thể tạo hợp đồng với xe này!");
+					_response.ErrorMessages.Add("Thương lượng chưa hoàn tất, chưa thể tạo hợp đồng!");
 					return NotFound(_response);
 				}
 				
@@ -109,11 +108,9 @@ namespace API.Controllers
 				var newContract = _mapper.Map<Contract>(dto);
 				newContract.StoreId = store.StoreId;
 				newContract.CreatedAt = DateTime.Now;
-				//newContract.BookingId = bookingId;
-				//newContract.BaseRequestId = booking.BaseRequestId;
-				newContract.MotorId = request.MotorId;
+				newContract.NegotiationId = negoId;
 				newContract.Status = SD.Request_Pending;
-				//newContract.Price = negotiation.FinalPrice;
+				newContract.Price = nego.Price;
 				newContract.NewOwner = userId;
 				await _unitOfWork.ContractService.Add(newContract);
 				foreach(var item in images)
@@ -260,8 +257,8 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						&& x.Status != SD.Request_Cancel,
-						//&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())),
+						&& x.Status != SD.Request_Cancel
+						&& x.Negotiations.Any(m => m.Contracts.Any()),
 						includeProperties: new string[]
 						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages",
 					  "Receiver", "Negotiations.Contracts", "Negotiations.Contracts.ContractImages" });
@@ -270,9 +267,9 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						&& x.Status != SD.Request_Cancel,
-						//&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
-						//|| s.Status == SD.Request_Accept))),
+						&& x.Status != SD.Request_Cancel
+						&& x.Negotiations.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
+						|| s.Status == SD.Request_Accept)),
 						includeProperties: new string[]
 						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", 
 					  "Sender", "Sender.StoreDesciptions", "Negotiations.Contracts", "Negotiations.Contracts.ContractImages" });
