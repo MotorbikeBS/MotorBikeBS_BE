@@ -265,27 +265,34 @@ namespace API.Validation
 			return false;
 		}
 
-		public static string BookingTimeValidation(DateTime bookingDate)
+		public static string NegoBookingTimeValidation(DateTime startDate, DateTime endDate, decimal price)
 		{
-			if (bookingDate == null)
+			if (startDate == null || endDate == null)
 			{
 				return "Vui lòng chọn ngày hẹn!";
 			}
-
+			
+			if(price == null)
+			{
+				return "Vui lòng nhập giá mong muốn";
+			}
+			if(price < 1000000 || price > 500000000)
+			{
+				return "Giá thấp nhất là 1.000.000VNĐ";
+			}
 			//TimeSpan time = bookingDate.TimeOfDay;
 
 			//TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
 			//TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
 
-			if (bookingDate.Date < DateTime.Now.Date)
+			if (startDate.Date < DateTime.Now.Date)
 			{
 				return "Vui lòng chọn thời gian trong tương lai!";
 			}
-
-			//if (time <= startTime || time >= endTime)
-			//{
-			//	return "Vui lòng chọn thời gian trong khung giờ 7h-21h!";
-			//}
+			if(startDate.Date > endDate.Date)
+			{
+				return "Vui lòng chọn thời gian kết thúc sau thời gian bắt đầu";
+			}
 			return "";
 		}
 
