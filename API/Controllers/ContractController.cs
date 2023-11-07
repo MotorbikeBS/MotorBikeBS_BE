@@ -37,7 +37,7 @@ namespace API.Controllers
 		[Authorize(Roles ="Store")]
 		[HttpPost]
 		[Route("CreateContract")]
-		public async Task<IActionResult> CreateContract(int bookingId,[FromForm] ContractCreateDTO dto, List<IFormFile> images)
+		public async Task<IActionResult> CreateContract(int negoId,[FromForm] ContractCreateDTO dto, List<IFormFile> images)
 		{
 			try
 			{
@@ -51,16 +51,8 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 
-				var booking = await _unitOfWork.BookingService.GetFirst(x => x.BookingId == bookingId);
-				if (booking == null)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
-					return NotFound(_response);
-				}
-				var negotiation = await _unitOfWork.NegotiationService.GetFirst(x => x.NegotiationId == booking.NegotiationId);
-				if (booking == null)
+				var nego = await _unitOfWork.NegotiationService.GetFirst(x => x.NegotiationId == negoId);
+				if (nego == null)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
@@ -68,7 +60,7 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 				
-				var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == booking.BaseRequestId);
+				var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == nego.RequestId);
 				if (request == null)
 				{
 					_response.IsSuccess = false;
@@ -97,7 +89,7 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Bạn đã tạo hợp đồng!");
 					return BadRequest(_response);
 				}
-				if (booking.Status == SD.Request_Cancel || request.Status == SD.Request_Cancel)
+				if (nego.Status == SD.Request_Cancel || request.Status == SD.Request_Cancel)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
@@ -118,7 +110,7 @@ namespace API.Controllers
 				newContract.StoreId = store.StoreId;
 				newContract.CreatedAt = DateTime.Now;
 				//newContract.BookingId = bookingId;
-				newContract.BaseRequestId = booking.BaseRequestId;
+				//newContract.BaseRequestId = booking.BaseRequestId;
 				newContract.MotorId = request.MotorId;
 				newContract.Status = SD.Request_Pending;
 				//newContract.Price = negotiation.FinalPrice;

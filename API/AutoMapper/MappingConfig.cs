@@ -40,7 +40,6 @@ namespace API.AutoMapper
 				config.CreateMap<Negotiation, NegotiationCreateDTO>().ReverseMap();
 				config.CreateMap<Negotiation, NegotiationResponseDTO>().ReverseMap();
 
-				config.CreateMap<Booking, BookingCreateDTO>().ReverseMap();
 				config.CreateMap<BuyerBooking, BookingResponseDTO>().ReverseMap();
 
 				config.CreateMap<BuyerBooking, BuyerBookingCreateDTO>().ReverseMap();
@@ -51,7 +50,6 @@ namespace API.AutoMapper
 				config.CreateMap<ContractImage, ContractImageResponseDTO>().ReverseMap();
 
 				//Booking for Negotiation
-				config.CreateMap<Booking, BookingNegoResponseDTO>().ReverseMap();
 				config.CreateMap<Request, BookingNegoRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Negotiations, opt => opt.MapFrom(src => src.Negotiations))
 																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
 																					   .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver));

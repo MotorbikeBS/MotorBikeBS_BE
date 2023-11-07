@@ -20,7 +20,6 @@ namespace Service.UnitOfWork
         public IStoreDescriptionService StoreDescriptionService { get; private set; } = null!;
 		public IStoreImageService StoreImageService { get; private set; } = null!;
 		public IWishListService WishListService { get; private set; } = null!;
-		public IBookingService BookingService { get; private set; } = null!;
         public INegotiationService NegotiationService { get; private set; } = null!;
         public IContractImageService ContractImageService { get; private set; } = null!;
         public IContractService ContractService { get; private set; } = null!;
@@ -51,7 +50,6 @@ namespace Service.UnitOfWork
             StoreDescriptionService = new StoreDescriptionRepository(_context, this);
 			StoreImageService = new StoreImageRepository(_context, this);
             WishListService = new WishListRepository(_context, this);
-            BookingService = new BookingRepository(_context, this);
             NegotiationService = new NegotiationRepository(_context, this);
             ContractService = new ContractRepository (_context, this);
             ContractImageService = new ContractImageRepository(_context, this);
