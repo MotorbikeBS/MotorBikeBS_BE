@@ -7,7 +7,6 @@ namespace Core.Models
     {
         public PointHistory()
         {
-            Payments = new HashSet<Payment>();
             PostBoostings = new HashSet<PostBoosting>();
         }
 
@@ -21,7 +20,6 @@ namespace Core.Models
 
         public virtual Request Request { get; set; } = null!;
         public virtual Request Store { get; set; } = null!;
-        public virtual ICollection<Payment> Payments { get; set; }
         public virtual ICollection<PostBoosting> PostBoostings { get; set; }
     }
 }
