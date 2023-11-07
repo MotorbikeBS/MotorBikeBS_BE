@@ -386,7 +386,7 @@ namespace API.Controllers
                         MotorId = (int)NegoRequest.MotorId,
                         UserId = (int)NegoRequest.ReceiverId,
                         StoreId = (int)obj.StoreId,
-                        Price = Negotiation.FinalPrice,
+                        Price = Negotiation.Price,
                         CreateAt = DateTime.Now,
                         Status = SD.Request_Accept,
                         RequestId = NegoRequest.RequestId
@@ -578,7 +578,7 @@ namespace API.Controllers
                             MotorId = (int)NegoRequest.MotorId,
                             UserId = (int)NegoRequest.ReceiverId,
                             StoreId = (int)obj.StoreId,
-                            Price = Negotiation.FinalPrice,
+                            Price = Negotiation.Price,
                             CreateAt = DateTime.Now,
                             Status = SD.Request_Accept,
                             RequestId = NegoRequest.RequestId
