@@ -18,8 +18,8 @@ namespace Core.Models
         }
 
         public virtual DbSet<BillConfirm> BillConfirms { get; set; } = null!;
-        public virtual DbSet<Booking> Bookings { get; set; } = null!;
         public virtual DbSet<BuyerBooking> BuyerBookings { get; set; } = null!;
+        public virtual DbSet<Comment> Comments { get; set; } = null!;
         public virtual DbSet<Contract> Contracts { get; set; } = null!;
         public virtual DbSet<ContractImage> ContractImages { get; set; } = null!;
         public virtual DbSet<Motorbike> Motorbikes { get; set; } = null!;
@@ -43,18 +43,18 @@ namespace Core.Models
         public virtual DbSet<Ward> Wards { get; set; } = null!;
         public virtual DbSet<Wishlist> Wishlists { get; set; } = null!;
 
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-			var d = Directory.GetCurrentDirectory();
-			IConfigurationRoot configuration = builder.Build();
-			string connectionString = configuration.GetConnectionString("DefaultConnection");
-			optionsBuilder.UseSqlServer(connectionString);
-		}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            var d = Directory.GetCurrentDirectory();
+            IConfigurationRoot configuration = builder.Build();
+            string connectionString = configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseSqlServer(connectionString);
+        }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BillConfirm>(entity =>
             {
@@ -87,38 +87,6 @@ namespace Core.Models
                     .HasForeignKey(d => d.RequestId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_BillConfirm_Request");
-            });
-
-            modelBuilder.Entity<Booking>(entity =>
-            {
-                entity.ToTable("Booking");
-
-                entity.Property(e => e.BookingId).HasColumnName("booking_id");
-
-                entity.Property(e => e.BaseRequestId).HasColumnName("base_request_id");
-
-                entity.Property(e => e.BookingDate)
-                    .HasColumnType("datetime")
-                    .HasColumnName("booking_date");
-
-                entity.Property(e => e.DateCreate)
-                    .HasColumnType("datetime")
-                    .HasColumnName("date_create");
-
-                entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
-
-                entity.Property(e => e.Note)
-                    .HasMaxLength(100)
-                    .HasColumnName("note");
-
-                entity.Property(e => e.Status)
-                    .HasMaxLength(10)
-                    .HasColumnName("status");
-
-                entity.HasOne(d => d.Negotiation)
-                    .WithMany(p => p.Bookings)
-                    .HasForeignKey(d => d.NegotiationId)
-                    .HasConstraintName("FK_Booking_Negotiation");
             });
 
             modelBuilder.Entity<BuyerBooking>(entity =>
@@ -154,6 +122,48 @@ namespace Core.Models
                     .HasConstraintName("FK_BuyerBooking_Request");
             });
 
+            modelBuilder.Entity<Comment>(entity =>
+            {
+                entity.ToTable("Comment");
+
+                entity.Property(e => e.CommentId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("comment_id");
+
+                entity.Property(e => e.Content)
+                    .HasMaxLength(100)
+                    .HasColumnName("content");
+
+                entity.Property(e => e.CreateAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("create_at");
+
+                entity.Property(e => e.Rating).HasColumnName("rating");
+
+                entity.Property(e => e.ReplyId).HasColumnName("reply_id");
+
+                entity.Property(e => e.RequestId).HasColumnName("request_id");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(10)
+                    .HasColumnName("status");
+
+                entity.Property(e => e.UpdateAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("update_at");
+
+                entity.HasOne(d => d.Reply)
+                    .WithMany(p => p.InverseReply)
+                    .HasForeignKey(d => d.ReplyId)
+                    .HasConstraintName("FK_Comment_Comment");
+
+                entity.HasOne(d => d.Request)
+                    .WithMany(p => p.Comments)
+                    .HasForeignKey(d => d.RequestId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Comment_Request");
+            });
+
             modelBuilder.Entity<Contract>(entity =>
             {
                 entity.ToTable("Contract");
@@ -161,8 +171,6 @@ namespace Core.Models
                 entity.Property(e => e.ContractId).HasColumnName("contract_id");
 
                 entity.Property(e => e.BaseRequestId).HasColumnName("base_request_id");
-
-                entity.Property(e => e.BookingId).HasColumnName("booking_id");
 
                 entity.Property(e => e.Content)
                     .HasMaxLength(1000)
@@ -173,6 +181,8 @@ namespace Core.Models
                     .HasColumnName("created_at");
 
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
+
+                entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
 
                 entity.Property(e => e.NewOwner).HasColumnName("new_owner");
 
@@ -186,10 +196,10 @@ namespace Core.Models
 
                 entity.Property(e => e.StoreId).HasColumnName("store_id");
 
-                entity.HasOne(d => d.Booking)
+                entity.HasOne(d => d.Negotiation)
                     .WithMany(p => p.Contracts)
-                    .HasForeignKey(d => d.BookingId)
-                    .HasConstraintName("FK_EarnALiving_Contract_Booking");
+                    .HasForeignKey(d => d.NegotiationId)
+                    .HasConstraintName("FK_Contract_Negotiation");
             });
 
             modelBuilder.Entity<ContractImage>(entity =>
@@ -401,8 +411,6 @@ namespace Core.Models
 
                 entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
 
-                entity.Property(e => e.BaseRequestId).HasColumnName("base_request_id");
-
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)
                     .HasColumnName("description");
@@ -415,15 +423,9 @@ namespace Core.Models
                     .HasColumnType("datetime")
                     .HasColumnName("expired_time");
 
-                entity.Property(e => e.FinalPrice)
+                entity.Property(e => e.Price)
                     .HasColumnType("decimal(15, 4)")
-                    .HasColumnName("final_price");
-
-                entity.Property(e => e.LastChangeUserId).HasColumnName("last_change_user_id");
-
-                entity.Property(e => e.OwnerPrice)
-                    .HasColumnType("decimal(15, 4)")
-                    .HasColumnName("owner_price");
+                    .HasColumnName("price");
 
                 entity.Property(e => e.RequestId).HasColumnName("request_id");
 
@@ -434,10 +436,6 @@ namespace Core.Models
                 entity.Property(e => e.Status)
                     .HasMaxLength(50)
                     .HasColumnName("status");
-
-                entity.Property(e => e.StorePrice)
-                    .HasColumnType("decimal(15, 4)")
-                    .HasColumnName("store_price");
 
                 entity.HasOne(d => d.Request)
                     .WithMany(p => p.Negotiations)
@@ -509,8 +507,6 @@ namespace Core.Models
                     .HasColumnType("datetime")
                     .HasColumnName("date_created");
 
-                entity.Property(e => e.HistoryId).HasColumnName("history_id");
-
                 entity.Property(e => e.PaymentTime)
                     .HasColumnType("datetime")
                     .HasColumnName("payment_time");
@@ -519,11 +515,13 @@ namespace Core.Models
                     .HasMaxLength(100)
                     .HasColumnName("payment_type");
 
-                entity.HasOne(d => d.History)
+                entity.Property(e => e.RequestId).HasColumnName("request_id");
+
+                entity.HasOne(d => d.Request)
                     .WithMany(p => p.Payments)
-                    .HasForeignKey(d => d.HistoryId)
+                    .HasForeignKey(d => d.RequestId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Payment_PointHistory");
+                    .HasConstraintName("FK_Payment_Request");
             });
 
             modelBuilder.Entity<PointHistory>(entity =>

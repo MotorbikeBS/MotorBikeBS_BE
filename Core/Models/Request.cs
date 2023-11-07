@@ -9,8 +9,10 @@ namespace Core.Models
         {
             BillConfirms = new HashSet<BillConfirm>();
             BuyerBookings = new HashSet<BuyerBooking>();
+            Comments = new HashSet<Comment>();
             Negotiations = new HashSet<Negotiation>();
             Notifications = new HashSet<Notification>();
+            Payments = new HashSet<Payment>();
             PointHistoryRequests = new HashSet<PointHistory>();
             PointHistoryStores = new HashSet<PointHistory>();
         }
@@ -29,8 +31,10 @@ namespace Core.Models
         public virtual User? Sender { get; set; }
         public virtual ICollection<BillConfirm> BillConfirms { get; set; }
         public virtual ICollection<BuyerBooking> BuyerBookings { get; set; }
+        public virtual ICollection<Comment> Comments { get; set; }
         public virtual ICollection<Negotiation> Negotiations { get; set; }
         public virtual ICollection<Notification> Notifications { get; set; }
+        public virtual ICollection<Payment> Payments { get; set; }
         public virtual ICollection<PointHistory> PointHistoryRequests { get; set; }
         public virtual ICollection<PointHistory> PointHistoryStores { get; set; }
     }
