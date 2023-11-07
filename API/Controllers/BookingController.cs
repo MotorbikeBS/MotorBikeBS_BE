@@ -57,7 +57,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
-				var requestInDb = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.BaseRequestId);
+				var requestInDb = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.RequestId);
 				if(requestInDb == null || requestInDb.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
@@ -80,7 +80,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.BadRequest;
 					return BadRequest(_response);
 				}
-				var duplicateBooking = await _unitOfWork.BookingService.Get(x => x.BaseRequestId == negotiationInDb.BaseRequestId);
+				var duplicateBooking = await _unitOfWork.BookingService.Get(x => x.BaseRequestId == negotiationInDb.RequestId);
 				if(duplicateBooking.Count() > 0)
 				{
 					_response.IsSuccess = false;
@@ -90,7 +90,7 @@ namespace API.Controllers
 				}
 				var newBooking = _mapper.Map<Booking>(dto);
 				newBooking.DateCreate = DateTime.Now;
-				newBooking.BaseRequestId = negotiationInDb.BaseRequestId;
+				//newBooking.BaseRequestId = negotiationInDb.BaseRequestId;
 				newBooking.NegotiationId = negotiationId;
 				newBooking.Status = SD.Request_Pending;
 
@@ -125,16 +125,16 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
-					&& x.Status == SD.Request_Pending
-					&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.Date && b.BookingDate <= b.BookingDate.Value.Date.AddDays(7))),
+					&& x.Status == SD.Request_Pending,
+					//&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.Date && b.BookingDate <= b.BookingDate.Value.Date.AddDays(7))),
 					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings", "Receiver" });
 				}
 				else
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 					&& x.RequestTypeId == SD.Request_Negotiation_Id
-					&& x.Status == SD.Request_Pending
-					&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.Date &&  b.BookingDate <= b.BookingDate.Value.Date.AddDays(7))),
+					&& x.Status == SD.Request_Pending,
+					//&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.Date &&  b.BookingDate <= b.BookingDate.Value.Date.AddDays(7))),
 					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings", "Sender", "Sender.StoreDesciptions" });
 				}
 				if(list.Count() > 0)

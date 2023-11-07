@@ -86,8 +86,8 @@ namespace API.Controllers
 				var list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
 						&& x.MotorId == request.MotorId
-						&& x.Status != SD.Request_Cancel
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())));
+						&& x.Status != SD.Request_Cancel);
+						//&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())));
 
 
 				if (list.Count() > 0)
@@ -117,11 +117,11 @@ namespace API.Controllers
 				var newContract = _mapper.Map<Contract>(dto);
 				newContract.StoreId = store.StoreId;
 				newContract.CreatedAt = DateTime.Now;
-				newContract.BookingId = bookingId;
+				//newContract.BookingId = bookingId;
 				newContract.BaseRequestId = booking.BaseRequestId;
 				newContract.MotorId = request.MotorId;
 				newContract.Status = SD.Request_Pending;
-				newContract.Price = negotiation.FinalPrice;
+				//newContract.Price = negotiation.FinalPrice;
 				newContract.NewOwner = userId;
 				await _unitOfWork.ContractService.Add(newContract);
 				foreach(var item in images)
@@ -268,22 +268,22 @@ namespace API.Controllers
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						&& x.Status != SD.Request_Cancel
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())),
+						&& x.Status != SD.Request_Cancel,
+						//&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())),
 						includeProperties: new string[]
-						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
-					  "Receiver", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
+						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages",
+					  "Receiver", "Negotiations.Contracts", "Negotiations.Contracts.ContractImages" });
 				}
 				else
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
-						&& x.Status != SD.Request_Cancel
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
-						|| s.Status == SD.Request_Accept))),
+						&& x.Status != SD.Request_Cancel,
+						//&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
+						//|| s.Status == SD.Request_Accept))),
 						includeProperties: new string[]
-						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
-					  "Sender", "Sender.StoreDesciptions", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
+						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", 
+					  "Sender", "Sender.StoreDesciptions", "Negotiations.Contracts", "Negotiations.Contracts.ContractImages" });
 				}
 				if (list.Count() > 0)
 				{
@@ -412,20 +412,20 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Xe này đã bán hoặc đã bị xóa!");
 					return BadRequest(_response);
 				}
-				var negotiation = await _unitOfWork.NegotiationService.GetFirst(x => x.BaseRequestId == request.RequestId);
-				if(negotiation == null || negotiation.FinalPrice == null)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
-					return NotFound(_response);
-				}
+				var negotiation = await _unitOfWork.NegotiationService.GetFirst(x => x.RequestId == request.RequestId);
+				//if(negotiation == null || negotiation.FinalPrice == null)
+				//{
+				//	_response.IsSuccess = false;
+				//	_response.StatusCode = HttpStatusCode.NotFound;
+				//	_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+				//	return NotFound(_response);
+				//}
 		
 				contract.Status = SD.Request_Accept;
 				await _unitOfWork.ContractService.Update(contract);
 				motor.MotorStatusId = SD.Status_Storage;
 				motor.StoreId = contract.StoreId;
-				motor.Price = negotiation.FinalPrice;
+				//motor.Price = negotiation.FinalPrice;
 				await _unitOfWork.MotorBikeService.Update(motor);
 				request.Status = SD.Request_Accept;
 				await _unitOfWork.RequestService.Update(request);

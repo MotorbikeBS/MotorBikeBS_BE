@@ -93,8 +93,6 @@ namespace API.Controllers
 					negotiationCreate.StartTime = DateTime.Now;
 					negotiationCreate.ExpiredTime = DateTime.Now.AddDays(3);
 					negotiationCreate.Status = SD.Request_Pending;
-					negotiationCreate.BaseRequestId = request.RequestId;
-					negotiationCreate.LastChangeUserId = userId;
 
 					await _unitOfWork.NegotiationService.Add(negotiationCreate);
 
@@ -171,8 +169,6 @@ namespace API.Controllers
 						StartTime = DateTime.Now,
 						EndTime = DateTime.Now,
 						Status = SD.Request_Accept,
-						BaseRequestId = request.RequestId,
-						FinalPrice = motor.Price
 					};
 
 					await _unitOfWork.NegotiationService.Add(negotiationCreate);
@@ -297,7 +293,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
-				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.BaseRequestId);
+				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.RequestId);
 				if (negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
@@ -337,14 +333,14 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						return BadRequest(_response);
 					}
-					if(userId == negotiationInDb.LastChangeUserId)
-					{
-						_response.IsSuccess = false;
-						_response.ErrorMessages.Add("Kết quả trả giá trước đó chưa được phản hồi ! Vui lòng đợi phản hồi trước khi thực hiện trả giá kế tiếp!");
-						_response.StatusCode = HttpStatusCode.BadRequest;
-						return BadRequest(_response);
-					}
-					negotiationInDb.OwnerPrice = dto.Price;
+					//if(userId == negotiationInDb.LastChangeUserId)
+					//{
+					//	_response.IsSuccess = false;
+					//	_response.ErrorMessages.Add("Kết quả trả giá trước đó chưa được phản hồi ! Vui lòng đợi phản hồi trước khi thực hiện trả giá kế tiếp!");
+					//	_response.StatusCode = HttpStatusCode.BadRequest;
+					//	return BadRequest(_response);
+					//}
+					//negotiationInDb.OwnerPrice = dto.Price;
 				}
 				else if (roleId == SD.Role_Store_Id)
 				{
@@ -355,16 +351,16 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						return BadRequest(_response);
 					}
-					if (userId == negotiationInDb.LastChangeUserId)
-					{
-						_response.IsSuccess = false;
-						_response.ErrorMessages.Add("Kết quả trả giá trước đó chưa được phản hồi ! Vui lòng đợi phản hồi trước khi thực hiện trả giá kế tiếp!");
-						_response.StatusCode = HttpStatusCode.BadRequest;
-						return BadRequest(_response);
-					}
-					negotiationInDb.StorePrice = dto.Price;
+					//if (userId == negotiationInDb.LastChangeUserId)
+					//{
+					//	_response.IsSuccess = false;
+					//	_response.ErrorMessages.Add("Kết quả trả giá trước đó chưa được phản hồi ! Vui lòng đợi phản hồi trước khi thực hiện trả giá kế tiếp!");
+					//	_response.StatusCode = HttpStatusCode.BadRequest;
+					//	return BadRequest(_response);
+					//}
+					//negotiationInDb.StorePrice = dto.Price;
 				}
-				negotiationInDb.LastChangeUserId = userId;
+				//negotiationInDb.LastChangeUserId = userId;
 				await _unitOfWork.NegotiationService.Update(negotiationInDb);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
@@ -401,7 +397,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
-				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.BaseRequestId);
+				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.RequestId);
 				if (negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
@@ -425,14 +421,14 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						return BadRequest(_response);
 					}
-					if (negotiationInDb.OwnerPrice == null)
-					{
-						_response.IsSuccess = false;
-						_response.ErrorMessages.Add("Chủ xe chưa ra giá, bạn không thể đồng ý!");
-						_response.StatusCode = HttpStatusCode.BadRequest;
-						return BadRequest(_response);
-					}
-					negotiationInDb.FinalPrice = negotiationInDb.OwnerPrice;
+					//if (negotiationInDb.OwnerPrice == null)
+					//{
+					//	_response.IsSuccess = false;
+					//	_response.ErrorMessages.Add("Chủ xe chưa ra giá, bạn không thể đồng ý!");
+					//	_response.StatusCode = HttpStatusCode.BadRequest;
+					//	return BadRequest(_response);
+					//}
+					//negotiationInDb.FinalPrice = negotiationInDb.OwnerPrice;
 				}
 				if (roleId == SD.Role_Owner_Id)
 				{
@@ -443,7 +439,7 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						return BadRequest(_response);
 					}
-					negotiationInDb.FinalPrice = negotiationInDb.StorePrice;
+					//negotiationInDb.FinalPrice = negotiationInDb.StorePrice;
 				}
 				negotiationInDb.Status = SD.Request_Accept;
 				negotiationInDb.EndTime = DateTime.Now;
@@ -482,7 +478,7 @@ namespace API.Controllers
 					_response.StatusCode = HttpStatusCode.NotFound;
 					return NotFound(_response);
 				}
-				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.BaseRequestId);
+				var baseRequest = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == negotiationInDb.RequestId);
 				if (negotiationInDb.Status != SD.Request_Pending || baseRequest.Status != SD.Request_Pending)
 				{
 					_response.IsSuccess = false;
@@ -506,7 +502,7 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						return BadRequest(_response);
 					}
-					negotiationInDb.FinalPrice = negotiationInDb.OwnerPrice;
+
 				}
 				if (roleId == SD.Role_Owner_Id)
 				{
@@ -517,7 +513,6 @@ namespace API.Controllers
 						_response.StatusCode = HttpStatusCode.BadRequest;
 						return BadRequest(_response);
 					}
-					negotiationInDb.FinalPrice = negotiationInDb.OwnerPrice;
 				}
 
 				negotiationInDb.Status = SD.Request_Cancel;
