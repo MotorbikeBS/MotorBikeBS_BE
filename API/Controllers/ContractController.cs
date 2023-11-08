@@ -1,5 +1,4 @@
 ﻿using API.DTO;
-using API.DTO.BookingNegotiationDTO;
 using API.DTO.ContractDTO;
 using API.Utility;
 using API.Validation;
@@ -276,7 +275,7 @@ namespace API.Controllers
 				}
 				if (list.Count() > 0)
 				{
-					var response = _mapper.Map<List<BookingNegoRequestResponseDTO>>(list);
+					var response = _mapper.Map<List<RequestContractResponseDTO>>(list);
 
 					response.ForEach(item => item.Motor.Owner = null);
 					_response.IsSuccess = true;
