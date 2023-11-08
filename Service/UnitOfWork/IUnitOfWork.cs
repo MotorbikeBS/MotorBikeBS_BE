@@ -22,5 +22,6 @@ namespace Service.UnitOfWork
         public IContractService ContractService { get; }
         public IContractImageService ContractImageService { get; }
         public IBuyerBookingService BuyerBookingService { get; }
+        public IPaymentService PaymentService { get; }
 	}
 }
