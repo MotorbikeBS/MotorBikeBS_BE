@@ -9,6 +9,7 @@ using Service.PagingUriGenerator;
 using Service.Repository;
 using Service.Service;
 using Service.UnitOfWork;
+using Service.VnPay.Service;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,7 @@ builder.Services.AddCors();
 builder.Services.AddSingleton(u => new BlobServiceClient(
     builder.Configuration.GetConnectionString("StorageAccount")));
 builder.Services.AddSingleton<IBlobService, BlobService>();
+builder.Services.AddSingleton<IVnPayService, VnPayService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IPagingUriService>(o =>
 {
