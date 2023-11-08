@@ -1,6 +1,8 @@
 ﻿using API.DTO;
 using API.DTO.VnPayDTO;
 using AutoMapper;
+using Core.VnPayModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.BlobImageService;
@@ -27,9 +29,10 @@ namespace API.Controllers
             _vnPayService = vnPayService;
         }
 
+        //[Authorize(Roles ="Store")]
         [HttpPost]
         [Route("CreatePaymentUrl")]
-        public IActionResult CreatePaymentUrl(PaymentInformationModel model)
+        public IActionResult CreatePaymentUrl(PaymentCreateModel model)
         {
             var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
 
@@ -38,14 +41,14 @@ namespace API.Controllers
 
         //[HttpGet]
         //[Route("PaymentCallBack")]
-        //public async IActionResult PaymentCallback()
+        //public async Task<IActionResult> PaymentCallback()
         //{
         //    try
         //    {
         //        var response = _vnPayService.PaymentExecute(Request.Query);
         //        if (response.Success)
         //        {
-                    
+
         //            _response.StatusCode = HttpStatusCode.OK;
         //            _response.ErrorMessages.Add("Nạp điểm thành công!");
         //            _response.IsSuccess = false;
