@@ -409,12 +409,12 @@ namespace API.Controllers
 				//	_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
 				//	return NotFound(_response);
 				//}
-		
+
 				contract.Status = SD.Request_Accept;
 				await _unitOfWork.ContractService.Update(contract);
 				motor.MotorStatusId = SD.Status_Storage;
 				motor.StoreId = contract.StoreId;
-				//motor.Price = negotiation.FinalPrice;
+				motor.Price = negotiation.Price;
 				await _unitOfWork.MotorBikeService.Update(motor);
 				request.Status = SD.Request_Accept;
 				await _unitOfWork.RequestService.Update(request);

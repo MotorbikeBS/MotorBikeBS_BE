@@ -40,7 +40,7 @@ namespace API.Controllers
         {
             try
             {
-                var rs = InputValidation.NegoBookingTimeValidation(dto.StartTime.Value, dto.EndTime.Value, dto.Price.Value);
+                var rs = InputValidation.NegoBookingTimeValidation(dto.StartTime, dto.EndTime, dto.Price);
                 if (!string.IsNullOrEmpty(rs))
                 {
                     _response.IsSuccess = false;
@@ -61,7 +61,9 @@ namespace API.Controllers
                 IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
                 && x.RequestTypeId == SD.Request_Negotiation_Id
                 && x.MotorId == motorId
-                && x.Status == SD.Request_Pending);
+                && x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+                && x.Negotiations.Any(y => y.Status != SD.Request_Cancel));
+
 
                 if (list.Count() > 0)
                 {
@@ -207,7 +209,7 @@ namespace API.Controllers
                 {
                     requestNegotiation = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
                     && x.RequestTypeId == SD.Request_Negotiation_Id
-                    && x.Status == SD.Request_Pending
+                    && x.Status != SD.Request_Cancel
                     && x.Negotiations.Any(n => n.Status != SD.Request_Cancel),
                     includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
                 }
@@ -216,7 +218,7 @@ namespace API.Controllers
                 {
                     requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
                     && x.RequestTypeId == SD.Request_Negotiation_Id
-                    && x.Status == SD.Request_Pending
+                    && x.Status != SD.Request_Cancel
                     && x.Negotiations.Any(n => n.Status != SD.Request_Cancel),
                     includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Receiver" });
                 }
@@ -417,18 +419,6 @@ namespace API.Controllers
                 //negotiationInDb.EndTime = DateTime.Now;
                 await _unitOfWork.NegotiationService.Update(negotiationInDb);
 
-                var otherNego = await _unitOfWork.RequestService.Get(x => x.RequestTypeId == SD.Request_Negotiation_Id
-                && x.MotorId == baseRequest.MotorId
-                && x.Status == SD.Request_Pending
-                && x.SenderId != userId);
-                if (otherNego.Count() > 0)
-                {
-                    foreach(var item in otherNego)
-                    {
-                        item.Status = SD.Request_Cancel;
-                        await _unitOfWork.RequestService.Update(item);
-                    }
-                }
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.Message = ("Bạn đã đồng ý thương lượng thành công!");

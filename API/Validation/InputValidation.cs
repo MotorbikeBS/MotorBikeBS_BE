@@ -267,12 +267,17 @@ namespace API.Validation
 
 		public static string NegoBookingTimeValidation(DateTime startDate, DateTime endDate, decimal price)
 		{
-			if (startDate == null || endDate == null)
+			if (startDate == default(DateTime))
 			{
-				return "Vui lòng chọn ngày hẹn!";
+				return "Vui lòng chọn ngày nhận xe!";
 			}
+			if(startDate == default(DateTime))
+			{
+                return "Vui lòng chọn ngày kết thúc!";
+            }
+
 			
-			if(price == null)
+			if(price == default(int))
 			{
 				return "Vui lòng nhập giá mong muốn";
 			}
@@ -289,7 +294,7 @@ namespace API.Validation
 			{
 				return "Vui lòng chọn thời gian trong tương lai!";
 			}
-			if(startDate.Date > endDate.Date)
+			if(startDate.Date >= endDate.Date)
 			{
 				return "Vui lòng chọn thời gian kết thúc sau thời gian bắt đầu";
 			}
@@ -298,7 +303,7 @@ namespace API.Validation
 
 		public static string BookingNonConsignmentTimeValidation(DateTime bookingDate)
 		{
-			if (bookingDate == null)
+			if (bookingDate == default(DateTime))
 			{
 				return "Vui lòng chọn ngày hẹn!";
 			}
