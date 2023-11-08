@@ -1,4 +1,5 @@
 ﻿using API.DTO.VnPayDTO;
+using Core.VnPayModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -17,7 +18,7 @@ namespace Service.VnPay.Service
         {
             _configuration = configuration;
         }
-        public string CreatePaymentUrl(PaymentInformationModel model, HttpContext context)
+        public string CreatePaymentUrl(PaymentCreateModel model, HttpContext context)
         {
             var timeZoneById = TimeZoneInfo.FindSystemTimeZoneById(_configuration["TimeZoneId"]);
             var timeNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneById);
@@ -33,8 +34,8 @@ namespace Service.VnPay.Service
             pay.AddRequestData("vnp_CurrCode", _configuration["Vnpay:CurrCode"]);
             pay.AddRequestData("vnp_IpAddr", pay.GetIpAddress(context));
             pay.AddRequestData("vnp_Locale", _configuration["Vnpay:Locale"]);
-            pay.AddRequestData("vnp_OrderInfo", $"{model.Name} {model.OrderDescription} {model.Amount}");
-            pay.AddRequestData("vnp_OrderType", model.OrderType);
+            pay.AddRequestData("vnp_OrderInfo", $"Nạp {model.Amount}");
+            pay.AddRequestData("vnp_OrderType", "Nạp điểm");
             pay.AddRequestData("vnp_ReturnUrl", urlCallBack);
             pay.AddRequestData("vnp_TxnRef", tick);
 
