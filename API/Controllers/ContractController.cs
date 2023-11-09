@@ -111,6 +111,7 @@ namespace API.Controllers
 				newContract.Status = SD.Request_Pending;
 				newContract.Price = nego.Price;
 				newContract.NewOwner = userId;
+				newContract.BaseRequestId = request.RequestId;
 				await _unitOfWork.ContractService.Add(newContract);
 				foreach(var item in images)
 				{
