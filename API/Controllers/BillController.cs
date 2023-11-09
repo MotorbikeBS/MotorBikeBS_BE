@@ -400,7 +400,10 @@ namespace API.Controllers
                     };
                     await _unitOfWork.BillService.Add(OwnerBill);
                     //Cancel OwnerPosting
-                    var OwnerPostingRequest = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
+                    var OwnerPostingRequest = await _unitOfWork.RequestService.GetLast(e => e.MotorId == NegoRequest.MotorId
+                                                            && e.SenderId == obj.OwnerId
+                                                            && e.RequestTypeId == requestPosting.RequestTypeId && e.Status == SD.Request_Accept
+                    );
                     OwnerPostingRequest.Status = SD.Request_Cancel;
                     await _unitOfWork.RequestService.Update(OwnerPostingRequest);
                     //Update Motor Ownership
@@ -603,7 +606,10 @@ namespace API.Controllers
                         };
                         await _unitOfWork.BillService.Add(OwnerBill);
                         //Cancel OwnerPosting
-                        var OwnerPostingRequest = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
+                        var OwnerPostingRequest = await _unitOfWork.RequestService.GetLast(e => e.MotorId == NegoRequest.MotorId 
+                                                            && e.SenderId == obj.OwnerId
+                                                            && e.RequestTypeId == requestPosting.RequestTypeId && e.Status == SD.Request_Accept
+                        );
                         OwnerPostingRequest.Status = SD.Request_Cancel;
                         await _unitOfWork.RequestService.Update(OwnerPostingRequest);
                         //Update Motor Ownership
