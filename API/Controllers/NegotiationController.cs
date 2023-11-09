@@ -58,10 +58,16 @@ namespace API.Controllers
                     return NotFound(_response);
                 }
 
+                //IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+                //&& x.MotorId == motorId
+                //&& x.RequestTypeId == SD.Request_Negotiation_Id
+                //&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept);
+                //&& x.Negotiations.Any(y => y.Status != SD.Request_Cancel));
+
                 IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
                 && x.RequestTypeId == SD.Request_Negotiation_Id
                 && x.MotorId == motorId
-                && x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+                && x.Status != SD.Request_Cancel
                 && x.Negotiations.Any(y => y.Status != SD.Request_Cancel));
 
 

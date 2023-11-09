@@ -31,7 +31,7 @@ namespace API.Controllers
             _vnPayService = vnPayService;
         }
 
-        [Authorize(Roles = "Store")]
+        //[Authorize(Roles = "Store")]
         [HttpPost]
         [Route("CreatePaymentUrl")]
         public async Task<IActionResult> CreatePaymentUrl(PaymentCreateModel model)
@@ -53,15 +53,26 @@ namespace API.Controllers
                     _response.IsSuccess = false;
                     return BadRequest(_response);
                 }
-                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                //var userId = int.Parse(User.FindFirst("UserId")?.Value);
                 Request request = new()
                 {
-                    SenderId = userId,
+                    //SenderId = userId,
+                    SenderId = 18,
                     Time = DateTime.Now,
                     RequestTypeId = SD.Request_Add_Point_Id,
-                    Status = SD.Request_Pending
+                    Status = SD.Request_Pending,
                 };
+
+                Payment payment = new()
+                {
+                    RequestId = request.RequestId,
+                    Content = $"Nạp {model.Amount}VNĐ",
+                    DateCreated = DateTime.Now,
+                    PaymentType = "Nạp điểm"
+                };
+
                 await _unitOfWork.RequestService.Add(request);
+                await _unitOfWork.PaymentService.Add(payment);
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.IsSuccess = true;
                 _response.Result = url;
@@ -93,7 +104,7 @@ namespace API.Controllers
                     _response.ErrorMessages.Add("Nạp điểm thành công!");
                     _response.IsSuccess = false;
                     _response.Result = response;
-                    return NotFound(_response);
+                    return Ok(_response);
                 }
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages.Add("Đã xảy ra lỗi!");
