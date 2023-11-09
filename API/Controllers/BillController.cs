@@ -384,7 +384,7 @@ namespace API.Controllers
                     BillConfirm OwnerBill = new()
                     {
                         MotorId = (int)NegoRequest.MotorId,
-                        UserId = (int)NegoRequest.ReceiverId,
+                        UserId = obj.OwnerId,
                         StoreId = (int)obj.StoreId,
                         Price = Negotiation.Price,
                         CreateAt = DateTime.Now,
@@ -576,7 +576,7 @@ namespace API.Controllers
                         BillConfirm OwnerBill = new()
                         {
                             MotorId = (int)NegoRequest.MotorId,
-                            UserId = (int)NegoRequest.ReceiverId,
+                            UserId = obj.OwnerId,
                             StoreId = (int)obj.StoreId,
                             Price = Negotiation.Price,
                             CreateAt = DateTime.Now,
