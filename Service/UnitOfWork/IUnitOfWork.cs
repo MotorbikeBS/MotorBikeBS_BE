@@ -18,10 +18,10 @@ namespace Service.UnitOfWork
         public IStoreDescriptionService StoreDescriptionService { get; }
 		public IStoreImageService StoreImageService { get; }
 		public IWishListService WishListService { get; }
-		public IBookingService BookingService { get; }
         public INegotiationService NegotiationService { get; }
         public IContractService ContractService { get; }
         public IContractImageService ContractImageService { get; }
         public IBuyerBookingService BuyerBookingService { get; }
+        public IPaymentService PaymentService { get; }
 	}
 }

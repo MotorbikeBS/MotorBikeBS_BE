@@ -1,5 +1,4 @@
 ﻿using API.DTO;
-using API.DTO.BookingNegotiationDTO;
 using API.DTO.ContractDTO;
 using API.Utility;
 using API.Validation;
@@ -37,13 +36,13 @@ namespace API.Controllers
 		[Authorize(Roles ="Store")]
 		[HttpPost]
 		[Route("CreateContract")]
-		public async Task<IActionResult> CreateContract(int bookingId,[FromForm] ContractCreateDTO dto, List<IFormFile> images)
+		public async Task<IActionResult> CreateContract(int negoId,[FromForm] ContractCreateDTO dto, List<IFormFile> images)
 		{
 			try
 			{
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
 				var rs = InputValidation.ContractValidation(dto.Content, images);
-				if(rs != "")
+				if(!string.IsNullOrEmpty(rs))
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;
@@ -51,16 +50,8 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 
-				var booking = await _unitOfWork.BookingService.GetFirst(x => x.BookingId == bookingId);
-				if (booking == null)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
-					return NotFound(_response);
-				}
-				var negotiation = await _unitOfWork.NegotiationService.GetFirst(x => x.NegotiationId == booking.NegotiationId);
-				if (booking == null)
+				var nego = await _unitOfWork.NegotiationService.GetFirst(x => x.NegotiationId == negoId);
+				if (nego == null)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
@@ -68,7 +59,7 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 				
-				var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == booking.BaseRequestId);
+				var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == nego.RequestId);
 				if (request == null)
 				{
 					_response.IsSuccess = false;
@@ -87,8 +78,7 @@ namespace API.Controllers
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
 						&& x.MotorId == request.MotorId
 						&& x.Status != SD.Request_Cancel
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())));
-
+						&& x.Negotiations.Any(m => m.Contracts.Any()));
 
 				if (list.Count() > 0)
 				{
@@ -97,11 +87,11 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Bạn đã tạo hợp đồng!");
 					return BadRequest(_response);
 				}
-				if (booking.Status == SD.Request_Cancel || request.Status == SD.Request_Cancel)
+				if (nego.Status == SD.Request_Cancel || request.Status == SD.Request_Cancel)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Bạn không thể tạo hợp đồng với xe này!");
+					_response.ErrorMessages.Add("Thương lượng chưa hoàn tất, chưa thể tạo hợp đồng!");
 					return NotFound(_response);
 				}
 				
@@ -117,12 +107,11 @@ namespace API.Controllers
 				var newContract = _mapper.Map<Contract>(dto);
 				newContract.StoreId = store.StoreId;
 				newContract.CreatedAt = DateTime.Now;
-				newContract.BookingId = bookingId;
-				newContract.BaseRequestId = booking.BaseRequestId;
-				newContract.MotorId = request.MotorId;
+				newContract.NegotiationId = negoId;
 				newContract.Status = SD.Request_Pending;
-				newContract.Price = negotiation.FinalPrice;
+				newContract.Price = nego.Price;
 				newContract.NewOwner = userId;
+				newContract.BaseRequestId = request.RequestId;
 				await _unitOfWork.ContractService.Add(newContract);
 				foreach(var item in images)
 				{
@@ -269,25 +258,25 @@ namespace API.Controllers
 					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
 						&& x.Status != SD.Request_Cancel
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any())),
+						&& x.Negotiations.Any(m => m.Contracts.Any()),
 						includeProperties: new string[]
-						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
-					  "Receiver", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
+						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages",
+					  "Receiver", "Negotiations.Contracts", "Negotiations.Contracts.ContractImages" });
 				}
 				else
 				{
 					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
 						&& x.Status != SD.Request_Cancel
-						&& x.Negotiations.Any(n => n.Bookings.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
-						|| s.Status == SD.Request_Accept))),
+						&& x.Negotiations.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
+						|| s.Status == SD.Request_Accept)),
 						includeProperties: new string[]
-						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings",
-					  "Sender", "Sender.StoreDesciptions", "Negotiations.Bookings.Contracts", "Negotiations.Bookings.Contracts.ContractImages" });
+						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", 
+					  "Sender", "Sender.StoreDesciptions", "Negotiations.Contracts", "Negotiations.Contracts.ContractImages" });
 				}
 				if (list.Count() > 0)
 				{
-					var response = _mapper.Map<List<BookingNegoRequestResponseDTO>>(list);
+					var response = _mapper.Map<List<RequestContractResponseDTO>>(list);
 
 					response.ForEach(item => item.Motor.Owner = null);
 					_response.IsSuccess = true;
@@ -412,20 +401,20 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Xe này đã bán hoặc đã bị xóa!");
 					return BadRequest(_response);
 				}
-				var negotiation = await _unitOfWork.NegotiationService.GetFirst(x => x.BaseRequestId == request.RequestId);
-				if(negotiation == null || negotiation.FinalPrice == null)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
-					return NotFound(_response);
-				}
-		
+				var negotiation = await _unitOfWork.NegotiationService.GetFirst(x => x.RequestId == request.RequestId);
+				//if(negotiation == null || negotiation.FinalPrice == null)
+				//{
+				//	_response.IsSuccess = false;
+				//	_response.StatusCode = HttpStatusCode.NotFound;
+				//	_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+				//	return NotFound(_response);
+				//}
+
 				contract.Status = SD.Request_Accept;
 				await _unitOfWork.ContractService.Update(contract);
 				motor.MotorStatusId = SD.Status_Storage;
 				motor.StoreId = contract.StoreId;
-				motor.Price = negotiation.FinalPrice;
+				motor.Price = negotiation.Price;
 				await _unitOfWork.MotorBikeService.Update(motor);
 				request.Status = SD.Request_Accept;
 				await _unitOfWork.RequestService.Update(request);

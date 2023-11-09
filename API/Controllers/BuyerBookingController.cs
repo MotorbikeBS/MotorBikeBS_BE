@@ -1,6 +1,5 @@
 ﻿using API.DTO;
 using API.DTO.BookingDTO;
-using API.DTO.BookingNegotiationDTO;
 using API.DTO.BuyerBookingDTO;
 using API.Utility;
 using API.Validation;

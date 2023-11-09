@@ -1,5 +1,4 @@
 ﻿using API.DTO.BookingDTO;
-using API.DTO.BookingNegotiationDTO;
 using API.DTO.BuyerBookingDTO;
 using API.DTO.ContractDTO;
 using API.DTO.MotorbikeDTO;
@@ -39,9 +38,9 @@ namespace API.AutoMapper
 
 				config.CreateMap<Negotiation, NegotiationCreateDTO>().ReverseMap();
 				config.CreateMap<Negotiation, NegotiationResponseDTO>().ReverseMap();
+				config.CreateMap<Negotiation, NegoRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Contracts, opt => opt.MapFrom(src => src.Contracts));
 
-				config.CreateMap<Booking, BookingCreateDTO>().ReverseMap();
-				config.CreateMap<BuyerBooking, BookingResponseDTO>().ReverseMap();
+                config.CreateMap<BuyerBooking, BookingResponseDTO>().ReverseMap();
 
 				config.CreateMap<BuyerBooking, BuyerBookingCreateDTO>().ReverseMap();
 
@@ -51,11 +50,10 @@ namespace API.AutoMapper
 				config.CreateMap<ContractImage, ContractImageResponseDTO>().ReverseMap();
 
 				//Booking for Negotiation
-				config.CreateMap<Booking, BookingNegoResponseDTO>().ReverseMap();
-				config.CreateMap<Request, BookingNegoRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Negotiations, opt => opt.MapFrom(src => src.Negotiations))
+				config.CreateMap<Request, RequestContractResponseDTO>().ReverseMap().ForMember(dest => dest.Negotiations, opt => opt.MapFrom(src => src.Negotiations))
 																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
 																					   .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver));
-				config.CreateMap<Negotiation, NegotiationRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Bookings, opt => opt.MapFrom(src => src.Bookings));
+				
 				//End
 
 				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap().ForSourceMember(source => source.File, opt => opt.DoNotValidate())
