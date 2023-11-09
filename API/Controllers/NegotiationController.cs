@@ -216,6 +216,8 @@ namespace API.Controllers
                     requestNegotiation = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
                     && x.RequestTypeId == SD.Request_Negotiation_Id
                     && x.Status != SD.Request_Cancel
+                    && x.Motor.MotorStatusId != SD.Status_Storage
+                    && x.Motor.MotorStatusId != SD.Status_Posting
                     && x.Negotiations.Any(n => n.Status != SD.Request_Cancel),
                     includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
                 }
@@ -225,6 +227,8 @@ namespace API.Controllers
                     requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
                     && x.RequestTypeId == SD.Request_Negotiation_Id
                     && x.Status != SD.Request_Cancel
+                    && x.Motor.MotorStatusId != SD.Status_Storage
+                    && x.Motor.MotorStatusId != SD.Status_Posting
                     && x.Negotiations.Any(n => n.Status != SD.Request_Cancel),
                     includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Receiver" });
                 }

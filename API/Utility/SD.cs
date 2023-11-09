@@ -29,9 +29,12 @@
 		public const string Request_Accept = "ACCEPT";
 		public const string Request_Reject = "REJECT";
 		public const string Request_Cancel = "CANCEL";
-	
 
-		public const string not_verify = "NOT VERIFY";
+        public const string Payment_Unpaid = "UNPAID";
+        public const string Payment_Error= "ERROR";
+        public const string Payment_Paid = "PAID";
+
+        public const string not_verify = "NOT VERIFY";
 		public const string active = "ACTIVE";
 		public const string in_active = "INACTIVE";
 		public const string refuse = "REFUSE";
