@@ -1,4 +1,5 @@
 using API.AutoMapper;
+using API.Hubs;
 using AutoMapper;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -27,6 +28,9 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 //Email Sender
 builder.Services.AddTransient<IEmailSender, EmailSenderRepository>();
 
+//Notification Hubs
+builder.Services.AddSignalR();
+
 //Cors
 builder.Services.AddCors();
 
@@ -36,6 +40,8 @@ builder.Services.AddSingleton(u => new BlobServiceClient(
 builder.Services.AddSingleton<IBlobService, BlobService>();
 builder.Services.AddSingleton<IVnPayService, VnPayService>();
 builder.Services.AddHttpContextAccessor();
+
+//PagingUriGenerator
 builder.Services.AddSingleton<IPagingUriService>(o =>
 {
     var accessor = o.GetRequiredService<IHttpContextAccessor>();
@@ -122,5 +128,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<NotificationHub>("/NotificationHub");
+});
 
 app.Run();
