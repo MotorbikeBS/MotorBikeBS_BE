@@ -566,6 +566,13 @@ namespace API.Controllers
                     _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
+                else if (StatusID == 0)
+                {
+                    _response.ErrorMessages.Add("Vui lòng chọn trạng thái đăng bán!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 else
                 {
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
@@ -596,6 +603,26 @@ namespace API.Controllers
                             _response.ErrorMessages.Add(rs);
                             return BadRequest(_response);
                         }
+                        //Check MotorStatusPosting if not same with OwnerPosting
+                        foreach (var PostingType in SD.Owner_RequestPostingTypeArray)
+                        {
+                            var request_Posting = await _unitOfWork.RequestService.GetLast(
+                                    e => e.MotorId == MotorID && e.RequestTypeId == PostingType 
+                                    && e.SenderId == MotorID &&  e.Status == SD.Request_Accept
+                            );
+                            if (request_Posting != null)
+                            {
+                                if ((request_Posting.RequestTypeId == SD.Request_Motor_Consignment && StatusID != SD.Status_Consignment) ||
+                                    (request_Posting.RequestTypeId == SD.Request_Motor_nonConsignment && StatusID != SD.Status_nonConsignment))
+                                {
+                                    _response.StatusCode = HttpStatusCode.BadRequest;
+                                    _response.IsSuccess = false;
+                                    _response.ErrorMessages.Add("Không thể đăng xe khác với hợp đồng mua bán với chủ xe!");
+                                    return BadRequest(_response);
+                                }
+                            }
+                        }
+                        //-------------------------
                         Request request = new()
                         {
                             MotorId = MotorID,
@@ -674,6 +701,27 @@ namespace API.Controllers
                     }
                     else
                     {
+                        //Cancel if have negotiation 
+                        var NegoRequest = await _unitOfWork.RequestService.GetLast(e => e.MotorId == MotorID
+                                                                        && e.RequestTypeId == SD.Request_Negotiation_Id
+                                                                        && e.Status != SD.Request_Cancel
+                        );
+                        if ( NegoRequest != null )
+                        {
+                            _response.StatusCode = HttpStatusCode.BadRequest;
+                            _response.IsSuccess = false;
+                            switch (NegoRequest.Status)
+                            {
+                                case SD.Request_Pending:
+                                    _response.ErrorMessages.Add("Xe đang trong quá trình thương lượng giá cả. Không thể gỡ xe khỏi sàn!");
+                                    break;
+                                case SD.Request_Accept:
+                                    _response.ErrorMessages.Add("Xe đang có hợp đồng mua bán. Không thể gỡ xe khỏi sàn!");
+                                    break;
+                            }
+                            return BadRequest(_response);
+                        }
+                        //------------------------
                         int check = 0;
                         foreach (var PostingType in SD.RequestPostingTypeArray) 
                         {

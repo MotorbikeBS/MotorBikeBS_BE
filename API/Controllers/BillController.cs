@@ -321,7 +321,7 @@ namespace API.Controllers
                         int check = 0;
                         foreach (var PostingType in SD.RequestPostingTypeArray)
                         {
-                            var request = await _unitOfWork.RequestService.GetFirst(
+                            var request = await _unitOfWork.RequestService.GetLast(
                                     e => e.MotorId == NegoRequest.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
                             );
                             if (request != null) 
@@ -339,7 +339,7 @@ namespace API.Controllers
                             return BadRequest(_response);
                         }
                     }
-                    //Add Request
+                    //Add Tranfer Request 
                     Request requestNew = new()
                     {
                         MotorId = NegoRequest.MotorId,
@@ -351,10 +351,10 @@ namespace API.Controllers
                     };
                     await _unitOfWork.RequestService.Add(requestNew);
                     //Add Cus Bill
-                    var requestCus = await _unitOfWork.RequestService.GetLast(
+                    var requestTranfer = await _unitOfWork.RequestService.GetLast(
                                     e => e.MotorId == NegoRequest.MotorId && e.RequestTypeId == SD.Request_MotorTranfer_Id && e.Status == SD.Request_Pending
                     );
-                    if (requestCus == null)
+                    if (requestTranfer == null)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.IsSuccess = false;
@@ -364,23 +364,30 @@ namespace API.Controllers
                     BillConfirm CusBill = new()
                     {
                         MotorId = (int)NegoRequest.MotorId,
-                        UserId = userId,
+                        UserId = newUser,
                         StoreId = (int)obj.StoreId,
                         Price = obj.Price,
                         CreateAt = DateTime.Now,
                         Status = SD.Request_Accept,
-                        RequestId = requestCus.RequestId
+                        RequestId = requestTranfer.RequestId
                     };
                     await _unitOfWork.BillService.Add(CusBill);
                     //Update Bill-request to done
-                    requestCus.Status = SD.Request_Accept;
-                    await _unitOfWork.RequestService.Update(requestCus);
+                    requestTranfer.Status = SD.Request_Accept;
+                    await _unitOfWork.RequestService.Update(requestTranfer);
                     //Cancel Posting-request
                     var requestPosting = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == requestPost);
                     requestPosting.Status = SD.Request_Cancel;
                     await _unitOfWork.RequestService.Update(requestPosting);
                     //*** Add OwnerBill ***
                     var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
+                    if (Negotiation == null)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.IsSuccess = false;
+                        _response.ErrorMessages.Add("Không tìm thấy giao dịch thương lượng giá cả với chủ xe!");
+                        return BadRequest(_response);
+                    }
                     BillConfirm OwnerBill = new()
                     {
                         MotorId = (int)NegoRequest.MotorId,
@@ -391,7 +398,11 @@ namespace API.Controllers
                         Status = SD.Request_Accept,
                         RequestId = NegoRequest.RequestId
                     };
-                    //----------------
+                    await _unitOfWork.BillService.Add(OwnerBill);
+                    //Cancel OwnerPosting
+                    var OwnerPostingRequest = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
+                    OwnerPostingRequest.Status = SD.Request_Cancel;
+                    await _unitOfWork.RequestService.Update(OwnerPostingRequest);
                     //Update Motor Ownership
                     obj.MotorStatusId = SD.Status_Storage;
                     obj.StoreId = null;
@@ -514,7 +525,7 @@ namespace API.Controllers
                         int check = 0;
                         foreach (var PostingType in SD.RequestPostingTypeArray)
                         {
-                            var request = await _unitOfWork.RequestService.GetFirst(
+                            var request = await _unitOfWork.RequestService.GetLast(
                                     e => e.MotorId == NegoRequest.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
                             );
                             if (request != null) 
@@ -573,6 +584,13 @@ namespace API.Controllers
                         await _unitOfWork.RequestService.Update(requestPosting);
                         //*** Add OwnerBill ***
                         var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
+                        if (Negotiation == null)
+                        {
+                            _response.StatusCode = HttpStatusCode.BadRequest;
+                            _response.IsSuccess = false;
+                            _response.ErrorMessages.Add("Không tìm thấy giao dịch thương lượng giá cả với chủ xe!");
+                            return BadRequest(_response);
+                        }
                         BillConfirm OwnerBill = new()
                         {
                             MotorId = (int)NegoRequest.MotorId,
@@ -583,7 +601,11 @@ namespace API.Controllers
                             Status = SD.Request_Accept,
                             RequestId = NegoRequest.RequestId
                         };
-                        //----------------
+                        await _unitOfWork.BillService.Add(OwnerBill);
+                        //Cancel OwnerPosting
+                        var OwnerPostingRequest = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
+                        OwnerPostingRequest.Status = SD.Request_Cancel;
+                        await _unitOfWork.RequestService.Update(OwnerPostingRequest);
                         //Update Motor Ownership
                         obj.MotorStatusId = SD.Status_Storage;
                         obj.StoreId = null;
