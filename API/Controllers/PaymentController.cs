@@ -31,37 +31,37 @@ namespace API.Controllers
             _vnPayService = vnPayService;
         }
 
-        //[Authorize(Roles = "Store")]
+        [Authorize(Roles = "Store")]
         [HttpPost]
         [Route("CreatePaymentUrl")]
         public async Task<IActionResult> CreatePaymentUrl(PaymentCreateModel model)
         {
             try
             {
-                if(model.Amount <5000 || model.Amount > 10000000)
+                if (model.Amount == default(int) || model.Amount < 10000 || model.Amount > 10000000)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Số tiền từ 5.000VNĐ đến 10.000.000VNĐ!");
+                    _response.ErrorMessages.Add("Số tiền từ 10.000VNĐ đến 10.000.000VNĐ!");
                     _response.IsSuccess = false;
                     return BadRequest(_response);
                 }
                 var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
-                if(url == null)
+                if (url == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Đã xảy ra lỗi!");
                     _response.IsSuccess = false;
                     return BadRequest(_response);
                 }
-                //var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
                 Request request = new()
                 {
-                    //SenderId = userId,
-                    SenderId = 18,
+                    SenderId = userId,
                     Time = DateTime.Now,
                     RequestTypeId = SD.Request_Add_Point_Id,
                     Status = SD.Request_Pending,
                 };
+                await _unitOfWork.RequestService.Add(request);
 
                 Payment payment = new()
                 {
@@ -70,9 +70,8 @@ namespace API.Controllers
                     DateCreated = DateTime.Now,
                     PaymentType = "Nạp điểm"
                 };
-
-                await _unitOfWork.RequestService.Add(request);
                 await _unitOfWork.PaymentService.Add(payment);
+
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.IsSuccess = true;
                 _response.Result = url;
@@ -93,21 +92,60 @@ namespace API.Controllers
 
         [HttpGet]
         [Route("PaymentCallBack")]
-        public IActionResult PaymentCallback()
+        public async Task<IActionResult> PaymentCallback()
         {
             try
             {
                 var response = _vnPayService.PaymentExecute(Request.Query);
-                if (response.Success)
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var request = await _unitOfWork.RequestService.GetLast(x => x.SenderId == userId
+                && x.RequestTypeId == SD.Request_Add_Point_Id
+                && x.Status == SD.Request_Pending);
+                if(request != null)
                 {
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.ErrorMessages.Add("Nạp điểm thành công!");
-                    _response.IsSuccess = false;
-                    _response.Result = response;
-                    return Ok(_response);
+                    if (response.VnPayResponseCode == "00")
+                    {
+
+                        var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
+                        if (store == null)
+                        {
+                            _response.StatusCode = HttpStatusCode.NotFound;
+                            _response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
+                            _response.IsSuccess = false;
+                            _response.Result = response;
+                            return NotFound(_response);
+                        }
+
+                        request.Status = SD.Request_Accept;
+                        await _unitOfWork.RequestService.Update(request);
+
+                        var payment = await _unitOfWork.PaymentService.GetFirst(x => x.RequestId == request.RequestId);
+                        payment.PaymentTime = DateTime.Now;
+                        await _unitOfWork.PaymentService.Update(payment);
+
+                        if (store.Point == null)
+                            store.Point = response.Amount;
+                        else
+                            store.Point = store.Point + response.Amount;
+                        await _unitOfWork.StoreDescriptionService.Update(store);
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.ErrorMessages.Add("Nạp điểm thành công!");
+                        _response.IsSuccess = false;
+                        _response.Result = response;
+                        return Ok(_response);
+                    }
+                    else
+                    {
+                        request.Status = SD.Request_Cancel;
+                        await _unitOfWork.RequestService.Update(request);
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Thanh toán không thành công!");
+                        _response.IsSuccess = false;
+                        return BadRequest(_response);
+                    }
                 }
                 _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessages.Add("Đã xảy ra lỗi!");
+                _response.ErrorMessages.Add("Không tìm thấy yêu cầu thanh toán!");
                 _response.IsSuccess = false;
                 return BadRequest(_response);
             }
