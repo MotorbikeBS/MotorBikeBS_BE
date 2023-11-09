@@ -39,6 +39,7 @@ namespace Service.VnPay
 
             var checkSignature =
                 vnPay.ValidateSignature(vnpSecureHash, hashSecret); //check Signature
+            var amount = vnPay.GetResponseData("vnp_Amount");
 
             if (!checkSignature)
                 return new PaymentResponseModel()
@@ -55,7 +56,8 @@ namespace Service.VnPay
                 PaymentId = vnPayTranId.ToString(),
                 TransactionId = vnPayTranId.ToString(),
                 Token = vnpSecureHash,
-                VnPayResponseCode = vnpResponseCode
+                VnPayResponseCode = vnpResponseCode,
+                Amount = int.Parse(amount)
             };
         }
         public string GetIpAddress(HttpContext context)
