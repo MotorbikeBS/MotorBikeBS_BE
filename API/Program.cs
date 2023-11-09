@@ -124,14 +124,17 @@ app.UseCors(builder =>
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
 app.UseAuthentication();
+
 app.UseAuthorization();
 
-app.MapControllers();
-app.UseRouting();
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapHub<NotificationHub>("/NotificationHub");
 });
+
+app.MapControllers();
 
 app.Run();

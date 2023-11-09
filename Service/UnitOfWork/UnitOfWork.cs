@@ -12,6 +12,8 @@ namespace Service.UnitOfWork
         public IMotorImageService MotorImageService { get; private set; } = null!;
         public IMotorStatusService MotorStatusService { get; private set; } = null!;
         public IMotorTypeService MotorTypeService { get; private set; } = null!;
+        public INotificationService NotificationService { get; private set; } = null!;
+        public INotificationTypeService NotificationTypeService { get; private set; } = null!;
         public IRequestService RequestService { get; private set; } = null!;
         public IBillService BillService { get; private set; } = null!;
         public IRequestTypeService RequestTypeService { get; private set; } = null!;
@@ -43,6 +45,8 @@ namespace Service.UnitOfWork
             MotorImageService = new MotorImageRepository(_context, this);
             MotorStatusService = new MotorStatusRepository(_context, this);
             MotorTypeService = new MotorTypeRepository(_context, this);
+            NotificationService = new NotificationRepository(_context, this);
+            NotificationTypeService = new NotificationTypeRepository(_context, this);
             RequestService = new RequestRepository(_context, this);
             RequestTypeService = new RequestTypeRepository(_context, this);
             BillService = new BillRepository(_context, this);

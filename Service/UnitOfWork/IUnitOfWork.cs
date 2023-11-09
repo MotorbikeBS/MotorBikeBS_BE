@@ -10,6 +10,8 @@ namespace Service.UnitOfWork
         public IMotorImageService MotorImageService { get; }
         public IMotorStatusService MotorStatusService { get; }
         public IMotorTypeService MotorTypeService { get; }
+        public INotificationService NotificationService { get; }
+        public INotificationTypeService NotificationTypeService { get; }
         public IRequestService RequestService { get; }
         public IRequestTypeService RequestTypeService { get; }
         public IBillService BillService { get; }
