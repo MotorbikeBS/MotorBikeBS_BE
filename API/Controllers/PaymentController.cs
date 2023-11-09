@@ -1,6 +1,7 @@
 ﻿using API.DTO;
 using API.DTO.VnPayDTO;
 using API.Utility;
+using API.Validation;
 using AutoMapper;
 using Core.Models;
 using Core.VnPayModel;
@@ -11,6 +12,7 @@ using Service.BlobImageService;
 using Service.UnitOfWork;
 using Service.VnPay.Service;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace API.Controllers
 {
@@ -38,14 +40,16 @@ namespace API.Controllers
         {
             try
             {
-                if (model.Amount == default(int) || model.Amount < 10000 || model.Amount > 10000000)
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var rs = InputValidation.PaymentValidate(model.Amount);
+                if (!string.IsNullOrEmpty(rs))
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Số tiền từ 10.000VNĐ đến 10.000.000VNĐ!");
+                    _response.ErrorMessages.Add(rs);
                     _response.IsSuccess = false;
                     return BadRequest(_response);
                 }
-                var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
+                var url = _vnPayService.CreatePaymentUrl(model, HttpContext, userId);
                 if (url == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -53,13 +57,12 @@ namespace API.Controllers
                     _response.IsSuccess = false;
                     return BadRequest(_response);
                 }
-                var userId = int.Parse(User.FindFirst("UserId")?.Value);
                 Request request = new()
                 {
                     SenderId = userId,
                     Time = DateTime.Now,
                     RequestTypeId = SD.Request_Add_Point_Id,
-                    Status = SD.Request_Pending,
+                    Status = SD.Payment_Unpaid,
                 };
                 await _unitOfWork.RequestService.Add(request);
 
@@ -90,22 +93,23 @@ namespace API.Controllers
 
         }
 
+
         [HttpGet]
         [Route("PaymentCallBack")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> PaymentCallback()
         {
             try
             {
                 var response = _vnPayService.PaymentExecute(Request.Query);
-                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var userId = ExtractUserId(response.OrderDescription);
                 var request = await _unitOfWork.RequestService.GetLast(x => x.SenderId == userId
                 && x.RequestTypeId == SD.Request_Add_Point_Id
-                && x.Status == SD.Request_Pending);
+                && x.Status == SD.Payment_Unpaid);
                 if(request != null)
                 {
                     if (response.VnPayResponseCode == "00")
                     {
-
                         var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
                         if (store == null)
                         {
@@ -116,7 +120,7 @@ namespace API.Controllers
                             return NotFound(_response);
                         }
 
-                        request.Status = SD.Request_Accept;
+                        request.Status = SD.Payment_Paid;
                         await _unitOfWork.RequestService.Update(request);
 
                         var payment = await _unitOfWork.PaymentService.GetFirst(x => x.RequestId == request.RequestId);
@@ -126,7 +130,7 @@ namespace API.Controllers
                         if (store.Point == null)
                             store.Point = response.Amount;
                         else
-                            store.Point = store.Point + response.Amount;
+                            store.Point = store.Point + (response.Amount/100000);
                         await _unitOfWork.StoreDescriptionService.Update(store);
                         _response.StatusCode = HttpStatusCode.OK;
                         _response.ErrorMessages.Add("Nạp điểm thành công!");
@@ -136,7 +140,7 @@ namespace API.Controllers
                     }
                     else
                     {
-                        request.Status = SD.Request_Cancel;
+                        request.Status = SD.Payment_Error;
                         await _unitOfWork.RequestService.Update(request);
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.ErrorMessages.Add("Thanh toán không thành công!");
@@ -159,6 +163,26 @@ namespace API.Controllers
                 };
                 return BadRequest(_response);
             }
+        }
+
+        static int ExtractUserId(string input)
+        {
+            string pattern = @"UserId:(\d+)";
+
+            Match match = Regex.Match(input, pattern);
+
+            if (match.Success)
+            {
+                string userIdStr = match.Groups[1].Value;
+
+                // Parse the extracted string to an integer
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    return userId;
+                }
+            }
+
+            return -1;
         }
     }
 }

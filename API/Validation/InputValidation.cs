@@ -325,6 +325,24 @@ namespace API.Validation
 			return "";
 		}
 
+		public static string PaymentValidate(int amount)
+		{
+            if(amount == default(int))
+			{
+				return "Vui lòng nhập số tiền!";
+			}
+			if (amount < 10000 || amount > 10000000)
+			{
+				return "Vui lòng nhập số tiền từ 10.000VNĐ đến 10.000.000VNĐ!";
+			}
+			if(amount % 1000 != 0)
+			{
+				return "Vui lòng nhập số tiền chẵn!";
+			}
+			return "";
+
+        }
+
 		//MotorBike
 		public static string MotorValidation(MotorUpdateDTO motorRegisterDTO)
         {
