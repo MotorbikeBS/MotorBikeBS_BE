@@ -706,21 +706,21 @@ namespace API.Controllers
                                                                         && e.RequestTypeId == SD.Request_Negotiation_Id
                                                                         && e.Status != SD.Request_Cancel
                         );
-                        if ( NegoRequest != null )
-                        {
-                            _response.StatusCode = HttpStatusCode.BadRequest;
-                            _response.IsSuccess = false;
-                            switch (NegoRequest.Status)
-                            {
-                                case SD.Request_Pending:
-                                    _response.ErrorMessages.Add("Xe đang trong quá trình thương lượng giá cả. Không thể gỡ xe khỏi sàn!");
-                                    break;
-                                case SD.Request_Accept:
-                                    _response.ErrorMessages.Add("Xe đang có hợp đồng mua bán. Không thể gỡ xe khỏi sàn!");
-                                    break;
-                            }
-                            return BadRequest(_response);
-                        }
+                        //if ( NegoRequest != null )
+                        //{
+                        //    _response.StatusCode = HttpStatusCode.BadRequest;
+                        //    _response.IsSuccess = false;
+                        //    switch (NegoRequest.Status)
+                        //    {
+                        //        case SD.Request_Pending:
+                        //            _response.ErrorMessages.Add("Xe đang trong quá trình thương lượng giá cả. Không thể gỡ xe khỏi sàn!");
+                        //            break;
+                        //        case SD.Request_Accept:
+                        //            _response.ErrorMessages.Add("Xe đang có hợp đồng mua bán. Không thể gỡ xe khỏi sàn!");
+                        //            break;
+                        //    }
+                        //    return BadRequest(_response);
+                        //}
                         //------------------------
                         int check = 0;
                         foreach (var PostingType in SD.RequestPostingTypeArray) 
@@ -741,6 +741,7 @@ namespace API.Controllers
                         var requestEdit = await _unitOfWork.RequestService.Get( e => e.MotorId == MotorID 
                                                                            && e.RequestTypeId != SD.Request_Motor_Register
                                                                            && e.RequestTypeId != SD.Request_Negotiation_Id
+                                                                           && e.SenderId == userId
                         );
                         foreach (var r in requestEdit)
                         {
