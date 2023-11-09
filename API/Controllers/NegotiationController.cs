@@ -58,10 +58,16 @@ namespace API.Controllers
                     return NotFound(_response);
                 }
 
+                //IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+                //&& x.MotorId == motorId
+                //&& x.RequestTypeId == SD.Request_Negotiation_Id
+                //&& x.Status == SD.Request_Pending || x.Status == SD.Request_Accept);
+                //&& x.Negotiations.Any(y => y.Status != SD.Request_Cancel));
+
                 IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
                 && x.RequestTypeId == SD.Request_Negotiation_Id
                 && x.MotorId == motorId
-                && x.Status == SD.Request_Pending || x.Status == SD.Request_Accept
+                && x.Status != SD.Request_Cancel
                 && x.Negotiations.Any(y => y.Status != SD.Request_Cancel));
 
 
@@ -210,6 +216,8 @@ namespace API.Controllers
                     requestNegotiation = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
                     && x.RequestTypeId == SD.Request_Negotiation_Id
                     && x.Status != SD.Request_Cancel
+                    && x.Motor.MotorStatusId != SD.Status_Storage
+                    && x.Motor.MotorStatusId != SD.Status_Posting
                     && x.Negotiations.Any(n => n.Status != SD.Request_Cancel),
                     includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
                 }
@@ -219,6 +227,8 @@ namespace API.Controllers
                     requestNegotiation = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
                     && x.RequestTypeId == SD.Request_Negotiation_Id
                     && x.Status != SD.Request_Cancel
+                    && x.Motor.MotorStatusId != SD.Status_Storage
+                    && x.Motor.MotorStatusId != SD.Status_Posting
                     && x.Negotiations.Any(n => n.Status != SD.Request_Cancel),
                     includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Receiver" });
                 }

@@ -268,7 +268,7 @@ namespace API.Controllers
 					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 						&& x.RequestTypeId == SD.Request_Negotiation_Id
 						&& x.Status != SD.Request_Cancel
-						&& x.Negotiations.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
+                        && x.Negotiations.Any(m => m.Contracts.Any(s => s.Status == SD.Request_Pending
 						|| s.Status == SD.Request_Accept)),
 						includeProperties: new string[]
 						{ "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", 
@@ -453,5 +453,85 @@ namespace API.Controllers
 				return BadRequest();
 			}
 		}
-	}
+
+        [Authorize(Roles = ("Owner, Store"))]
+        [HttpPut]
+        [Route("RejectContract")]
+        public async Task<IActionResult> RejectContract(int contractId)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                var contract = await _unitOfWork.ContractService.GetFirst(x => x.ContractId == contractId);
+                if (contract == null || contract.Status != SD.Request_Pending || contract.StoreId == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Không tìm thấy hợp đồng!");
+                    return NotFound(_response);
+                }
+                var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == contract.BaseRequestId);
+                if (request == null || request.Status != SD.Request_Pending)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+                    return NotFound(_response);
+                }
+                if (roleId == SD.Role_Owner_Id)
+				{
+                    if (request.ReceiverId != userId)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Bạn không có quyền này!");
+                        return BadRequest(_response);
+                    }
+                }
+                if (roleId == SD.Role_Store_Id)
+                {
+                    if (request.SenderId != userId)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Bạn không có quyền này!");
+                        return BadRequest(_response);
+                    }
+                }
+
+				IEnumerable<ContractImage> img = await _unitOfWork.ContractImageService.Get(x => x.ContractId == contractId);
+				if (img.Count() > 0)
+				{
+					foreach (var item in img)
+					{
+						var oldLisenceImg = item.ImageLink.Split('/').Last();
+						await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
+						await _unitOfWork.ContractImageService.Delete(item);
+					}
+				}
+
+				contract.Status = SD.Request_Reject;
+                await _unitOfWork.ContractService.Update(contract);
+
+				request.Status = SD.Request_Cancel;
+                await _unitOfWork.RequestService.Update(request);
+
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Message = "Từ chối thành công!";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest();
+            }
+        }
+    }
 }
