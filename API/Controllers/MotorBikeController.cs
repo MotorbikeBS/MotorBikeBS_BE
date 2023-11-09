@@ -603,6 +603,26 @@ namespace API.Controllers
                             _response.ErrorMessages.Add(rs);
                             return BadRequest(_response);
                         }
+                        //Check MotorStatusPosting if not same with OwnerPosting
+                        foreach (var PostingType in SD.Owner_RequestPostingTypeArray)
+                        {
+                            var request_Posting = await _unitOfWork.RequestService.GetLast(
+                                    e => e.MotorId == MotorID && e.RequestTypeId == PostingType 
+                                    && e.SenderId == MotorID &&  e.Status == SD.Request_Accept
+                            );
+                            if (request_Posting != null)
+                            {
+                                if ((request_Posting.RequestTypeId == SD.Request_Motor_Consignment && StatusID != SD.Status_Consignment) ||
+                                    (request_Posting.RequestTypeId == SD.Request_Motor_nonConsignment && StatusID != SD.Status_nonConsignment))
+                                {
+                                    _response.StatusCode = HttpStatusCode.BadRequest;
+                                    _response.IsSuccess = false;
+                                    _response.ErrorMessages.Add("Không thể đăng xe khác với hợp đồng mua bán với chủ xe!");
+                                    return BadRequest(_response);
+                                }
+                            }
+                        }
+                        //-------------------------
                         Request request = new()
                         {
                             MotorId = MotorID,
@@ -693,10 +713,10 @@ namespace API.Controllers
                             switch (NegoRequest.Status)
                             {
                                 case SD.Request_Pending:
-                                    _response.ErrorMessages.Add("Xe đang trong quá trình thương lượng giá cả!");
+                                    _response.ErrorMessages.Add("Xe đang trong quá trình thương lượng giá cả. Không thể gỡ xe khỏi sàn!");
                                     break;
                                 case SD.Request_Accept:
-                                    _response.ErrorMessages.Add("Xe đang có hợp đồng mua bán!");
+                                    _response.ErrorMessages.Add("Xe đang có hợp đồng mua bán. Không thể gỡ xe khỏi sàn!");
                                     break;
                             }
                             return BadRequest(_response);

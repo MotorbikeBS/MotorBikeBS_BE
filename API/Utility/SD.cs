@@ -15,7 +15,8 @@
 		public const int Status_Consignment = 4;
 		public const int Status_nonConsignment = 5;
 
-        public static readonly int[] RequestPostingTypeArray = new int[] {2,3,4}; //Posting - Consignment - nonConsignment
+        public static readonly int[] RequestPostingTypeArray = new int[] { 2, 3, 4}; //Posting - Consignment - nonConsignment
+        public static readonly int[] Owner_RequestPostingTypeArray = new int[] { 3, 4 };
         public const int Request_Motor_Register = 1;
 		public const int Request_Motor_Posting = 2;
         public const int Request_Motor_Consignment = 3;
