@@ -566,6 +566,13 @@ namespace API.Controllers
                     _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
+                else if (StatusID == 0)
+                {
+                    _response.ErrorMessages.Add("Vui lòng chọn trạng thái đăng bán!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 else
                 {
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
@@ -674,6 +681,27 @@ namespace API.Controllers
                     }
                     else
                     {
+                        //Cancel if have negotiation 
+                        var NegoRequest = await _unitOfWork.RequestService.GetLast(e => e.MotorId == MotorID
+                                                                        && e.RequestTypeId == SD.Request_Negotiation_Id
+                                                                        && e.Status != SD.Request_Cancel
+                        );
+                        if ( NegoRequest != null )
+                        {
+                            _response.StatusCode = HttpStatusCode.BadRequest;
+                            _response.IsSuccess = false;
+                            switch (NegoRequest.Status)
+                            {
+                                case SD.Request_Pending:
+                                    _response.ErrorMessages.Add("Xe đang trong quá trình thương lượng giá cả!");
+                                    break;
+                                case SD.Request_Accept:
+                                    _response.ErrorMessages.Add("Xe đang có hợp đồng mua bán!");
+                                    break;
+                            }
+                            return BadRequest(_response);
+                        }
+                        //------------------------
                         int check = 0;
                         foreach (var PostingType in SD.RequestPostingTypeArray) 
                         {
