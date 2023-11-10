@@ -1,10 +1,11 @@
-﻿namespace API.DTO.NegotiationDTO
+﻿namespace API.DTO.ContractDTO
 {
 	public class NegotiationCreateDTO
 	{
-        public decimal Price { get; set; }
+        public decimal FinalPrice { get; set; }
+        public string Content { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public string? Description { get; set; }
+        public decimal Deposit { get; set; }
     }
 }

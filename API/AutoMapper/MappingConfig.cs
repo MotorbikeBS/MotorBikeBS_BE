@@ -36,25 +36,25 @@ namespace API.AutoMapper
 				config.CreateMap<Role, RoleResponseDTO>().ReverseMap();
 				config.CreateMap<StoreDesciption, StoreDescriptionResponseDTO>().ReverseMap();
 
-				config.CreateMap<Negotiation, NegotiationCreateDTO>().ReverseMap();
-				config.CreateMap<Negotiation, NegotiationResponseDTO>().ReverseMap();
-				//config.CreateMap<Negotiation, NegoRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Contracts, opt => opt.MapFrom(src => src.Contracts));
+				config.CreateMap<Valuation, ValuationCreateDTO>().ReverseMap();
+				config.CreateMap<Valuation, ValuationResponseDTO>().ReverseMap();
 
-                config.CreateMap<BuyerBooking, BookingResponseDTO>().ReverseMap();
+                config.CreateMap<Valuation, ValuationRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Negotiations, opt => opt.MapFrom(src => src.Negotiations)); ;
+
+                config.CreateMap<Request, ValuationResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Valuations, opt => opt.MapFrom(src => src.Valuations));
+
+				config.CreateMap<BuyerBooking, BookingResponseDTO>().ReverseMap();
 
 				config.CreateMap<BuyerBooking, BuyerBookingCreateDTO>().ReverseMap();
 
-				config.CreateMap<Contract, ContractCreateDTO>().ReverseMap();
-				config.CreateMap<Contract, ContractResponseDTO>().ReverseMap();
+				config.CreateMap<Negotiation, NegotiationCreateDTO>().ReverseMap();
+				config.CreateMap<Negotiation, NegotiationResponseDTO>().ReverseMap();
 
-				config.CreateMap<ContractImage, ContractImageResponseDTO>().ReverseMap();
+				config.CreateMap<Request, RequestNegotiationResponseDTO>().ReverseMap().ForMember(dest => dest.Valuations, opt => opt.MapFrom(src => src.Valuations))
+																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
+																					   .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver));
 
-				//Booking for Negotiation
-				//config.CreateMap<Request, RequestContractResponseDTO>().ReverseMap().ForMember(dest => dest.Negotiations, opt => opt.MapFrom(src => src.Negotiations))
-				//																	   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
-				//																	   .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver));
-				
-				//End
+
 
 				config.CreateMap<StoreDesciption, StoreRegisterDTO>().ReverseMap().ForSourceMember(source => source.File, opt => opt.DoNotValidate())
 																				  .ForSourceMember(source => source.License, opt => opt.DoNotValidate());
@@ -87,10 +87,10 @@ namespace API.AutoMapper
 				config.CreateMap<Request, BookingResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
 																				   .ForSourceMember(source => source.Sender, opt => opt.DoNotValidate());
 
-				//config.CreateMap<Request, NegotiationResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
-				//																	   .ForMember(dest => dest.Valuations, opt => opt.MapFrom(src => src.Va))
-				//																	   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
-				//																	   .ForMember(source => source.Receiver, opt => opt.MapFrom(src => src.Receiver));
+				config.CreateMap<Request, ValuationResponseRequestDTO>().ReverseMap().ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
+																					   .ForMember(dest => dest.Valuations, opt => opt.MapFrom(src => src.Valuations))
+																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
+																					   .ForMember(source => source.Receiver, opt => opt.MapFrom(src => src.Receiver));
 
 
 				config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
