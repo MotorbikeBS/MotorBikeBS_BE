@@ -290,7 +290,7 @@ namespace API.Controllers
 			}
 		}
 
-		[Authorize(Roles = ("Owner"))]
+		[Authorize(Roles = ("Owner, Store"))]
 		[HttpPut]
 		[Route("CancelNegotiation")]
 		public async Task<IActionResult> CancelNegotiation(int negotiationId)
@@ -298,7 +298,8 @@ namespace API.Controllers
 			try
 			{
 				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-				var nego = await _unitOfWork.NegotiationService.GetFirst(x => x.NegotiationId == negotiationId);
+                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                var nego = await _unitOfWork.NegotiationService.GetFirst(x => x.NegotiationId == negotiationId);
 				if (nego == null || nego.Status != SD.Request_Pending || nego.StoreId == null)
 				{
 					_response.IsSuccess = false;
@@ -314,25 +315,38 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
 					return NotFound(_response);
 				}
-				if (request.ReceiverId != userId)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.BadRequest;
-					_response.ErrorMessages.Add("Bạn không có quyền này!");
-					return BadRequest(_response);
-				}
-				//IEnumerable<ContractImage> img = await _unitOfWork.ContractImageService.Get(x => x.ContractId == contractId);
-				//if(img.Count() > 0)
-				//{
-				//	foreach (var item in img)
-				//	{
-				//		var oldLisenceImg = item.ImageLink.Split('/').Last();
-				//		await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
-				//		await _unitOfWork.ContractImageService.Delete(item);
-				//	}
-				//}
-				//await _unitOfWork.ContractService.Delete(contract);
-				nego.Status = SD.Request_Cancel;
+                if (roleId == SD.Role_Owner_Id)
+                {
+                    if (request.ReceiverId != userId)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Bạn không có quyền này!");
+                        return BadRequest(_response);
+                    }
+                }
+                if (roleId == SD.Role_Store_Id)
+                {
+                    if (request.SenderId != userId)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Bạn không có quyền này!");
+                        return BadRequest(_response);
+                    }
+                }
+                //IEnumerable<ContractImage> img = await _unitOfWork.ContractImageService.Get(x => x.ContractId == contractId);
+                //if(img.Count() > 0)
+                //{
+                //	foreach (var item in img)
+                //	{
+                //		var oldLisenceImg = item.ImageLink.Split('/').Last();
+                //		await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
+                //		await _unitOfWork.ContractImageService.Delete(item);
+                //	}
+                //}
+                //await _unitOfWork.ContractService.Delete(contract);
+                nego.Status = SD.Request_Cancel;
 				await _unitOfWork.NegotiationService.Update(nego);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
@@ -443,10 +457,10 @@ namespace API.Controllers
 			}
 		}
 
-		//[Authorize(Roles = ("Owner, Store"))]
+		//[Authorize(Roles = ("Owner))]
 		//[HttpPut]
-		//[Route("RejectContract")]
-		//public async Task<IActionResult> RejectContract(int contractId)
+		//[Route("RejectNegotiation")]
+		//public async Task<IActionResult> RejectNegotiation(int contractId)
 		//{
 		//	try
 		//	{
