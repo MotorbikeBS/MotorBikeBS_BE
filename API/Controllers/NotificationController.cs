@@ -122,7 +122,7 @@ namespace SignalRNotifications.Controllers
         {
             try
             {
-                var obj = await _unitOfWork.NotificationService.GetFirst(e => e.UserId == id, includeProperties: "NotificationType");
+                var obj = await _unitOfWork.NotificationService.Get(e => e.UserId == id, includeProperties: "NotificationType");
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy thông báo nào!");
@@ -132,6 +132,44 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = obj;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+        [Authorize]
+        [HttpPut("markRead")]
+        public async Task<IActionResult> markRead(int NotificationID)
+        {
+            try
+            {
+                var obj = await _unitOfWork.NotificationService.GetFirst(e => e.NotificationId == NotificationID, includeProperties: "NotificationType");
+                if (obj == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông báo nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    if (obj.IsRead == false || obj.IsRead == null)
+                    {
+                        obj.IsRead = true;
+                    }
+                    await _unitOfWork.NotificationService.Update(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
