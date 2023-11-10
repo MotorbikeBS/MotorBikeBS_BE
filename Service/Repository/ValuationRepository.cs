@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 
 namespace Service.Repository
 {
-	public class ContractImageRepository : GenericRepository<ContractImage>, IContractImageService
-	{
-		public ContractImageRepository(MotorbikeDBContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
-		{
-		}
-	}
+    public class ValuationRepository : GenericRepository<Valuation>, IValuationService
+    {
+        public ValuationRepository(MotorbikeDBContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
+        {
+        }
+    }
 }

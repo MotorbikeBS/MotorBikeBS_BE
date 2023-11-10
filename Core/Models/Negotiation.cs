@@ -5,21 +5,19 @@ namespace Core.Models
 {
     public partial class Negotiation
     {
-        public Negotiation()
-        {
-            Contracts = new HashSet<Contract>();
-        }
-
         public int NegotiationId { get; set; }
-        public int RequestId { get; set; }
-        public decimal? Price { get; set; }
+        public int? MotorId { get; set; }
+        public decimal? FinalPrice { get; set; }
+        public int? StoreId { get; set; }
+        public string? Content { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string? Status { get; set; }
+        public int? ValuationId { get; set; }
+        public int? BaseRequestId { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
-        public string? Description { get; set; }
-        public string? Status { get; set; }
-        public DateTime? ExpiredTime { get; set; }
+        public decimal? Deposit { get; set; }
 
-        public virtual Request Request { get; set; } = null!;
-        public virtual ICollection<Contract> Contracts { get; set; }
+        public virtual Valuation? Valuation { get; set; }
     }
 }

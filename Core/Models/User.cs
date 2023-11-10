@@ -35,7 +35,6 @@ namespace Core.Models
         public DateTime? VerifycationTokenExpires { get; set; }
 
         public virtual Role? Role { get; set; }
-        public virtual Ward? Ward { get; set; }
         public virtual ICollection<Motorbike> Motorbikes { get; set; }
         public virtual ICollection<Request> RequestReceivers { get; set; }
         public virtual ICollection<Request> RequestSenders { get; set; }
