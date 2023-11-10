@@ -23,5 +23,6 @@ namespace Service.UnitOfWork
         public INegotiationService NegotiationService { get; }
         public IBuyerBookingService BuyerBookingService { get; }
         public IPaymentService PaymentService { get; }
-	}
+        public IValuationService ValuationService { get; }
+    }
 }

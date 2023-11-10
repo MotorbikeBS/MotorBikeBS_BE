@@ -771,12 +771,9 @@ namespace Core.Models
 
             modelBuilder.Entity<Valuation>(entity =>
             {
-                entity.HasKey(e => e.ValueationId)
-                    .HasName("PK_Negotiation");
-
                 entity.ToTable("Valuation");
 
-                entity.Property(e => e.ValueationId).HasColumnName("valueation_id");
+                entity.Property(e => e.ValuationId).HasColumnName("valuation_id");
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)

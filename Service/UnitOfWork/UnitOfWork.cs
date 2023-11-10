@@ -25,9 +25,10 @@ namespace Service.UnitOfWork
         public INegotiationService NegotiationService { get; private set; } = null!;
         public IBuyerBookingService BuyerBookingService { get; private set; } = null!;
         public IPaymentService PaymentService { get; private set; } = null!;
+        public IValuationService ValuationService { get; private set; } = null!;
 
 
-		private readonly MotorbikeDBContext _context;
+        private readonly MotorbikeDBContext _context;
 
         public UnitOfWork()
         {
@@ -56,6 +57,7 @@ namespace Service.UnitOfWork
             NegotiationService = new NegotiationRepository(_context, this);
             BuyerBookingService = new BuyerBookingRepository(_context, this);
             PaymentService = new PaymentRepository(_context, this);
+            ValuationService = new ValuationRepository(_context, this);
 		}
     }
 }

@@ -10,7 +10,7 @@ namespace Core.Models
             Negotiations = new HashSet<Negotiation>();
         }
 
-        public int ValueationId { get; set; }
+        public int ValuationId { get; set; }
         public int RequestId { get; set; }
         public decimal? StorePrice { get; set; }
         public string? Description { get; set; }
