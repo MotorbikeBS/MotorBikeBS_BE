@@ -2,7 +2,7 @@
 {
 	public class ValuationCreateDTO
 	{
-        public decimal Price { get; set; }
-        public string? Description { get; set; }
+        public decimal StorePrice { get; set; }
+        public string Description { get; set; }
     }
 }

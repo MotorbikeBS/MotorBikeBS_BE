@@ -40,7 +40,7 @@ namespace API.Controllers
         {
             try
             {
-                var rs = InputValidation.ValuationValidation(dto.Price, dto.Description);
+                var rs = InputValidation.ValuationValidation(dto.StorePrice, dto.Description);
                 if (!string.IsNullOrEmpty(rs))
                 {
                     _response.IsSuccess = false;
@@ -89,6 +89,8 @@ namespace API.Controllers
                     var valuationCreate = _mapper.Map<Valuation>(dto);
                     valuationCreate.RequestId = request.RequestId;
                     valuationCreate.Status = SD.Request_Pending;
+                    valuationCreate.StorePrice = dto.StorePrice;
+                    valuationCreate.Description = dto.Description;
 
                     await _unitOfWork.ValuationService.Add(valuationCreate);
 
