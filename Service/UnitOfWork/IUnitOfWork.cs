@@ -21,9 +21,8 @@ namespace Service.UnitOfWork
 		public IStoreImageService StoreImageService { get; }
 		public IWishListService WishListService { get; }
         public INegotiationService NegotiationService { get; }
-        public IContractService ContractService { get; }
-        public IContractImageService ContractImageService { get; }
         public IBuyerBookingService BuyerBookingService { get; }
         public IPaymentService PaymentService { get; }
-	}
+        public IValuationService ValuationService { get; }
+    }
 }

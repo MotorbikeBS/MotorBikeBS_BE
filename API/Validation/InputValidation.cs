@@ -264,8 +264,21 @@ namespace API.Validation
 
 			return false;
 		}
+        public static string ValuationValidation(decimal price, string des)
+        {
+            if(price == default(decimal) || des.Length == 0)
+			{
+				return "Vui lòng nhập đầy đủ thông tin";
+			}
+			if(price < 1000000 || price > 500000000)
+			{
+				return "Vui lòng nhập giá từ 1.000.000Vnđ đến 500.000.000Vnđ";
+			}
 
-		public static string NegoBookingTimeValidation(DateTime startDate, DateTime endDate, decimal price)
+            return "";
+        }
+
+        public static string NegoBookingTimeValidation(DateTime startDate, DateTime endDate, decimal price)
 		{
 			if (startDate == default(DateTime))
 			{

@@ -20,8 +20,6 @@ namespace Core.Models
         public virtual DbSet<BillConfirm> BillConfirms { get; set; } = null!;
         public virtual DbSet<BuyerBooking> BuyerBookings { get; set; } = null!;
         public virtual DbSet<Comment> Comments { get; set; } = null!;
-        public virtual DbSet<Contract> Contracts { get; set; } = null!;
-        public virtual DbSet<ContractImage> ContractImages { get; set; } = null!;
         public virtual DbSet<Motorbike> Motorbikes { get; set; } = null!;
         public virtual DbSet<MotorbikeBrand> MotorbikeBrands { get; set; } = null!;
         public virtual DbSet<MotorbikeImage> MotorbikeImages { get; set; } = null!;
@@ -40,7 +38,7 @@ namespace Core.Models
         public virtual DbSet<StoreDesciption> StoreDesciptions { get; set; } = null!;
         public virtual DbSet<StoreImage> StoreImages { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
-        public virtual DbSet<Ward> Wards { get; set; } = null!;
+        public virtual DbSet<Valuation> Valuations { get; set; } = null!;
         public virtual DbSet<Wishlist> Wishlists { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -162,67 +160,6 @@ namespace Core.Models
                     .HasForeignKey(d => d.RequestId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Comment_Request");
-            });
-
-            modelBuilder.Entity<Contract>(entity =>
-            {
-                entity.ToTable("Contract");
-
-                entity.Property(e => e.ContractId).HasColumnName("contract_id");
-
-                entity.Property(e => e.BaseRequestId).HasColumnName("base_request_id");
-
-                entity.Property(e => e.Content)
-                    .HasMaxLength(1000)
-                    .HasColumnName("content");
-
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnType("datetime")
-                    .HasColumnName("created_at");
-
-                entity.Property(e => e.MotorId).HasColumnName("motor_id");
-
-                entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
-
-                entity.Property(e => e.NewOwner).HasColumnName("new_owner");
-
-                entity.Property(e => e.Price)
-                    .HasColumnType("money")
-                    .HasColumnName("price");
-
-                entity.Property(e => e.Status)
-                    .HasMaxLength(10)
-                    .HasColumnName("status");
-
-                entity.Property(e => e.StoreId).HasColumnName("store_id");
-
-                entity.HasOne(d => d.Negotiation)
-                    .WithMany(p => p.Contracts)
-                    .HasForeignKey(d => d.NegotiationId)
-                    .HasConstraintName("FK_Contract_Negotiation");
-            });
-
-            modelBuilder.Entity<ContractImage>(entity =>
-            {
-                entity.ToTable("ContractImage");
-
-                entity.Property(e => e.ContractImageId).HasColumnName("contract_image_id");
-
-                entity.Property(e => e.ContractId).HasColumnName("contract_id");
-
-                entity.Property(e => e.Description)
-                    .HasMaxLength(200)
-                    .HasColumnName("description");
-
-                entity.Property(e => e.ImageLink)
-                    .HasMaxLength(100)
-                    .HasColumnName("image_link");
-
-                entity.HasOne(d => d.Contract)
-                    .WithMany(p => p.ContractImages)
-                    .HasForeignKey(d => d.ContractId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_EarnALiving_ContractImage_EarnALiving_Contract");
             });
 
             modelBuilder.Entity<Motorbike>(entity =>
@@ -411,37 +348,46 @@ namespace Core.Models
 
                 entity.Property(e => e.NegotiationId).HasColumnName("negotiation_id");
 
-                entity.Property(e => e.Description)
-                    .HasMaxLength(200)
-                    .HasColumnName("description");
+                entity.Property(e => e.BaseRequestId).HasColumnName("base_request_id");
+
+                entity.Property(e => e.Content)
+                    .HasMaxLength(1000)
+                    .HasColumnName("content");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("created_at");
+
+                entity.Property(e => e.Deposit)
+                    .HasColumnType("money")
+                    .HasColumnName("deposit");
 
                 entity.Property(e => e.EndTime)
                     .HasColumnType("datetime")
                     .HasColumnName("end_time");
 
-                entity.Property(e => e.ExpiredTime)
-                    .HasColumnType("datetime")
-                    .HasColumnName("expired_time");
+                entity.Property(e => e.FinalPrice)
+                    .HasColumnType("money")
+                    .HasColumnName("final_price");
 
-                entity.Property(e => e.Price)
-                    .HasColumnType("decimal(15, 4)")
-                    .HasColumnName("price");
-
-                entity.Property(e => e.RequestId).HasColumnName("request_id");
+                entity.Property(e => e.MotorId).HasColumnName("motor_id");
 
                 entity.Property(e => e.StartTime)
                     .HasColumnType("datetime")
                     .HasColumnName("start_time");
 
                 entity.Property(e => e.Status)
-                    .HasMaxLength(50)
+                    .HasMaxLength(10)
                     .HasColumnName("status");
 
-                entity.HasOne(d => d.Request)
+                entity.Property(e => e.StoreId).HasColumnName("store_id");
+
+                entity.Property(e => e.ValuationId).HasColumnName("valuation_id");
+
+                entity.HasOne(d => d.Valuation)
                     .WithMany(p => p.Negotiations)
-                    .HasForeignKey(d => d.RequestId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Negotiation_Request");
+                    .HasForeignKey(d => d.ValuationId)
+                    .HasConstraintName("FK_Negotiation_Valuation");
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -516,6 +462,8 @@ namespace Core.Models
                     .HasColumnName("payment_type");
 
                 entity.Property(e => e.RequestId).HasColumnName("request_id");
+
+                entity.Property(e => e.VnpayOrderId).HasColumnName("vnpay_order_id");
 
                 entity.HasOne(d => d.Request)
                     .WithMany(p => p.Payments)
@@ -726,11 +674,6 @@ namespace Core.Models
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_StoreDesciption_User1");
-
-                entity.HasOne(d => d.Ward)
-                    .WithMany(p => p.StoreDesciptions)
-                    .HasForeignKey(d => d.WardId)
-                    .HasConstraintName("FK_StoreDesciption_LocalAddress");
             });
 
             modelBuilder.Entity<StoreImage>(entity =>
@@ -824,32 +767,33 @@ namespace Core.Models
                     .WithMany(p => p.Users)
                     .HasForeignKey(d => d.RoleId)
                     .HasConstraintName("FK_User_Role");
-
-                entity.HasOne(d => d.Ward)
-                    .WithMany(p => p.Users)
-                    .HasForeignKey(d => d.WardId)
-                    .HasConstraintName("FK_User_LocalAddress");
             });
 
-            modelBuilder.Entity<Ward>(entity =>
+            modelBuilder.Entity<Valuation>(entity =>
             {
-                entity.ToTable("Ward");
+                entity.ToTable("Valuation");
 
-                entity.Property(e => e.WardId)
-                    .HasMaxLength(5)
-                    .HasColumnName("ward_id");
+                entity.Property(e => e.ValuationId).HasColumnName("valuation_id");
 
-                entity.Property(e => e.DistrictId)
-                    .HasMaxLength(5)
-                    .HasColumnName("district_id");
+                entity.Property(e => e.Description)
+                    .HasMaxLength(200)
+                    .HasColumnName("description");
 
-                entity.Property(e => e.Type)
+                entity.Property(e => e.RequestId).HasColumnName("request_id");
+
+                entity.Property(e => e.Status)
                     .HasMaxLength(50)
-                    .HasColumnName("type");
+                    .HasColumnName("status");
 
-                entity.Property(e => e.WardName)
-                    .HasMaxLength(100)
-                    .HasColumnName("ward_name");
+                entity.Property(e => e.StorePrice)
+                    .HasColumnType("decimal(15, 4)")
+                    .HasColumnName("store_price");
+
+                entity.HasOne(d => d.Request)
+                    .WithMany(p => p.Valuations)
+                    .HasForeignKey(d => d.RequestId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Negotiation_Request");
             });
 
             modelBuilder.Entity<Wishlist>(entity =>

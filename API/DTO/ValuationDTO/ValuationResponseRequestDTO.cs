@@ -4,7 +4,7 @@ using Core.Models;
 
 namespace API.DTO.NegotiationDTO
 {
-	public class NegotiationResponseRequestDTO
+	public class ValuationResponseRequestDTO
 	{
 		public int RequestId { get; set; }
 		public int? MotorId { get; set; }
@@ -15,7 +15,7 @@ namespace API.DTO.NegotiationDTO
 		public string? Status { get; set; }
 
 		public virtual Motorbike? Motor { get; set; }
-		public virtual ICollection<NegotiationResponseDTO> Negotiations { get; set; }
+		public virtual ICollection<ValuationResponseDTO> Valuations { get; set; }
 		public virtual UserResponseDTO? Receiver { get; set; }
 		public virtual UserResponseDTO? Sender { get; set; }
 	}
