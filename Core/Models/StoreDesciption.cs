@@ -27,7 +27,6 @@ namespace Core.Models
         public string? BusinessLicense { get; set; }
 
         public virtual User User { get; set; } = null!;
-        public virtual Ward? Ward { get; set; }
         public virtual ICollection<Motorbike> Motorbikes { get; set; }
         public virtual ICollection<StoreImage> StoreImages { get; set; }
     }

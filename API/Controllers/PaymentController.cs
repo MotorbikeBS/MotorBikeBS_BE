@@ -94,11 +94,13 @@ namespace API.Controllers
         }
 
 
+
         [HttpGet]
         [Route("PaymentCallBack")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> PaymentCallback()
         {
+            var paymentFeResponselink = "https://motorbikebs.azurewebsites.net/payment-point/";
             try
             {
                 var response = _vnPayService.PaymentExecute(Request.Query);
@@ -106,9 +108,11 @@ namespace API.Controllers
                 var request = await _unitOfWork.RequestService.GetLast(x => x.SenderId == userId
                 && x.RequestTypeId == SD.Request_Add_Point_Id
                 && x.Status == SD.Payment_Unpaid);
-                if(request != null)
+                if (request != null)
                 {
-                    if (response.VnPayResponseCode == "00")
+                    
+                    var result = int.Parse(response.VnPayResponseCode);
+                    if (result == 00)
                     {
                         var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
                         if (store == null)
@@ -130,28 +134,71 @@ namespace API.Controllers
                         if (store.Point == null)
                             store.Point = response.Amount;
                         else
-                            store.Point = store.Point + (response.Amount/100000);
+                            store.Point = store.Point + (response.Amount / 100000);
                         await _unitOfWork.StoreDescriptionService.Update(store);
                         _response.StatusCode = HttpStatusCode.OK;
                         _response.ErrorMessages.Add("Nạp điểm thành công!");
                         _response.IsSuccess = false;
                         _response.Result = response;
-                        return Ok(_response);
+                        //return Ok(_response);
+                        return Redirect($"{paymentFeResponselink}" + "successfully");
                     }
                     else
                     {
+                        switch (result)
+                        {
+                            case 07:
+                                _response.ErrorMessages.Add("Trừ tiền thành công. Giao dịch bị nghi ngờ (liên quan tới lừa đảo, giao dịch bất thường).!");
+                                break;
+                            case 09:
+                                _response.ErrorMessages.Add("Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng chưa đăng ký dịch vụ InternetBanking tại ngân hàng.!");
+                                break;
+                            case 10:
+                                _response.ErrorMessages.Add("Giao dịch không thành công do: Khách hàng xác thực thông tin thẻ/tài khoản không đúng quá 3 lần!");
+                                break;
+                            case 11:
+                                _response.ErrorMessages.Add("Giao dịch không thành công do: Đã hết hạn chờ thanh toán. Xin quý khách vui lòng thực hiện lại giao dịch.!");
+                                break;
+                            case 12:
+                                _response.ErrorMessages.Add("Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng bị khóa.!");
+                                break;
+                            case 13:
+                                _response.ErrorMessages.Add("Giao dịch không thành công do Quý khách nhập sai mật khẩu xác thực giao dịch (OTP). Xin quý khách vui lòng thực hiện lại giao dịch.!");
+                                break;
+                            case 24:
+                                _response.ErrorMessages.Add("Giao dịch không thành công do: Khách hàng hủy giao dịch!");
+                                break;
+                            case 51:
+                                _response.ErrorMessages.Add("Giao dịch không thành công do: Tài khoản của quý khách không đủ số dư để thực hiện giao dịch.!");
+                                break;
+                            case 65:
+                                _response.ErrorMessages.Add("Giao dịch không thành công do: Tài khoản của Quý khách đã vượt quá hạn mức giao dịch trong ngày.!");
+                                break;
+                            case 75:
+                                _response.ErrorMessages.Add("Ngân hàng thanh toán đang bảo trì.!");
+                                break;
+                            case 79:
+                                _response.ErrorMessages.Add("Giao dịch không thành công do: KH nhập sai mật khẩu thanh toán quá số lần quy định. Xin quý khách vui lòng thực hiện lại giao dịch!");
+                                break;
+                            case 99:
+                                _response.ErrorMessages.Add("Thanh toán không thành công, đã có lỗi xảy ra!");
+                                break;
+                        }
+
                         request.Status = SD.Payment_Error;
                         await _unitOfWork.RequestService.Update(request);
                         _response.StatusCode = HttpStatusCode.BadRequest;
-                        _response.ErrorMessages.Add("Thanh toán không thành công!");
+
                         _response.IsSuccess = false;
-                        return BadRequest(_response);
+                        //return BadRequest(_response);
+                        return Redirect($"{paymentFeResponselink}" + "error-payment");
                     }
                 }
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages.Add("Không tìm thấy yêu cầu thanh toán!");
                 _response.IsSuccess = false;
-                return BadRequest(_response);
+                //return BadRequest(_response);
+                return Redirect($"{paymentFeResponselink}" + "error-payment");
             }
             catch (Exception ex)
             {
@@ -161,9 +208,10 @@ namespace API.Controllers
                 {
                     ex.ToString()
                 };
-                return BadRequest(_response);
+                return Redirect($"{paymentFeResponselink}" + "error-payment");
             }
         }
+
 
         static int ExtractUserId(string input)
         {

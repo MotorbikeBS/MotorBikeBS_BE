@@ -380,7 +380,7 @@ namespace API.Controllers
                     requestPosting.Status = SD.Request_Cancel;
                     await _unitOfWork.RequestService.Update(requestPosting);
                     //*** Add OwnerBill ***
-                    var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
+                    var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.BaseRequestId == NegoRequest.RequestId);
                     if (Negotiation == null)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
@@ -393,7 +393,7 @@ namespace API.Controllers
                         MotorId = (int)NegoRequest.MotorId,
                         UserId = obj.OwnerId,
                         StoreId = (int)obj.StoreId,
-                        Price = Negotiation.Price,
+                        Price = Negotiation.FinalPrice,
                         CreateAt = DateTime.Now,
                         Status = SD.Request_Accept,
                         RequestId = NegoRequest.RequestId
@@ -586,7 +586,7 @@ namespace API.Controllers
                         requestPosting.Status = SD.Request_Cancel;
                         await _unitOfWork.RequestService.Update(requestPosting);
                         //*** Add OwnerBill ***
-                        var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.RequestId == NegoRequest.RequestId);
+                        var Negotiation = await _unitOfWork.NegotiationService.GetFirst(e => e.BaseRequestId == NegoRequest.RequestId);
                         if (Negotiation == null)
                         {
                             _response.StatusCode = HttpStatusCode.BadRequest;
@@ -599,7 +599,7 @@ namespace API.Controllers
                             MotorId = (int)NegoRequest.MotorId,
                             UserId = obj.OwnerId,
                             StoreId = (int)obj.StoreId,
-                            Price = Negotiation.Price,
+                            Price = Negotiation.FinalPrice,
                             CreateAt = DateTime.Now,
                             Status = SD.Request_Accept,
                             RequestId = NegoRequest.RequestId

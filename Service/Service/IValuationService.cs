@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Service.Service
 {
-	public interface IContractImageService : IGenericRepository<ContractImage>
-	{
-	}
+    public interface IValuationService : IGenericRepository<Valuation>
+    {
+    }
 }
