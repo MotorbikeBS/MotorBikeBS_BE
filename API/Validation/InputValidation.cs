@@ -338,6 +338,19 @@ namespace API.Validation
 			return "";
 		}
 
+		public static string PostBoostingValidation(DateTime startDate, DateTime endDate, int level)
+		{
+            if (startDate == default(DateTime) || endDate == default(DateTime))
+            {
+                return "Vui lòng chọn ngày!";
+            }
+			if(level == default(int))
+			{
+				return "Vui lòng chọn gói đẩy bài";
+			}
+			return "";
+        }
+
 		public static string PaymentValidate(int amount)
 		{
             if(amount == default(int))

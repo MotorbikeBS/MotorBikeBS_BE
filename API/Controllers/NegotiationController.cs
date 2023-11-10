@@ -23,14 +23,13 @@ namespace API.Controllers
 		private readonly IUnitOfWork _unitOfWork;
 		private ApiResponse _response;
 		private readonly IMapper _mapper;
-		private readonly IBlobService _blobService;
 
-		public NegotiationController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService)
+
+		public NegotiationController(IUnitOfWork unitOfWork, IMapper mapper)
 		{
 			_unitOfWork = unitOfWork;
 			_response = new ApiResponse();
 			_mapper = mapper;
-			_blobService = blobService;
 		}
 
 		[Authorize(Roles = "Store")]
@@ -290,80 +289,69 @@ namespace API.Controllers
 			}
 		}
 
-		[Authorize(Roles = ("Owner, Store"))]
-		[HttpPut]
-		[Route("CancelNegotiation")]
-		public async Task<IActionResult> CancelNegotiation(int negotiationId)
-		{
-			try
-			{
-				var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
-                var nego = await _unitOfWork.NegotiationService.GetFirst(x => x.NegotiationId == negotiationId);
-				if (nego == null || nego.Status != SD.Request_Pending || nego.StoreId == null)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy kết quả thương lượng nào!");
-					return NotFound(_response);
-				}
-				var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == nego.BaseRequestId);
-				if (request == null || request.Status != SD.Request_Pending)
-				{
-					_response.IsSuccess = false;
-					_response.StatusCode = HttpStatusCode.NotFound;
-					_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
-					return NotFound(_response);
-				}
-                if (roleId == SD.Role_Owner_Id)
-                {
-                    if (request.ReceiverId != userId)
-                    {
-                        _response.IsSuccess = false;
-                        _response.StatusCode = HttpStatusCode.BadRequest;
-                        _response.ErrorMessages.Add("Bạn không có quyền này!");
-                        return BadRequest(_response);
-                    }
-                }
-                if (roleId == SD.Role_Store_Id)
-                {
-                    if (request.SenderId != userId)
-                    {
-                        _response.IsSuccess = false;
-                        _response.StatusCode = HttpStatusCode.BadRequest;
-                        _response.ErrorMessages.Add("Bạn không có quyền này!");
-                        return BadRequest(_response);
-                    }
-                }
-                //IEnumerable<ContractImage> img = await _unitOfWork.ContractImageService.Get(x => x.ContractId == contractId);
-                //if(img.Count() > 0)
-                //{
-                //	foreach (var item in img)
-                //	{
-                //		var oldLisenceImg = item.ImageLink.Split('/').Last();
-                //		await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
-                //		await _unitOfWork.ContractImageService.Delete(item);
-                //	}
-                //}
-                //await _unitOfWork.ContractService.Delete(contract);
-                nego.Status = SD.Request_Cancel;
-				await _unitOfWork.NegotiationService.Update(nego);
-				_response.IsSuccess = true;
-				_response.StatusCode = HttpStatusCode.OK;
-				_response.Message = "Từ chối thành công!";
-				return Ok(_response);
-			}
-			catch (Exception ex)
-			{
-				_response.IsSuccess = false;
-				_response.StatusCode = HttpStatusCode.BadRequest;
-				_response.ErrorMessages = new List<string>()
-				{
-					ex.ToString()
-				};
-				return BadRequest();
-			}
-		}
+		//[Authorize(Roles = ("Owner, Store"))]
+		//[HttpPut]
+		//[Route("CancelNegotiation")]
+		//public async Task<IActionResult> CancelNegotiation(int negotiationId)
+		//{
+		//	try
+		//	{
+		//		var userId = int.Parse(User.FindFirst("UserId")?.Value);
+  //              var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+  //              var nego = await _unitOfWork.NegotiationService.GetFirst(x => x.NegotiationId == negotiationId);
+		//		if (nego == null || nego.Status != SD.Request_Pending || nego.StoreId == null)
+		//		{
+		//			_response.IsSuccess = false;
+		//			_response.StatusCode = HttpStatusCode.NotFound;
+		//			_response.ErrorMessages.Add("Không tìm thấy kết quả thương lượng nào!");
+		//			return NotFound(_response);
+		//		}
+		//		var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == nego.BaseRequestId);
+		//		if (request == null || request.Status != SD.Request_Pending)
+		//		{
+		//			_response.IsSuccess = false;
+		//			_response.StatusCode = HttpStatusCode.NotFound;
+		//			_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+		//			return NotFound(_response);
+		//		}
+  //              if (roleId == SD.Role_Owner_Id)
+  //              {
+  //                  if (request.ReceiverId != userId)
+  //                  {
+  //                      _response.IsSuccess = false;
+  //                      _response.StatusCode = HttpStatusCode.BadRequest;
+  //                      _response.ErrorMessages.Add("Bạn không có quyền này!");
+  //                      return BadRequest(_response);
+  //                  }
+  //              }
+  //              if (roleId == SD.Role_Store_Id)
+  //              {
+  //                  if (request.SenderId != userId)
+  //                  {
+  //                      _response.IsSuccess = false;
+  //                      _response.StatusCode = HttpStatusCode.BadRequest;
+  //                      _response.ErrorMessages.Add("Bạn không có quyền này!");
+  //                      return BadRequest(_response);
+  //                  }
+  //              }
+  //              nego.Status = SD.Request_Cancel;
+		//		await _unitOfWork.NegotiationService.Update(nego);
+		//		_response.IsSuccess = true;
+		//		_response.StatusCode = HttpStatusCode.OK;
+		//		_response.Message = "Từ chối thành công!";
+		//		return Ok(_response);
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		_response.IsSuccess = false;
+		//		_response.StatusCode = HttpStatusCode.BadRequest;
+		//		_response.ErrorMessages = new List<string>()
+		//		{
+		//			ex.ToString()
+		//		};
+		//		return BadRequest();
+		//	}
+		//}
 
 		[Authorize(Roles = ("Owner"))]
 		[HttpPut]
@@ -405,13 +393,7 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 				var negotiation = await _unitOfWork.NegotiationService.GetFirst(x => x.BaseRequestId == request.RequestId);
-                //if(negotiation == null || negotiation.FinalPrice == null)
-                //{
-                //	_response.IsSuccess = false;
-                //	_response.StatusCode = HttpStatusCode.NotFound;
-                //	_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
-                //	return NotFound(_response);
-                //}
+
 
                 nego.Status = SD.Request_Accept;
 				await _unitOfWork.NegotiationService.Update(nego);
@@ -457,84 +439,6 @@ namespace API.Controllers
 			}
 		}
 
-		//[Authorize(Roles = ("Owner))]
-		//[HttpPut]
-		//[Route("RejectNegotiation")]
-		//public async Task<IActionResult> RejectNegotiation(int contractId)
-		//{
-		//	try
-		//	{
-		//		var userId = int.Parse(User.FindFirst("UserId")?.Value);
-		//		var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
-		//		var contract = await _unitOfWork.ContractService.GetFirst(x => x.ContractId == contractId);
-		//		if (contract == null || contract.Status != SD.Request_Pending || contract.StoreId == null)
-		//		{
-		//			_response.IsSuccess = false;
-		//			_response.StatusCode = HttpStatusCode.NotFound;
-		//			_response.ErrorMessages.Add("Không tìm thấy hợp đồng!");
-		//			return NotFound(_response);
-		//		}
-		//		var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == contract.BaseRequestId);
-		//		if (request == null || request.Status != SD.Request_Pending)
-		//		{
-		//			_response.IsSuccess = false;
-		//			_response.StatusCode = HttpStatusCode.NotFound;
-		//			_response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
-		//			return NotFound(_response);
-		//		}
-		//		if (roleId == SD.Role_Owner_Id)
-		//		{
-		//			if (request.ReceiverId != userId)
-		//			{
-		//				_response.IsSuccess = false;
-		//				_response.StatusCode = HttpStatusCode.BadRequest;
-		//				_response.ErrorMessages.Add("Bạn không có quyền này!");
-		//				return BadRequest(_response);
-		//			}
-		//		}
-		//		if (roleId == SD.Role_Store_Id)
-		//		{
-		//			if (request.SenderId != userId)
-		//			{
-		//				_response.IsSuccess = false;
-		//				_response.StatusCode = HttpStatusCode.BadRequest;
-		//				_response.ErrorMessages.Add("Bạn không có quyền này!");
-		//				return BadRequest(_response);
-		//			}
-		//		}
-
-		//		IEnumerable<ContractImage> img = await _unitOfWork.ContractImageService.Get(x => x.ContractId == contractId);
-		//		if (img.Count() > 0)
-		//		{
-		//			foreach (var item in img)
-		//			{
-		//				var oldLisenceImg = item.ImageLink.Split('/').Last();
-		//				await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
-		//				await _unitOfWork.ContractImageService.Delete(item);
-		//			}
-		//		}
-
-		//		contract.Status = SD.Request_Reject;
-		//		await _unitOfWork.ContractService.Update(contract);
-
-		//		request.Status = SD.Request_Cancel;
-		//		await _unitOfWork.RequestService.Update(request);
-
-		//		_response.IsSuccess = true;
-		//		_response.StatusCode = HttpStatusCode.OK;
-		//		_response.Message = "Từ chối thành công!";
-		//		return Ok(_response);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_response.IsSuccess = false;
-		//		_response.StatusCode = HttpStatusCode.BadRequest;
-		//		_response.ErrorMessages = new List<string>()
-		//		{
-		//			ex.ToString()
-		//		};
-		//		return BadRequest();
-		//	}
-		//}
+		
 	}
 }

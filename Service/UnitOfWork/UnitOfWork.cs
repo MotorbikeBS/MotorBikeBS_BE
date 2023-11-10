@@ -26,6 +26,8 @@ namespace Service.UnitOfWork
         public IBuyerBookingService BuyerBookingService { get; private set; } = null!;
         public IPaymentService PaymentService { get; private set; } = null!;
         public IValuationService ValuationService { get; private set; } = null!;
+        public IPointHistoryService PointHistoryService { get; private set; } = null!;
+        public IPostBoostingService PostBoostingService { get; private set; } = null!;
 
 
         private readonly MotorbikeDBContext _context;
@@ -58,6 +60,8 @@ namespace Service.UnitOfWork
             BuyerBookingService = new BuyerBookingRepository(_context, this);
             PaymentService = new PaymentRepository(_context, this);
             ValuationService = new ValuationRepository(_context, this);
+            PostBoostingService = new PostBoostingRepository(_context, this);
+            PointHistoryService = new PointHistoryRepository(_context, this);
 		}
     }
 }
