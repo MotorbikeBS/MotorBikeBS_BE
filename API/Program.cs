@@ -28,7 +28,7 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 //Email Sender
 builder.Services.AddTransient<IEmailSender, EmailSenderRepository>();
 
-//Notification Hubs
+//SignalR for Notification
 builder.Services.AddSignalR();
 
 //Cors
@@ -130,10 +130,7 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapHub<NotificationHub>("/NotificationHub");
-});
+app.MapHub<NotificationHub>("/notification-hub");
 
 app.MapControllers();
 
