@@ -24,7 +24,8 @@
 		public const int Request_Booking_Id = 6;
 		public const int Request_Negotiation_Id = 8;
         public const int Request_MotorTranfer_Id = 9;
-        public const int Request_Add_Point_Id = 9;
+        public const int Request_Add_Point_Id = 10;
+        public const int Request_Post_Boosting_Id = 11;
 
         public const string Request_Pending = "PENDING";
 		public const string Request_Accept = "ACCEPT";

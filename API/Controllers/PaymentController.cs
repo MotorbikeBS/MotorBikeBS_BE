@@ -1,4 +1,6 @@
 ﻿using API.DTO;
+using API.DTO.ContractDTO;
+using API.DTO.PaymentDTO;
 using API.DTO.VnPayDTO;
 using API.Utility;
 using API.Validation;
@@ -11,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Service.BlobImageService;
 using Service.UnitOfWork;
 using Service.VnPay.Service;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -129,6 +132,7 @@ namespace API.Controllers
 
                         var payment = await _unitOfWork.PaymentService.GetFirst(x => x.RequestId == request.RequestId);
                         payment.PaymentTime = DateTime.Now;
+                        payment.VnpayOrderId = int.Parse(response.OrderId);
                         await _unitOfWork.PaymentService.Update(payment);
 
                         if (store.Point == null)
@@ -136,11 +140,7 @@ namespace API.Controllers
                         else
                             store.Point = store.Point + (response.Amount / 100000);
                         await _unitOfWork.StoreDescriptionService.Update(store);
-                        _response.StatusCode = HttpStatusCode.OK;
-                        _response.ErrorMessages.Add("Nạp điểm thành công!");
-                        _response.IsSuccess = false;
-                        _response.Result = response;
-                        //return Ok(_response);
+
                         return Redirect($"{paymentFeResponselink}" + "successfully");
                     }
                     else
@@ -187,18 +187,43 @@ namespace API.Controllers
 
                         request.Status = SD.Payment_Error;
                         await _unitOfWork.RequestService.Update(request);
-                        _response.StatusCode = HttpStatusCode.BadRequest;
 
-                        _response.IsSuccess = false;
-                        //return BadRequest(_response);
                         return Redirect($"{paymentFeResponselink}" + "error-payment");
                     }
                 }
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessages.Add("Không tìm thấy yêu cầu thanh toán!");
-                _response.IsSuccess = false;
-                //return BadRequest(_response);
                 return Redirect($"{paymentFeResponselink}" + "error-payment");
+            }
+            catch (Exception ex)
+            {
+                return Redirect($"{paymentFeResponselink}" + "error-payment");
+            }
+        }
+
+        [Authorize(Roles =("Store"))]
+        [HttpGet]
+        [Route("GetPaymentHistory")]
+        public async Task<IActionResult>GetPaymentHistory()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var payment = await _unitOfWork.RequestService.Get(x => x.RequestTypeId == SD.Request_Add_Point_Id
+                && x.SenderId == userId
+                && x.Payments.Any(y => y.RequestId != default(int)),
+                includeProperties: "Payments");
+
+                if(payment.Count() < 1)
+                {
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Bạn chưa thực hiện thanh toán!");
+                    _response.IsSuccess = false;
+                    return NotFound(_response);
+                }
+                var response = _mapper.Map<List<PaymentRequestResponseDTO>>(payment);
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Result = response;
+                _response.IsSuccess = false;
+                return Ok(_response);
             }
             catch (Exception ex)
             {
@@ -208,7 +233,7 @@ namespace API.Controllers
                 {
                     ex.ToString()
                 };
-                return Redirect($"{paymentFeResponselink}" + "error-payment");
+                return BadRequest(_response);
             }
         }
 

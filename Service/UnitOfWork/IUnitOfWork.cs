@@ -24,5 +24,7 @@ namespace Service.UnitOfWork
         public IBuyerBookingService BuyerBookingService { get; }
         public IPaymentService PaymentService { get; }
         public IValuationService ValuationService { get; }
+        public IPointHistoryService PointHistoryService { get; }
+        public IPostBoostingService PostBoostingService { get; }
     }
 }
