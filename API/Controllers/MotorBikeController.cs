@@ -608,7 +608,7 @@ namespace API.Controllers
                         {
                             var request_Posting = await _unitOfWork.RequestService.GetLast(
                                     e => e.MotorId == MotorID && e.RequestTypeId == PostingType 
-                                    && e.SenderId == MotorID &&  e.Status == SD.Request_Accept
+                                    && e.SenderId == obj.OwnerId &&  e.Status == SD.Request_Accept
                             );
                             if (request_Posting != null)
                             {
@@ -783,14 +783,35 @@ namespace API.Controllers
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
+                var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == MotorID);
+                if (obj == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 //Check if Motor is Posting
                 int check = 0;
                 foreach (var PostingType in SD.RequestPostingTypeArray)
                 {
-                    var request = await _unitOfWork.RequestService.GetFirst(
+                    var request = await _unitOfWork.RequestService.GetLast(
                             e => e.MotorId == MotorID && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
                     );
-                    if (request != null) { check += 1; }
+                    
+                    if (request != null) 
+                    {
+                        var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                        switch (roleId)
+                        {
+                            case SD.Role_Store_Id:
+                                if (request.SenderId == obj.StoreId) check += 1;
+                                break;
+                            case SD.Role_Owner_Id:
+                                if (request.SenderId == obj.OwnerId && obj.StoreId == null) check += 1;
+                                break;
+                        }
+                    }
                 }
                 if (check > 0)
                 {
@@ -815,14 +836,6 @@ namespace API.Controllers
                     _response.IsSuccess = false;
                     _response.ErrorMessages.Add("Xe được đăng bán cần có thông tin cửa hàng!");
                     return BadRequest(_response);
-                }
-                var obj = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == MotorID);
-                if (obj == null)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy xe này!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(_response);
                 }
                 else
                 {
