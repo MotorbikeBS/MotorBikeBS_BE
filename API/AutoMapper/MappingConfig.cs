@@ -4,6 +4,7 @@ using API.DTO.ContractDTO;
 using API.DTO.MotorbikeDTO;
 using API.DTO.NegotiationDTO;
 using API.DTO.OwnerDTO;
+using API.DTO.PaymentDTO;
 using API.DTO.RequestDTO;
 using API.DTO.Role;
 using API.DTO.StoreDTO;
@@ -61,7 +62,9 @@ namespace API.AutoMapper
 
 				config.CreateMap<Wishlist, WishlistResponseDTO>().ReverseMap();
 
-				config.CreateMap<Motorbike, MotorRegisterDTO>().ReverseMap();
+                config.CreateMap<Payment, PaymentResponseDTO>().ReverseMap();
+
+                config.CreateMap<Motorbike, MotorRegisterDTO>().ReverseMap();
 				config.CreateMap<Motorbike, MotorUpdateDTO>().ReverseMap();
 				config.CreateMap<MotorRegisterDTO, MotorUpdateDTO>().ReverseMap();
 				config.CreateMap<Motorbike, MotorResponseDTO>().ReverseMap()
@@ -92,8 +95,9 @@ namespace API.AutoMapper
 																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
 																					   .ForMember(source => source.Receiver, opt => opt.MapFrom(src => src.Receiver));
 
+				config.CreateMap<Request, PaymentRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments));
 
-				config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
+                config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
 				config.CreateMap<Request, RequestResponseDTO>().ReverseMap()
 					.ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver))
 					.ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
