@@ -19,6 +19,7 @@ namespace Service.UnitOfWork
         public IRequestTypeService RequestTypeService { get; private set; } = null!;
         public IUserService UserService { get; private set; } = null!;
         public IRoleService RoleService { get; private set; } = null!;
+        public ICommentService CommentService { get; private set; } = null!;
         public IStoreDescriptionService StoreDescriptionService { get; private set; } = null!;
 		public IStoreImageService StoreImageService { get; private set; } = null!;
 		public IWishListService WishListService { get; private set; } = null!;
@@ -53,6 +54,7 @@ namespace Service.UnitOfWork
             BillService = new BillRepository(_context, this);
             UserService = new UserRepository(_context, this);
             RoleService = new RoleRepository(_context, this);
+            CommentService = new CommentRepository(_context, this);
             StoreDescriptionService = new StoreDescriptionRepository(_context, this);
 			StoreImageService = new StoreImageRepository(_context, this);
             WishListService = new WishListRepository(_context, this);
