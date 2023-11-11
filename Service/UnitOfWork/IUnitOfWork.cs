@@ -17,6 +17,7 @@ namespace Service.UnitOfWork
         public IBillService BillService { get; }
         public IUserService UserService { get; }
         public IRoleService RoleService { get; }
+        public ICommentService CommentService { get; }
         public IStoreDescriptionService StoreDescriptionService { get; }
 		public IStoreImageService StoreImageService { get; }
 		public IWishListService WishListService { get; }
