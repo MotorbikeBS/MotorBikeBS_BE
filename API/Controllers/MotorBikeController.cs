@@ -690,6 +690,7 @@ namespace API.Controllers
                 else
                 {
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
                     var Store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
                     int StoreID = (Store == null) ? 0 : Store.StoreId;
                     if (StoreID != obj.StoreId && userId != obj.OwnerId)
@@ -701,27 +702,6 @@ namespace API.Controllers
                     }
                     else
                     {
-                        //Cancel if have negotiation 
-                        var NegoRequest = await _unitOfWork.RequestService.GetLast(e => e.MotorId == MotorID
-                                                                        && e.RequestTypeId == SD.Request_Negotiation_Id
-                                                                        && e.Status != SD.Request_Cancel
-                        );
-                        //if ( NegoRequest != null )
-                        //{
-                        //    _response.StatusCode = HttpStatusCode.BadRequest;
-                        //    _response.IsSuccess = false;
-                        //    switch (NegoRequest.Status)
-                        //    {
-                        //        case SD.Request_Pending:
-                        //            _response.ErrorMessages.Add("Xe đang trong quá trình thương lượng giá cả. Không thể gỡ xe khỏi sàn!");
-                        //            break;
-                        //        case SD.Request_Accept:
-                        //            _response.ErrorMessages.Add("Xe đang có hợp đồng mua bán. Không thể gỡ xe khỏi sàn!");
-                        //            break;
-                        //    }
-                        //    return BadRequest(_response);
-                        //}
-                        //------------------------
                         int check = 0;
                         foreach (var PostingType in SD.RequestPostingTypeArray) 
                         {
@@ -737,19 +717,37 @@ namespace API.Controllers
                             _response.ErrorMessages.Add("Xe chưa được đăng lên sàn!");
                             return BadRequest(_response);
                         }
-                        //Cancel all request except Register and Negotiation
-                        var requestEdit = await _unitOfWork.RequestService.Get( e => e.MotorId == MotorID 
+                        //Cancel all request except Register and Negotiation 
+                        IEnumerable<Request>? requestEdit = null;
+                        switch (roleId)
+                        {
+                            case SD.Role_Store_Id:
+                                requestEdit = await _unitOfWork.RequestService.Get(e => e.MotorId == MotorID
                                                                            && e.RequestTypeId != SD.Request_Motor_Register
                                                                            && e.RequestTypeId != SD.Request_Negotiation_Id
                                                                            && e.SenderId == userId
-                        );
-                        foreach (var r in requestEdit)
+                                );
+                                break;
+                            case SD.Role_Owner_Id:
+                                requestEdit = await _unitOfWork.RequestService.Get(e => e.MotorId == MotorID
+                                                                           && e.RequestTypeId != SD.Request_Motor_Register
+                                );
+                                break;
+                        }
+                        if (requestEdit != null)
                         {
-                            r.Status = SD.Request_Cancel;
-                            await _unitOfWork.RequestService.Update(r);
+                            foreach (var r in requestEdit)
+                            {
+                                r.Status = SD.Request_Cancel;
+                                await _unitOfWork.RequestService.Update(r);
+                            }
                         }
                         //Update Motor
                         obj.MotorStatusId = SD.Status_Storage;
+                        if (roleId == SD.Role_Owner_Id) 
+                        {
+                            obj.StoreId = null;
+                        }
                         await _unitOfWork.MotorBikeService.Update(obj);
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
