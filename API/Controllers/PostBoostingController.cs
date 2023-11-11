@@ -70,9 +70,20 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
 
-                //var check = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
-                //&& x.RequestTypeId == SD.Request_Post_Boosting_Id
-                //&& x.Po
+                var checkDuplicate = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+                && x.RequestTypeId == SD.Request_Post_Boosting_Id
+                && x.PointHistoryRequests
+                .Any(y => y.PostBoostings
+                .Any(z => z.StartTime.Value.Date < DateTime.Now.Date
+                && z.EndTime.Value.Date > DateTime.Now.Date)));
+                
+                if(checkDuplicate.Count() >0 )
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Tin này đã được đẩy!");
+                    return BadRequest(_response);
+                }
 
                 int pointPerDay = 3;
 
