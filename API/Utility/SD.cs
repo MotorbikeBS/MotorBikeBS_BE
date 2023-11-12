@@ -55,6 +55,17 @@
             "Owner.Role",
             "Store"
         };
+        public static readonly string[] GetBillArray = new string[]
+        {
+            "Request",
+            "Request.Motor",
+            "Request.Motor.Model.Brand",
+            "Request.Motor.MotorbikeImages",
+            "Request.Sender",
+            "Request.Sender.StoreDesciptions",
+            "Request.Receiver",
+            "Request.Receiver.StoreDesciptions"
+        };
         public static readonly string[] GetRequestArray = new string[]
         {
             "Receiver",
