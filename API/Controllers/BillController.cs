@@ -569,9 +569,9 @@ namespace API.Controllers
                         }
                         BillConfirm CusBill = new()
                         {
-                            MotorId = (int)NegoRequest.MotorId,
-                            UserId = newUser,
-                            StoreId = (int)obj.StoreId,
+                            MotorId = (int) NegoRequest.MotorId,
+                            UserId = (int) newUser,
+                            StoreId = (int) obj.StoreId,
                             Price = obj.Price,
                             CreateAt = DateTime.Now,
                             Status = SD.Request_Accept,
