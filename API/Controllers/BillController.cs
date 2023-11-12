@@ -570,7 +570,7 @@ namespace API.Controllers
                         BillConfirm CusBill = new()
                         {
                             MotorId = (int)NegoRequest.MotorId,
-                            UserId = userId,
+                            UserId = newUser,
                             StoreId = (int)obj.StoreId,
                             Price = obj.Price,
                             CreateAt = DateTime.Now,

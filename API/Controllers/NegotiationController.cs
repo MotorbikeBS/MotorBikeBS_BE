@@ -189,9 +189,9 @@ namespace API.Controllers
                 }
                 var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
 
-                var reUpNego = _mapper.Map<Negotiation>(dto);
-                nego.Status = SD.Request_Pending;
-                await _unitOfWork.NegotiationService.Update(nego);
+                var newNego = _mapper.Map(dto, nego);
+                newNego.Status = SD.Request_Pending;
+                await _unitOfWork.NegotiationService.Update(newNego);
 
                 _response.IsSuccess = true;
                 _response.Message = "Tải lại thông tin thương lượng thành công, vui lòng chờ người bán xác nhận!";
