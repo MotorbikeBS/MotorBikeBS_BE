@@ -1,4 +1,5 @@
 ﻿using API.DTO;
+using API.DTO.BillDTO;
 using API.DTO.BookingDTO;
 using API.DTO.MotorbikeDTO;
 using API.DTO.UserDTO;
@@ -38,7 +39,8 @@ namespace API.Controllers
         {
             try
             {
-                var listDatabase = await _unitOfWork.BillService.Get(e => e.StoreId == ReceiverID, includeProperties: "Request");
+                var listDatabase = await _unitOfWork.BillService.Get(e => e.StoreId == ReceiverID, includeProperties: SD.GetBillArray);
+                var listResponse = _mapper.Map<List<BillResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy hóa đơn nào!");
@@ -50,7 +52,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = listDatabase;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
@@ -72,7 +74,8 @@ namespace API.Controllers
         {
             try
             {
-                var listDatabase = await _unitOfWork.BillService.Get(e => e.UserId == UserId, includeProperties: "Request");
+                var listDatabase = await _unitOfWork.BillService.Get(e => e.UserId == UserId, includeProperties: SD.GetBillArray);
+                var listResponse = _mapper.Map<List<BillResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy hóa đơn nào!");
@@ -84,7 +87,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = listDatabase;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
@@ -100,13 +103,14 @@ namespace API.Controllers
             }
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("GetByBillID")]
         public async Task<IActionResult> GetByBillID(int BillID)
         {
             try
             {
-                var listDatabase = await _unitOfWork.BillService.GetFirst(e => e.BillConfirmId == BillID, includeProperties: "Request");
+                var listDatabase = await _unitOfWork.BillService.GetFirst(e => e.BillConfirmId == BillID, includeProperties:  SD.GetBillArray);
+                var listResponse = _mapper.Map<BillResponseDTO>(listDatabase);
                 if (listDatabase == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy hóa đơn nào!");
@@ -118,7 +122,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = listDatabase;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }

@@ -1,4 +1,5 @@
-﻿using API.DTO.BookingDTO;
+﻿using API.DTO.BillDTO;
+using API.DTO.BookingDTO;
 using API.DTO.BuyerBookingDTO;
 using API.DTO.ContractDTO;
 using API.DTO.MotorbikeDTO;
@@ -102,8 +103,16 @@ namespace API.AutoMapper
 					.ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver))
 					.ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
 					.ForMember(dest => dest.RequestType, opt => opt.MapFrom(src => src.RequestType));
+                config.CreateMap<Request, Bill_RequestResponseDTO>().ReverseMap()
+					.ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
+                    .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver))
+                    .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender));
 
-			});
+
+                config.CreateMap<BillConfirm, BillResponseDTO>().ReverseMap()
+                    .ForMember(dest => dest.Request, opt => opt.MapFrom(src => src.Request));
+
+            });
 			return mappingConfig;
 		}
 	}
