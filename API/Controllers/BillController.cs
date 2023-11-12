@@ -103,7 +103,7 @@ namespace API.Controllers
             }
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("GetByBillID")]
         public async Task<IActionResult> GetByBillID(int BillID)
         {

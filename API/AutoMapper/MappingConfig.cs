@@ -1,6 +1,7 @@
 ﻿using API.DTO.BillDTO;
 using API.DTO.BookingDTO;
 using API.DTO.BuyerBookingDTO;
+using API.DTO.CommentDTO;
 using API.DTO.ContractDTO;
 using API.DTO.MotorbikeDTO;
 using API.DTO.NegotiationDTO;
@@ -111,6 +112,8 @@ namespace API.AutoMapper
 
                 config.CreateMap<BillConfirm, BillResponseDTO>().ReverseMap()
                     .ForMember(dest => dest.Request, opt => opt.MapFrom(src => src.Request));
+
+				config.CreateMap<Comment, CommentRegisterDTO>().ReverseMap();
 
             });
 			return mappingConfig;

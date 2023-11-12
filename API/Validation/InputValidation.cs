@@ -1,4 +1,5 @@
-﻿using API.DTO.MotorbikeDTO;
+﻿using API.DTO.CommentDTO;
+using API.DTO.MotorbikeDTO;
 using API.Utility;
 using Azure;
 using Core.Models;
@@ -398,6 +399,23 @@ namespace API.Validation
 			if (motorRegisterDTO.Price < 0)
             {
                 return "Giá tiền không hợp lệ!";
+            }
+            return "";
+        }
+        public static string CommentValidation(CommentRegisterDTO comment)
+        {
+            if (comment.Content == null || comment.Rating == null)
+            {
+                return "Bình luận không được để trống!";
+            }
+
+            if (comment.Content.Length < 6)
+            {
+                return "Nội dung phải từ 6 ký tự trở lên!";
+            }
+            if (comment.Rating < 0 || comment.Rating > 5)
+            {
+                return "Vui lòng đánh giá từ 0 - 5 sao!";
             }
             return "";
         }
