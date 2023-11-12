@@ -463,7 +463,9 @@ namespace Core.Models
 
                 entity.Property(e => e.RequestId).HasColumnName("request_id");
 
-                entity.Property(e => e.VnpayOrderId).HasColumnName("vnpay_order_id");
+                entity.Property(e => e.VnpayOrderId)
+                    .HasMaxLength(50)
+                    .HasColumnName("vnpay_order_id");
 
                 entity.HasOne(d => d.Request)
                     .WithMany(p => p.Payments)

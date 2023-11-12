@@ -7,7 +7,7 @@
         public string? Content { get; set; }
         public DateTime? DateCreated { get; set; }
         public DateTime? PaymentTime { get; set; }
-        public int? VnpayOrderId { get; set; }
+        public string? VnpayOrderId { get; set; }
         public string? PaymentType { get; set; }
     }
 }

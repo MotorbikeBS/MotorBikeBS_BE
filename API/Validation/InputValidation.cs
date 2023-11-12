@@ -348,6 +348,10 @@ namespace API.Validation
 			{
 				return "Vui lòng chọn gói đẩy bài";
 			}
+			if(level <1 || level >3)
+			{
+				return "Gói đẩy bài phải từ 1 đến 3!";
+			}
 			return "";
         }
 
