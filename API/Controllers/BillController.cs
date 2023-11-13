@@ -15,6 +15,7 @@ using Service.Service;
 using Service.UnitOfWork;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace API.Controllers
 {
@@ -200,7 +201,7 @@ namespace API.Controllers
                         }
                     }
                     //Add Request
-                    Request requestNew = new()
+                    Request requestTranfer = new()
                     {
                         MotorId = MotorID,
                         ReceiverId = newUser,
@@ -209,7 +210,7 @@ namespace API.Controllers
                         RequestTypeId = SD.Request_MotorTranfer_Id,
                         Status = SD.Request_Pending
                     };
-                    await _unitOfWork.RequestService.Add(requestNew);
+                    await _unitOfWork.RequestService.Add(requestTranfer);
                     //-----------
                     //Add Cus Bill
                     var requestCus = await _unitOfWork.RequestService.GetLast(
@@ -239,13 +240,25 @@ namespace API.Controllers
                     //Cancel Posting-request
                     var requestPosting = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == requestPost);
                     requestPosting.Status = SD.Request_Cancel;
-                    await _unitOfWork.RequestService.Update(requestPosting);
+                    await _unitOfWork.RequestService.Update(requestPosting);                    
                     //Update Motor Ownership
                     obj.MotorStatusId = SD.Status_Storage;
                     obj.StoreId = null;
                     obj.OwnerId = newUser;
                     await _unitOfWork.MotorBikeService.Update(obj);
-                    //---------------------
+                    //Add newUser Notification
+                    Notification newUserNoti = new()
+                    {
+                        RequestId = requestTranfer.RequestId,
+                        UserId = newUser,
+                        Title = "Thông tin xe mới được vào kho",
+                        Content = "Xe " + obj.MotorName + " đã được thêm vào kho xe của bạn.",
+                        NotificationTypeId = SD.NotificationType_TranferOwnership,
+                        Time = DateTime.Now,
+                        IsRead = false
+                    };
+                    await _unitOfWork.NotificationService.Add(newUserNoti);
+                    //-----------------------
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = CusBill;
@@ -415,6 +428,30 @@ namespace API.Controllers
                     obj.StoreId = null;
                     obj.OwnerId = newUser;
                     await _unitOfWork.MotorBikeService.Update(obj);
+                    //Add newUser Notification
+                    Notification newUserNoti = new()
+                    {
+                        RequestId = requestTranfer.RequestId,
+                        UserId = newUser,
+                        Title = "Thông tin xe mới được vào kho",
+                        Content = "Xe " + obj.MotorName + " đã được thêm vào kho xe của bạn.",
+                        NotificationTypeId = SD.NotificationType_TranferOwnership,
+                        Time = DateTime.Now,
+                        IsRead = false
+                    };
+                    await _unitOfWork.NotificationService.Add(newUserNoti);
+                    //Add Owner Notification
+                    Notification ownerNoti = new()
+                    {
+                        RequestId = NegoRequest.RequestId,
+                        UserId = NegoRequest.ReceiverId,
+                        Title = "Thông tin hóa đơn mới được thêm",
+                        Content = "Xe " + obj.MotorName + " đã bán. Thông tin hóa đơn được thêm vào lịch sử của bạn.",
+                        NotificationTypeId = SD.NotificationType_OwnerSoldOut,
+                        Time = DateTime.Now,
+                        IsRead = false
+                    };
+                    await _unitOfWork.NotificationService.Add(ownerNoti);
                     //---------------------
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
@@ -437,7 +474,7 @@ namespace API.Controllers
         [HttpPost]
         [Authorize(Roles = "Store")]
         [Route("CreateBill-nonConsignment")]
-        public async Task<IActionResult> BillforNonConsignment(int MotorID)
+        public async Task<IActionResult> BillforNonConsignment(int MotorID, int BuyerBookingID)
         {
             try
             {
@@ -461,23 +498,20 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
                 //Check BuyerBooking request
-                var BuyerRequest = await _unitOfWork.RequestService.GetLast(e => e.MotorId == MotorID
-                                                                        && e.RequestTypeId == SD.Request_Booking_Id
-                                                                        && e.Status == SD.Request_Accept
-                );
-                if (BuyerRequest == null)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    _response.ErrorMessages.Add("Không tìm thấy yêu cầu đặt lịch xem xe!");
-                    return BadRequest(_response);
-                }
-                var BuyerBooking = await _unitOfWork.BuyerBookingService.GetFirst(e => e.RequestId == BuyerRequest.RequestId);
+                var BuyerBooking = await _unitOfWork.BuyerBookingService.GetFirst(e => e.BookingId == BuyerBookingID);
                 if (BuyerBooking == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.IsSuccess = false;
                     _response.ErrorMessages.Add("Không tìm thấy lịch hẹn!");
+                    return BadRequest(_response);
+                }
+                var BuyerRequest = await _unitOfWork.RequestService.GetLast(e => e.RequestId == BuyerBooking.RequestId);
+                if (BuyerRequest == null)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Không tìm thấy yêu cầu đặt lịch xem xe!");
                     return BadRequest(_response);
                 }
                 else if (NegoRequest.Status != SD.Request_Accept)
@@ -550,7 +584,7 @@ namespace API.Controllers
                             return BadRequest(_response);
                         }
                         //Add Request
-                        Request requestNew = new()
+                        Request requestTranfer = new()
                         {
                             MotorId = NegoRequest.MotorId,
                             ReceiverId = newUser,
@@ -559,7 +593,7 @@ namespace API.Controllers
                             RequestTypeId = SD.Request_MotorTranfer_Id,
                             Status = SD.Request_Pending
                         };
-                        await _unitOfWork.RequestService.Add(requestNew);
+                        await _unitOfWork.RequestService.Add(requestTranfer);
                         //Add Cus Bill
                         var requestCus = await _unitOfWork.RequestService.GetLast(
                                         e => e.MotorId == NegoRequest.MotorId && e.RequestTypeId == SD.Request_MotorTranfer_Id && e.Status == SD.Request_Pending
@@ -621,7 +655,31 @@ namespace API.Controllers
                         obj.StoreId = null;
                         obj.OwnerId = (int) newUser;
                         await _unitOfWork.MotorBikeService.Update(obj);
-                        //---------------------
+                        //Add newUser Notification
+                        Notification newUserNoti = new()
+                        {
+                            RequestId = requestTranfer.RequestId,
+                            UserId = newUser,
+                            Title = "Thông tin xe mới được vào kho",
+                            Content = "Xe " + obj.MotorName + " đã được thêm vào kho xe của bạn.",
+                            NotificationTypeId = SD.NotificationType_TranferOwnership,
+                            Time = DateTime.Now,
+                            IsRead = false
+                        };
+                        await _unitOfWork.NotificationService.Add(newUserNoti);
+                        //Add Owner Notification
+                        Notification ownerNoti = new()
+                        {
+                            RequestId = NegoRequest.RequestId,
+                            UserId = NegoRequest.ReceiverId,
+                            Title = "Thông tin hóa đơn mới được thêm",
+                            Content = "Xe " + obj.MotorName + " đã bán. Thông tin hóa đơn được thêm vào lịch sử của bạn.",
+                            NotificationTypeId = SD.NotificationType_OwnerSoldOut,
+                            Time = DateTime.Now,
+                            IsRead = false
+                        };
+                        await _unitOfWork.NotificationService.Add(ownerNoti);
+                        //-------------------------
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
                         _response.Result = CusBill;

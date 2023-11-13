@@ -181,15 +181,79 @@ namespace SignalRNotifications.Controllers
                         _response.Result = false;
                         _response.ErrorMessages.Add("Chỉ được bình luận khi trải nghiệm chức năng hệ thống");
                         return BadRequest(_response);
-                    }
+                    }                    
                     var newComment = _mapper.Map<Comment>(comment);
                     newComment.Status = SD.Request_Accept;
+                    newComment.CreateAt = DateTime.Now;
+                    newComment.UpdateAt = null;
+                    if (newComment.ReplyId == 0) newComment.ReplyId = null;
                     await _unitOfWork.CommentService.Add(newComment);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = newComment;
                     return Ok(_response);
                 }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("UpdateComment")]
+        public async Task<IActionResult> UpdateComment([FromQuery] int id, CommentRegisterDTO comment, string Status)
+        {
+            try
+            {
+                var rs = InputValidation.CommentValidation(comment);
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
+                if (Status != "Update" || Status != "Delete")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add("Vui lòng chọn trạng thái bình luận là Cập nhật (Update) hoặc Xóa (Delete)!");
+                    return BadRequest(_response);
+                }
+                var obj = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == id);
+                if (obj == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy bình luận này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    obj.Status = "DELETE";
+                    obj.UpdateAt = DateTime.Now;
+                    //Set oldComment to Delete and create new Comment
+                    await _unitOfWork.CommentService.Update(obj);
+                    var newComment = _mapper.Map<Comment>(comment);
+                    newComment.Status = SD.Request_Accept;
+                    newComment.CreateAt = DateTime.Now;
+                    newComment.UpdateAt = null;
+                    newComment.Status = SD.Request_Accept;
+                    if (newComment.ReplyId == 0) newComment.ReplyId = null;
+                    await _unitOfWork.CommentService.Add(newComment);
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = obj;
+                }
+                return Ok(_response);
             }
             catch (Exception ex)
             {

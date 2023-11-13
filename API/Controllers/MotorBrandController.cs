@@ -172,6 +172,7 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
         [HttpPost]
         [Authorize(Roles = "Store,Owner,Admin")]
         [Route("BrandRegister")]

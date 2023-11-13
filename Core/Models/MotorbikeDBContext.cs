@@ -126,12 +126,10 @@ namespace Core.Models
             {
                 entity.ToTable("Comment");
 
-                entity.Property(e => e.CommentId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("comment_id");
+                entity.Property(e => e.CommentId).HasColumnName("comment_id");
 
                 entity.Property(e => e.Content)
-                    .HasMaxLength(100)
+                    .HasMaxLength(200)
                     .HasColumnName("content");
 
                 entity.Property(e => e.CreateAt)
@@ -177,9 +175,7 @@ namespace Core.Models
                     .HasColumnName("certificate_number")
                     .IsFixedLength();
 
-                entity.Property(e => e.Description)
-                    .HasMaxLength(255)
-                    .HasColumnName("description");
+                entity.Property(e => e.Description).HasColumnName("description");
 
                 entity.Property(e => e.ModelId).HasColumnName("model_id");
 
@@ -196,7 +192,7 @@ namespace Core.Models
                 entity.Property(e => e.OwnerId).HasColumnName("owner_id");
 
                 entity.Property(e => e.Price)
-                    .HasColumnType("money")
+                    .HasColumnType("decimal(15, 4)")
                     .HasColumnName("price");
 
                 entity.Property(e => e.RegistrationImage)
@@ -842,7 +838,7 @@ namespace Core.Models
                     .HasColumnName("status");
 
                 entity.Property(e => e.StorePrice)
-                    .HasColumnType("decimal(15, 4)")
+                    .HasColumnType("money")
                     .HasColumnName("store_price");
 
                 entity.HasOne(d => d.Request)
