@@ -27,6 +27,9 @@
         public const int Request_Add_Point_Id = 10;
         public const int Request_Post_Boosting_Id = 11;
 
+        public const int NotificationType_TranferOwnership = 1;
+        public const int NotificationType_OwnerSoldOut = 2;
+
         public const string Request_Pending = "PENDING";
 		public const string Request_Accept = "ACCEPT";
 		public const string Request_Reject = "REJECT";
