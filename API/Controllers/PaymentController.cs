@@ -133,6 +133,8 @@ namespace API.Controllers
                         var payment = await _unitOfWork.PaymentService.GetFirst(x => x.RequestId == request.RequestId);
                         payment.PaymentTime = DateTime.Now;
                         payment.VnpayOrderId = response.OrderId;
+                        payment.Amount = response.Amount/100;
+                        payment.Point = response.Amount / 100000;
                         await _unitOfWork.PaymentService.Update(payment);
 
                         if (store.Point == null)

@@ -9,5 +9,7 @@
         public DateTime? PaymentTime { get; set; }
         public string? VnpayOrderId { get; set; }
         public string? PaymentType { get; set; }
+        public decimal? Amount { get; set; }
+        public int? Point { get; set; }
     }
 }
