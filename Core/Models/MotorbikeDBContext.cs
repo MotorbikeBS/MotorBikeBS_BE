@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 namespace Core.Models
 {
@@ -32,6 +31,8 @@ namespace Core.Models
         public virtual DbSet<Payment> Payments { get; set; } = null!;
         public virtual DbSet<PointHistory> PointHistories { get; set; } = null!;
         public virtual DbSet<PostBoosting> PostBoostings { get; set; } = null!;
+        public virtual DbSet<Report> Reports { get; set; } = null!;
+        public virtual DbSet<ReportImage> ReportImages { get; set; } = null!;
         public virtual DbSet<Request> Requests { get; set; } = null!;
         public virtual DbSet<RequestType> RequestTypes { get; set; } = null!;
         public virtual DbSet<Role> Roles { get; set; } = null!;
@@ -445,6 +446,10 @@ namespace Core.Models
 
                 entity.Property(e => e.PaymentId).HasColumnName("payment_id");
 
+                entity.Property(e => e.Amount)
+                    .HasColumnType("money")
+                    .HasColumnName("amount");
+
                 entity.Property(e => e.Content)
                     .HasMaxLength(200)
                     .HasColumnName("content");
@@ -460,6 +465,8 @@ namespace Core.Models
                 entity.Property(e => e.PaymentType)
                     .HasMaxLength(100)
                     .HasColumnName("payment_type");
+
+                entity.Property(e => e.Point).HasColumnName("point");
 
                 entity.Property(e => e.RequestId).HasColumnName("request_id");
 
@@ -543,6 +550,52 @@ namespace Core.Models
                     .WithMany(p => p.PostBoostings)
                     .HasForeignKey(d => d.HistoryId)
                     .HasConstraintName("FK_PostBoosting_PointHistory");
+            });
+
+            modelBuilder.Entity<Report>(entity =>
+            {
+                entity.ToTable("Report");
+
+                entity.Property(e => e.ReportId).HasColumnName("report_id");
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(500)
+                    .HasColumnName("description");
+
+                entity.Property(e => e.RequestId).HasColumnName("request_id");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(50)
+                    .HasColumnName("status");
+
+                entity.Property(e => e.Title)
+                    .HasMaxLength(200)
+                    .HasColumnName("title");
+
+                entity.HasOne(d => d.Request)
+                    .WithMany(p => p.Reports)
+                    .HasForeignKey(d => d.RequestId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Report_Request");
+            });
+
+            modelBuilder.Entity<ReportImage>(entity =>
+            {
+                entity.ToTable("ReportImage");
+
+                entity.Property(e => e.ReportImageId).HasColumnName("report_image_id");
+
+                entity.Property(e => e.ImageLink)
+                    .HasMaxLength(200)
+                    .HasColumnName("image_link");
+
+                entity.Property(e => e.ReportId).HasColumnName("report_id");
+
+                entity.HasOne(d => d.Report)
+                    .WithMany(p => p.ReportImages)
+                    .HasForeignKey(d => d.ReportId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_ReportImage_Report");
             });
 
             modelBuilder.Entity<Request>(entity =>
