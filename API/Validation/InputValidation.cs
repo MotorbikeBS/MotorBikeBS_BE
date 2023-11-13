@@ -223,29 +223,29 @@ namespace API.Validation
 			return "";
 		}
 
-		public static string ContractValidation(string content, List<IFormFile> images)
-		{
-			if(content == null)
-			{
-				return "Vui lòng nhập nội dung hợp đồng!";
-			}
-			if(images.Count() < 1)
-			{
-				return "Vui lòng chọn hình ảnh hợp đồng!";
-			}
-			if(images.Count() > 5)
-			{
-				return "Vui lòng chọn tối đa 5 ảnh!";
-			}
-			foreach (var img in images)
-			{
-				if (!IsImage(img))
-				{
-					return "Vui lòng chọn ảnh hợp lệ";
-				}
-			}
-			return "";
-		}
+		//public static string ContractValidation(string content, List<IFormFile> images)
+		//{
+		//	if(content == null)
+		//	{
+		//		return "Vui lòng nhập nội dung hợp đồng!";
+		//	}
+		//	if(images.Count() < 1)
+		//	{
+		//		return "Vui lòng chọn hình ảnh hợp đồng!";
+		//	}
+		//	if(images.Count() > 5)
+		//	{
+		//		return "Vui lòng chọn tối đa 5 ảnh!";
+		//	}
+		//	foreach (var img in images)
+		//	{
+		//		if (!IsImage(img))
+		//		{
+		//			return "Vui lòng chọn ảnh hợp lệ";
+		//		}
+		//	}
+		//	return "";
+		//}
 
 		public static bool IsImage(IFormFile file)
 		{
@@ -372,6 +372,38 @@ namespace API.Validation
 			}
 			return "";
 
+        }
+
+		public static string ReportValidation(int storeId, string title, string des, List<IFormFile> images)
+		{
+			if (storeId == default(int))
+			{
+				return "Vui lòng nhập id cửa hàng";
+			}
+			if(title.Length <= 0 || des.Length <=0)
+			{
+				return "Vui lòng nhập đủ thông tin!";
+			}
+			if(title.Length > 200 || des.Length > 500)
+			{
+				return "Nội dung quá dài!";
+			}
+            if (images.Count() < 1)
+            {
+                return "Vui lòng chọn hình ảnh hợp đồng!";
+            }
+            if (images.Count() > 5)
+            {
+                return "Vui lòng chọn tối đa 5 ảnh!";
+            }
+            foreach (var img in images)
+            {
+                if (!IsImage(img))
+                {
+                    return "Vui lòng chọn ảnh hợp lệ";
+                }
+            }
+			return "";
         }
 
 		//MotorBike

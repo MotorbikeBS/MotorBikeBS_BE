@@ -29,6 +29,8 @@ namespace Service.UnitOfWork
         public IValuationService ValuationService { get; private set; } = null!;
         public IPointHistoryService PointHistoryService { get; private set; } = null!;
         public IPostBoostingService PostBoostingService { get; private set; } = null!;
+        public IReportService ReportService { get; private set; } = null!;
+        public IReportImageService ReportImageService { get; private set; } = null!;
 
 
         private readonly MotorbikeDBContext _context;
@@ -64,6 +66,8 @@ namespace Service.UnitOfWork
             ValuationService = new ValuationRepository(_context, this);
             PostBoostingService = new PostBoostingRepository(_context, this);
             PointHistoryService = new PointHistoryRepository(_context, this);
+            ReportService = new ReportRepository(_context, this);
+            ReportImageService = new ReportImageRepository(_context, this);
 		}
     }
 }
