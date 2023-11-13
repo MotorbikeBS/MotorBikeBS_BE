@@ -85,7 +85,19 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
 
-                int pointPerDay = 3;
+                int pointPerDay;
+                if(dto.Level == 1)
+                {
+                    pointPerDay = 1;
+                }
+                else if(dto.Level == 2)
+                {
+                    pointPerDay = 2;
+                }
+                else
+                {
+                    pointPerDay = 3;
+                }
 
                 int dayOfBoost = (dto.EndTime - dto.StartTime).Days;
 
@@ -105,7 +117,7 @@ namespace API.Controllers
                     SenderId = userId,
                     Time = DateTime.Now,
                     RequestTypeId = SD.Request_Post_Boosting_Id,
-                    //Status
+                    Status = SD.Request_Accept
                 };
 
                 await _unitOfWork.RequestService.Add(request);
