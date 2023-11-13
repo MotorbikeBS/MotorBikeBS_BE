@@ -238,7 +238,7 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
-                    obj.Status = "DELETE";
+                    obj.Status = Status;
                     obj.UpdateAt = DateTime.Now;
                     //Set oldComment to Delete and create new Comment
                     await _unitOfWork.CommentService.Update(obj);

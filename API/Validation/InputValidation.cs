@@ -413,9 +413,9 @@ namespace API.Validation
             {
                 return "Nội dung phải từ 6 ký tự trở lên!";
             }
-            if (comment.Rating < 0 || comment.Rating > 5)
+            if (comment.Rating < 1 || comment.Rating > 5)
             {
-                return "Vui lòng đánh giá từ 0 - 5 sao!";
+                return "Vui lòng đánh giá từ 1 - 5 sao!";
             }
             return "";
         }
