@@ -1,6 +1,7 @@
 ﻿using API.DTO;
 using API.DTO.CommentDTO;
 using API.DTO.MotorbikeDTO;
+using API.DTO.RequestDTO;
 using API.Hubs;
 using API.Utility;
 using API.Validation;
@@ -34,7 +35,7 @@ namespace SignalRNotifications.Controllers
         }
 
         [Authorize]
-        [HttpGet("{id:int}")]
+        [HttpGet("GetByCommentID")]
         public async Task<IActionResult> GetByCommentId(int CommentID)
         {
             try
@@ -67,18 +68,70 @@ namespace SignalRNotifications.Controllers
             }
         }
 
+        //[Authorize]
+        //[HttpGet("GetByUserId_Sender")]
+        //public async Task<IActionResult> GetByUserId_Sender(int UserID)
+        //{
+        //    try
+        //    {
+        //        var request = await _unitOfWork.RequestService.Get(e => e.ReceiverId == UserID || e.SenderId == UserID);
+        //        List<Comment> allComments = new List<Comment>();
+
+        //        foreach (Request p in request)
+        //        {
+        //            var comments = await _unitOfWork.CommentService.Get(e => e.RequestId == p.RequestId && e.Status == SD.Request_Accept
+        //                                                                && e.UserId == UserID && e.ReplyId == null, includeProperties: SD.GetCommentArray);
+        //            allComments.AddRange(comments);
+        //        }
+        //        if (allComments == null)
+        //        {
+        //            _response.ErrorMessages.Add("Không tìm thấy thông báo nào!");
+        //            _response.IsSuccess = false;
+        //            _response.StatusCode = HttpStatusCode.NotFound;
+        //            return NotFound(_response);
+        //        }
+        //        else
+        //        {
+        //            var listComment = allComments.Where(comment => comment.InverseReply.Any(reply => reply.UserId == UserID)).ToList();
+        //            var listResponse = _mapper.Map<List<CommentResponseDTO>>(listComment);
+        //            _response.IsSuccess = true;
+        //            _response.StatusCode = HttpStatusCode.OK;
+        //            _response.Result = listResponse;
+        //        }
+        //        return Ok(_response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _response.IsSuccess = false;
+        //        _response.StatusCode = HttpStatusCode.BadRequest;
+        //        _response.ErrorMessages = new List<string>()
+        //        {
+        //            ex.ToString()
+        //        };
+        //        return BadRequest(_response);
+        //    }
+        //}
+
         [Authorize]
-        [HttpGet("GetByUserID")]
-        public async Task<IActionResult> GetByUserId_Sender(int UserID)
+        [HttpGet("GetByStoreId_Receiver")]
+        public async Task<IActionResult> GetByStoreId_Receiver(int StoreID)
         {
             try
             {
-                var request = await _unitOfWork.RequestService.Get(e => e.SenderId == UserID);
+                var store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.StoreId == StoreID);
+                if (store == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin cửa hàng nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                var request = await _unitOfWork.RequestService.Get(e => e.ReceiverId == store.UserId || e.SenderId == store.UserId);
                 List<Comment> allComments = new List<Comment>();
 
                 foreach (Request p in request)
                 {
-                    var comments = await _unitOfWork.CommentService.Get(e => e.RequestId == p.RequestId && e.Status == SD.Request_Accept, includeProperties: "Rely");
+                    var comments = await _unitOfWork.CommentService.Get(e => e.RequestId == p.RequestId && e.Status == SD.Request_Accept && e.ReplyId == null, includeProperties: SD.GetCommentArray);
                     allComments.AddRange(comments);
                 }
                 if (allComments == null)
@@ -90,9 +143,10 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
+                    var listResponse = _mapper.Map<List<CommentResponseDTO>>(allComments);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = allComments;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
@@ -109,25 +163,17 @@ namespace SignalRNotifications.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetByStoreId_Receiver")]
-        public async Task<IActionResult> GetByStoreId_Receiver(int StoreID)
+        [HttpGet("GetHistoryCommentByRequestID")]
+        public async Task<IActionResult> GetHistoryCommentByRequestID(int RequestID)
         {
             try
             {
-                var store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.StoreId == StoreID);
-                if (store == null)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy thông tin cửa hàng nào!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(_response);
-                }
-                var request = await _unitOfWork.RequestService.Get(e => e.ReceiverId == store.UserId);
+                var request = await _unitOfWork.RequestService.Get(e => e.RequestId == RequestID);
                 List<Comment> allComments = new List<Comment>();
 
                 foreach (Request p in request)
                 {
-                    var comments = await _unitOfWork.CommentService.Get(e => e.RequestId == p.RequestId && e.Status == SD.Request_Accept, includeProperties: "Rely");
+                    var comments = await _unitOfWork.CommentService.Get(e => e.RequestId == p.RequestId && e.Status != SD.Request_Accept && e.ReplyId == null, includeProperties: "InverseReply");
                     allComments.AddRange(comments);
                 }
                 if (allComments == null)
@@ -139,9 +185,10 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
+                    var listResponse = _mapper.Map<List<CommentResponseDTO>>(allComments);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = allComments;
+                    _response.Result = listResponse;
                 }
                 return Ok(_response);
             }
@@ -174,16 +221,18 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
-                    var request = await _unitOfWork.RequestService.Get(e => e.RequestId == comment.RequestId);
+                    var request = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == comment.RequestId);
                     if (request == null)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.Result = false;
                         _response.ErrorMessages.Add("Chỉ được bình luận khi trải nghiệm chức năng hệ thống");
                         return BadRequest(_response);
-                    }                    
+                    }
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
                     var newComment = _mapper.Map<Comment>(comment);
                     newComment.Status = SD.Request_Accept;
+                    newComment.UserId = userId;
                     newComment.CreateAt = DateTime.Now;
                     newComment.UpdateAt = null;
                     if (newComment.ReplyId == 0) newComment.ReplyId = null;
@@ -206,10 +255,10 @@ namespace SignalRNotifications.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPost]
         [Authorize]
-        [Route("UpdateComment")]
-        public async Task<IActionResult> UpdateComment([FromQuery] int id, CommentRegisterDTO comment, string Status)
+        [Route("ReplyComment")]
+        public async Task<IActionResult> ReplyComment(CommentRegisterDTO comment)
         {
             try
             {
@@ -221,11 +270,63 @@ namespace SignalRNotifications.Controllers
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
-                if (Status != "Update" || Status != "Delete")
+                var commentReply = await _unitOfWork.CommentService.GetFirst(e => e.ReplyId == comment.ReplyId);
+                if(commentReply == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Result = false;
-                    _response.ErrorMessages.Add("Vui lòng chọn trạng thái bình luận là Cập nhật (Update) hoặc Xóa (Delete)!");
+                    _response.ErrorMessages.Add("Chưa chọn bình luận nào để trả lời!");
+                    return BadRequest(_response);
+                }
+                else
+                {
+                    var request = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == commentReply.RequestId);
+                    if (request == null)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add("Chỉ được bình luận khi trải nghiệm chức năng hệ thống");
+                        return BadRequest(_response);
+                    }
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    var newComment = _mapper.Map<Comment>(comment);
+                    newComment.RequestId = commentReply.RequestId;
+                    newComment.Status = SD.Request_Accept;
+                    newComment.UserId = userId;
+                    newComment.CreateAt = DateTime.Now;
+                    newComment.UpdateAt = null;
+                    await _unitOfWork.CommentService.Add(newComment);
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = newComment;
+                    return Ok(_response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("UpdateComment")]
+        public async Task<IActionResult> UpdateComment([FromQuery] int id, CommentRegisterDTO comment)
+        {
+            try
+            {
+                var rs = InputValidation.CommentValidation(comment);
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
                 var obj = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == id);
@@ -238,16 +339,76 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
-                    obj.Status = Status;
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    obj.Status = "UPDATE";
                     obj.UpdateAt = DateTime.Now;
                     //Set oldComment to Delete and create new Comment
                     await _unitOfWork.CommentService.Update(obj);
                     var newComment = _mapper.Map<Comment>(comment);
+                    newComment.RequestId = obj.RequestId;
                     newComment.Status = SD.Request_Accept;
+                    newComment.UserId = userId;
                     newComment.CreateAt = DateTime.Now;
                     newComment.UpdateAt = null;
                     newComment.Status = SD.Request_Accept;
-                    if (newComment.ReplyId == 0) newComment.ReplyId = null;
+                    newComment.ReplyId = obj.ReplyId;
+                    await _unitOfWork.CommentService.Add(newComment);
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = obj;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("DeleteComment")]
+        public async Task<IActionResult> DeleteComment([FromQuery] int id, CommentRegisterDTO comment)
+        {
+            try
+            {
+                var rs = InputValidation.CommentValidation(comment);
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
+                var obj = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == id);
+                if (obj == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy bình luận này!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                    obj.Status = "DELETE";
+                    obj.UpdateAt = DateTime.Now;
+                    //Set oldComment to Delete and create new Comment
+                    await _unitOfWork.CommentService.Update(obj);
+                    var newComment = _mapper.Map<Comment>(comment);
+                    newComment.RequestId = obj.RequestId;
+                    newComment.Status = SD.Request_Accept;
+                    newComment.UserId = userId;
+                    newComment.CreateAt = DateTime.Now;
+                    newComment.UpdateAt = null;
+                    newComment.Status = SD.Request_Accept;
+                    newComment.ReplyId = obj.ReplyId;
                     await _unitOfWork.CommentService.Add(newComment);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;

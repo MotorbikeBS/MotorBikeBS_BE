@@ -113,7 +113,7 @@ namespace API.Controllers
                 && x.Status == SD.Payment_Unpaid);
                 if (request != null)
                 {
-                    
+
                     var result = int.Parse(response.VnPayResponseCode);
                     if (result == 00)
                     {
@@ -133,7 +133,7 @@ namespace API.Controllers
                         var payment = await _unitOfWork.PaymentService.GetFirst(x => x.RequestId == request.RequestId);
                         payment.PaymentTime = DateTime.Now;
                         payment.VnpayOrderId = response.OrderId;
-                        payment.Amount = response.Amount/100;
+                        payment.Amount = response.Amount / 100;
                         payment.Point = response.Amount / 100000;
                         await _unitOfWork.PaymentService.Update(payment);
 
@@ -201,10 +201,10 @@ namespace API.Controllers
             }
         }
 
-        [Authorize(Roles =("Store"))]
+        [Authorize(Roles = ("Store"))]
         [HttpGet]
         [Route("GetPaymentHistory")]
-        public async Task<IActionResult>GetPaymentHistory()
+        public async Task<IActionResult> GetPaymentHistory()
         {
             try
             {
@@ -214,7 +214,7 @@ namespace API.Controllers
                 && x.Payments.Any(y => y.RequestId != default(int)),
                 includeProperties: "Payments");
 
-                if(payment.Count() < 1)
+                if (payment.Count() < 1)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("Bạn chưa thực hiện thanh toán!");

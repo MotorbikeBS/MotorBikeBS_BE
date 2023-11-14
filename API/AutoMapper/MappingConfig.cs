@@ -108,13 +108,22 @@ namespace API.AutoMapper
 					.ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
                     .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver))
                     .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender));
+				config.CreateMap<Request, Store_RequestResponseDTO>().ReverseMap()
+					.ForMember(dest => dest.Motor, opt => opt.MapFrom(src => src.Motor))
+                    .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver))
+                    .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
+                    .ForMember(dest => dest.RequestType, opt => opt.MapFrom(src => src.RequestType))
+                    ;
 
 
                 config.CreateMap<BillConfirm, BillResponseDTO>().ReverseMap()
                     .ForMember(dest => dest.Request, opt => opt.MapFrom(src => src.Request));
 
 				config.CreateMap<Comment, CommentRegisterDTO>().ReverseMap();
-
+                config.CreateMap<Comment, CommentResponseDTO>().ReverseMap()
+					.ForMember(dest => dest.Request, opt => opt.MapFrom(src => src.Request))
+                    .ForMember(dest => dest.InverseReply, opt => opt.MapFrom(src => src.InverseReply));
+                config.CreateMap<Comment, ReplyCommentResponseDTO>().ReverseMap();
             });
 			return mappingConfig;
 		}

@@ -1,27 +1,22 @@
-﻿using System;
+﻿using API.DTO.RequestDTO;
+using Core.Models;
+using System;
 using System.Collections.Generic;
 
-namespace Core.Models
+namespace API.DTO.CommentDTO
 {
-    public partial class Comment
+    public partial class CommentResponseDTO
     {
-        public Comment()
-        {
-            InverseReply = new HashSet<Comment>();
-        }
-
         public int CommentId { get; set; }
-        public int RequestId { get; set; }
         public int UserId { get; set; }
         public string? Content { get; set; }
         public int? Rating { get; set; }
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
         public string? Status { get; set; }
+        public int RequestId { get; set; }
+        public virtual Store_RequestResponseDTO Request { get; set; } = null!;
         public int? ReplyId { get; set; }
-
-        public virtual Comment? Reply { get; set; }
-        public virtual Request Request { get; set; } = null!;
-        public virtual ICollection<Comment> InverseReply { get; set; }
+        public virtual ICollection<ReplyCommentResponseDTO> InverseReply { get; set; }
     }
 }
