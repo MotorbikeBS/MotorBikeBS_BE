@@ -26,6 +26,7 @@
         public const int Request_MotorTranfer_Id = 9;
         public const int Request_Add_Point_Id = 10;
         public const int Request_Post_Boosting_Id = 11;
+        public const int Request_Report_Id = 12;
 
         public const int NotificationType_TranferOwnership = 1;
         public const int NotificationType_OwnerSoldOut = 2;

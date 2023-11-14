@@ -126,10 +126,12 @@ namespace Core.Models
             {
                 entity.ToTable("Comment");
 
-                entity.Property(e => e.CommentId).HasColumnName("comment_id");
+                entity.Property(e => e.CommentId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("comment_id");
 
                 entity.Property(e => e.Content)
-                    .HasMaxLength(200)
+                    .HasMaxLength(100)
                     .HasColumnName("content");
 
                 entity.Property(e => e.CreateAt)
@@ -175,7 +177,9 @@ namespace Core.Models
                     .HasColumnName("certificate_number")
                     .IsFixedLength();
 
-                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Description)
+                    .HasMaxLength(255)
+                    .HasColumnName("description");
 
                 entity.Property(e => e.ModelId).HasColumnName("model_id");
 
@@ -192,7 +196,7 @@ namespace Core.Models
                 entity.Property(e => e.OwnerId).HasColumnName("owner_id");
 
                 entity.Property(e => e.Price)
-                    .HasColumnType("decimal(15, 4)")
+                    .HasColumnType("money")
                     .HasColumnName("price");
 
                 entity.Property(e => e.RegistrationImage)
@@ -505,16 +509,10 @@ namespace Core.Models
                 entity.Property(e => e.StoreId).HasColumnName("store_id");
 
                 entity.HasOne(d => d.Request)
-                    .WithMany(p => p.PointHistoryRequests)
+                    .WithMany(p => p.PointHistories)
                     .HasForeignKey(d => d.RequestId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_PointHistory_Request1");
-
-                entity.HasOne(d => d.Store)
-                    .WithMany(p => p.PointHistoryStores)
-                    .HasForeignKey(d => d.StoreId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_PointHistory_Request");
+                    .HasConstraintName("FK_PointHistory_Request2");
             });
 
             modelBuilder.Entity<PostBoosting>(entity =>
@@ -838,7 +836,7 @@ namespace Core.Models
                     .HasColumnName("status");
 
                 entity.Property(e => e.StorePrice)
-                    .HasColumnType("money")
+                    .HasColumnType("decimal(15, 4)")
                     .HasColumnName("store_price");
 
                 entity.HasOne(d => d.Request)
