@@ -345,6 +345,14 @@ namespace API.Validation
             {
                 return "Vui lòng chọn ngày!";
             }
+			if(startDate < DateTime.Now || endDate < DateTime.Now)
+			{
+                return "Vui lòng chọn thời gian trong tương lai!";
+            }
+			if(startDate < endDate)
+			{
+				return "Vui lòng chọn ngày kết thúc sau ngày bắt đầu";
+			}
 			if(level == default(int))
 			{
 				return "Vui lòng chọn gói đẩy bài";
