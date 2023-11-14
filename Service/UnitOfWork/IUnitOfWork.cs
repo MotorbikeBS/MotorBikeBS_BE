@@ -27,5 +27,7 @@ namespace Service.UnitOfWork
         public IValuationService ValuationService { get; }
         public IPointHistoryService PointHistoryService { get; }
         public IPostBoostingService PostBoostingService { get; }
+        public IReportService ReportService { get; }
+        public IReportImageService ReportImageService { get; }
     }
 }

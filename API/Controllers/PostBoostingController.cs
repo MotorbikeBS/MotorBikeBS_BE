@@ -21,10 +21,10 @@ namespace API.Controllers
         private ApiResponse _response;
         private readonly IMapper _mapper;
 
-        public PostBoostingController(IUnitOfWork unitOfWork, ApiResponse response, IMapper mapper)
+        public PostBoostingController(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            _response = response;
+            _response = new ApiResponse();
             _mapper = mapper;
         }
 
@@ -71,11 +71,12 @@ namespace API.Controllers
                 }
 
                 var checkDuplicate = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+                && x.MotorId == motorId
                 && x.RequestTypeId == SD.Request_Post_Boosting_Id
-                && x.PointHistoryRequests
+                && x.PointHistories
                 .Any(y => y.PostBoostings
-                .Any(z => z.StartTime.Value.Date < DateTime.Now.Date
-                && z.EndTime.Value.Date > DateTime.Now.Date)));
+                .Any(z => z.StartTime < DateTime.Now
+                && z.EndTime > DateTime.Now)));
                 
                 if(checkDuplicate.Count() >0 )
                 {

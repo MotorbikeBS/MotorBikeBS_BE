@@ -19,7 +19,6 @@ namespace Core.Models
         public int StoreId { get; set; }
 
         public virtual Request Request { get; set; } = null!;
-        public virtual Request Store { get; set; } = null!;
         public virtual ICollection<PostBoosting> PostBoostings { get; set; }
     }
 }
