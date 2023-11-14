@@ -1,11 +1,13 @@
 ﻿using API.DTO;
 using API.DTO.ReportDTO;
+using API.Utility;
 using API.Validation;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Service.BlobImageService;
 using Service.UnitOfWork;
 using System.Net;
 
@@ -18,12 +20,14 @@ namespace API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private ApiResponse _response;
+        private readonly IBlobService _blobService;
 
-        public ReportController(IUnitOfWork unitOfWork, IMapper mapper)
+        public ReportController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _response = new ApiResponse();
+            _blobService = blobService;
         }
 
         [Authorize(Roles =("Customer, Owner"))]
@@ -51,13 +55,42 @@ namespace API.Controllers
                     return NotFound(_response);
                 }
 
-                //Request request = new()
-                //{
-                //    SenderId = userId,
-                //    ReceiverId = 1,
+                Request request = new()
+                {
+                    SenderId = userId,
+                    ReceiverId = 1,
+                    Time = DateTime.Now,
+                    RequestTypeId = SD.Request_Report_Id,
+                    Status = SD.Request_Pending
+                };
 
-                //}
-                return Ok();
+                await _unitOfWork.RequestService.Add(request);
+
+                Report report = new()
+                {
+                    RequestId = request.RequestId,
+                    Description = dto.Description,
+                    Title = dto.Title,
+                    Status = SD.Request_Pending
+                };
+
+                await _unitOfWork.ReportService.Add(report);
+
+                foreach(var item in images)
+                {
+                    string file = $"{Guid.NewGuid()}{Path.GetExtension(item.FileName)}";
+                    var img = await _blobService.UploadBlob(file, SD.Storage_Container, item);
+                    ReportImage image = new()
+                    {
+                        ReportId = report.ReportId,
+                        ImageLink = img
+                    };
+                    await _unitOfWork.ReportImageService.Add(image);
+                }
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Message = ("Báo cáo thành công, vui lòng chờ Admin xác thực!");
+                return Ok(_response);
             }
             catch (Exception ex)
             {

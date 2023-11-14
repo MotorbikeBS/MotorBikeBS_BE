@@ -12,8 +12,7 @@ namespace Core.Models
             Comments = new HashSet<Comment>();
             Notifications = new HashSet<Notification>();
             Payments = new HashSet<Payment>();
-            PointHistoryRequests = new HashSet<PointHistory>();
-            PointHistoryStores = new HashSet<PointHistory>();
+            PointHistories = new HashSet<PointHistory>();
             Reports = new HashSet<Report>();
             Valuations = new HashSet<Valuation>();
         }
@@ -35,8 +34,7 @@ namespace Core.Models
         public virtual ICollection<Comment> Comments { get; set; }
         public virtual ICollection<Notification> Notifications { get; set; }
         public virtual ICollection<Payment> Payments { get; set; }
-        public virtual ICollection<PointHistory> PointHistoryRequests { get; set; }
-        public virtual ICollection<PointHistory> PointHistoryStores { get; set; }
+        public virtual ICollection<PointHistory> PointHistories { get; set; }
         public virtual ICollection<Report> Reports { get; set; }
         public virtual ICollection<Valuation> Valuations { get; set; }
     }
