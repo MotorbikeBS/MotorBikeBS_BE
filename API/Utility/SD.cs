@@ -76,5 +76,27 @@
             "Sender",
             "RequestType"
         };
+        public static readonly string[] GetCommentArray = new string[]
+        {
+            "Request",
+            "Request.Motor",
+            "Request.Motor.Model.Brand",
+            "Request.Motor.MotorbikeImages",
+            "Request.Sender",
+            "Request.Receiver",
+            "Request.RequestType",
+            "InverseReply"
+        };
+        public static readonly string[] GetRequestWithStoreArray = new string[]
+        {
+            "Motor",
+            "Motor.Model.Brand",
+            "Motor.MotorbikeImages",
+            "Sender",
+            "Sender.StoreDesciptions",
+            "Receiver",
+            "Receiver.StoreDesciptions",
+            "RequestType"
+        };
     }
 }

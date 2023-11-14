@@ -152,6 +152,8 @@ namespace Core.Models
                     .HasColumnType("datetime")
                     .HasColumnName("update_at");
 
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+
                 entity.HasOne(d => d.Reply)
                     .WithMany(p => p.InverseReply)
                     .HasForeignKey(d => d.ReplyId)

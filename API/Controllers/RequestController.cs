@@ -132,6 +132,52 @@ namespace API.Controllers
         }
 
         [Authorize]
+        [HttpGet("GetRequestAssociated_WithStore")]
+        public async Task<IActionResult> GetRequestAssociated_WithStore(int StoreID)
+        {
+            try
+            {
+                var StoreData = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.StoreId == StoreID);
+                if (StoreData == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy cửa hàng !");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var listDatabase = await _unitOfWork.RequestService.Get(e => ( e.ReceiverId == userId && e.SenderId == StoreData.UserId )
+                                                                          || ( e.ReceiverId == StoreData.UserId && e.SenderId == userId )
+                                                                            , includeProperties: SD.GetRequestWithStoreArray);
+                var listResponse = _mapper.Map<List<Store_RequestResponseDTO>>(listDatabase);
+                if (listDatabase == null || listDatabase.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy yêu cầu nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = listResponse;
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetByRequestId(int id)
         {
