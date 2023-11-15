@@ -99,6 +99,8 @@ namespace API.AutoMapper
 																					   .ForMember(source => source.Receiver, opt => opt.MapFrom(src => src.Receiver));
 
                 config.CreateMap<PostBoosting, PostBoostingResponseDTO>().ReverseMap();
+                config.CreateMap<PostBoosting, PostBoostingCreateDTO>().ReverseMap();
+
                 config.CreateMap<PointHistory, PointHistoryBoostingResponseDTO>().ReverseMap().ForMember(dest => dest.PostBoostings, opt => opt.MapFrom(src => src.PostBoostings));
                 config.CreateMap<Request, BoostingRequestResponseDTO>().ReverseMap().ForMember(dest => dest.PointHistories, opt => opt.MapFrom(src => src.PointHistories));
 
