@@ -541,8 +541,6 @@ namespace Core.Models
                     .HasMaxLength(50)
                     .HasColumnName("status");
 
-                entity.Property(e => e.TotalPoint).HasColumnName("total_point");
-
                 entity.HasOne(d => d.History)
                     .WithMany(p => p.PostBoostings)
                     .HasForeignKey(d => d.HistoryId)
