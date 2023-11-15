@@ -160,7 +160,7 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 				var userUpdate = _mapper.Map(userUpdateDTO, user);
-				userUpdate.UserUpdatedAt = DateTime.Now;
+				userUpdate.UserUpdatedAt = DateTime.Now.ToLocalTime();
 				await _unitOfWork.UserService.Update(userUpdate);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;

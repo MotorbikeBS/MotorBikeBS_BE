@@ -89,7 +89,7 @@
 //					return BadRequest(_response);
 //				}
 //				var newBooking = _mapper.Map<Booking>(dto);
-//				newBooking.DateCreate = DateTime.Now;
+//				newBooking.DateCreate = DateTime.Now.ToLocalTime();
 //				//newBooking.BaseRequestId = negotiationInDb.BaseRequestId;
 //				newBooking.NegotiationId = negotiationId;
 //				newBooking.Status = SD.Request_Pending;
@@ -126,7 +126,7 @@
 //					list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 //					&& x.RequestTypeId == SD.Request_Negotiation_Id
 //					&& x.Status == SD.Request_Pending,
-//					//&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.Date && b.BookingDate <= b.BookingDate.Value.Date.AddDays(7))),
+//					//&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.ToLocalTime().Date && b.BookingDate <= b.BookingDate.Value.Date.AddDays(7))),
 //					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings", "Receiver" });
 //				}
 //				else
@@ -134,7 +134,7 @@
 //					list = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 //					&& x.RequestTypeId == SD.Request_Negotiation_Id
 //					&& x.Status == SD.Request_Pending,
-//					//&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.Date &&  b.BookingDate <= b.BookingDate.Value.Date.AddDays(7))),
+//					//&& x.Negotiations.Any(n => n.Bookings.Any(b => b.BookingDate >= DateTime.Now.ToLocalTime().Date &&  b.BookingDate <= b.BookingDate.Value.Date.AddDays(7))),
 //					includeProperties: new string[] { "Negotiations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Negotiations.Bookings", "Sender", "Sender.StoreDesciptions" });
 //				}
 //				if(list.Count() > 0)

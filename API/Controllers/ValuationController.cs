@@ -80,7 +80,7 @@ namespace API.Controllers
                         MotorId = motorId,
                         ReceiverId = motor.OwnerId,
                         SenderId = userId,
-                        Time = DateTime.Now,
+                        Time = DateTime.Now.ToLocalTime(),
                         RequestTypeId = SD.Request_Negotiation_Id,
                         Status = SD.Request_Pending
                     };
@@ -155,7 +155,7 @@ namespace API.Controllers
         //				MotorId = motorId,
         //				ReceiverId = motor.OwnerId,
         //				SenderId = userId,
-        //				Time = DateTime.Now,
+        //				Time = DateTime.Now.ToLocalTime(),
         //				RequestTypeId = SD.Request_Negotiation_Id,
         //				Status = SD.Request_Pending
         //			};
@@ -164,8 +164,8 @@ namespace API.Controllers
         //			var negotiationCreate = new Negotiation()
         //			{
         //				RequestId = request.RequestId,
-        //				StartTime = DateTime.Now,
-        //				EndTime = DateTime.Now,
+        //				StartTime = DateTime.Now.ToLocalTime(),
+        //				EndTime = DateTime.Now.ToLocalTime(),
         //				Status = SD.Request_Accept,
         //			};
 
@@ -303,7 +303,7 @@ namespace API.Controllers
         //			_response.StatusCode = HttpStatusCode.BadRequest;
         //			return BadRequest(_response);
         //		}
-        //		if(negotiationInDb.ExpiredTime < DateTime.Now)
+        //		if(negotiationInDb.ExpiredTime < DateTime.Now.ToLocalTime())
         //		{
         //			_response.IsSuccess = false;
         //			_response.ErrorMessages.Add("Không thể thương lượng, đã quá thời gian thương lượng, vui lòng hủy yêu cầu!");
@@ -407,7 +407,7 @@ namespace API.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                //if (negotiationInDb.ExpiredTime < DateTime.Now)
+                //if (negotiationInDb.ExpiredTime < DateTime.Now.ToLocalTime())
                 //{
                 //	_response.IsSuccess = false;
                 //	_response.ErrorMessages.Add("Không thể đồng ý, đã quá thời gian thương lượng, vui lòng hủy yêu cầu!");
@@ -423,7 +423,7 @@ namespace API.Controllers
                 }
 
                 valuationInDb.Status = SD.Request_Accept;
-                //negotiationInDb.EndTime = DateTime.Now;
+                //negotiationInDb.EndTime = DateTime.Now.ToLocalTime();
                 await _unitOfWork.ValuationService.Update(valuationInDb);
 
                 _response.IsSuccess = true;

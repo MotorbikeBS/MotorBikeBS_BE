@@ -66,7 +66,7 @@ namespace API.Controllers
 					newUser.Status = SD.not_verify;
 					newUser.PasswordHash = passwordHash;
 					newUser.PasswordSalt = passwordSalt;
-					newUser.VerifycationTokenExpires = DateTime.Now.AddHours(3);
+					newUser.VerifycationTokenExpires = DateTime.Now.ToLocalTime().AddHours(3);
 					newUser.RoleId = 4;
 					//newUser.UserName = newUser.UserName.ToString().;
 					newUser.VerifycationToken = CreateRandomToken();
@@ -219,7 +219,7 @@ namespace API.Controllers
 				}
 				else
 				{
-					if (user.VerifycationTokenExpires < DateTime.Now)
+					if (user.VerifycationTokenExpires < DateTime.Now.ToLocalTime())
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
@@ -289,7 +289,7 @@ namespace API.Controllers
 					else
 					{
 						user.PasswordResetToken = CreateRandomToken();
-						user.ResetTokenExpires = DateTime.Now.AddHours(3);
+						user.ResetTokenExpires = DateTime.Now.ToLocalTime().AddHours(3);
 						await _unitOfWork.UserService.Update(user);
 
 						var subject = "Thay đổi mật khẩu";
@@ -340,7 +340,7 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Mã xác minh không lợp lệ!");
 					return BadRequest(_response);
 				}
-				else if (user.ResetTokenExpires < DateTime.Now)
+				else if (user.ResetTokenExpires < DateTime.Now.ToLocalTime())
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;

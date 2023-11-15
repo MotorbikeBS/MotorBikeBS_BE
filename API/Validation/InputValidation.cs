@@ -78,7 +78,7 @@ namespace API.Validation
 			//	return "Giới tính không hợp lệ!";
 			//}
 
-			//int age = DateTime.Now.Year - dob.Year;
+			//int age = DateTime.Now.ToLocalTime().Year - dob.Year;
 			//if (age < 16)
 			//{
 			//	return "Người dùng phải từ 16 tuổi trở lên!";
@@ -196,7 +196,7 @@ namespace API.Validation
 				return "Giới tính không hợp lệ!";
 			}
 
-			int age = DateTime.Now.Year - dob.Year;
+			int age = DateTime.Now.ToLocalTime().Year - dob.Year;
 			if (age < 16)
 			{
 				return "Người dùng phải từ 16 tuổi trở lên!";
@@ -215,7 +215,7 @@ namespace API.Validation
 				return "Tên không chưa ký tự đặc biệt!";
 			}
 
-			if (dob > DateTime.Now)
+			if (dob > DateTime.Now.ToLocalTime())
 			{
 				return ("Ngày sinh không hợp lệ!");
 			}
@@ -304,7 +304,7 @@ namespace API.Validation
 			//TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
 			//TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
 
-			if (startDate.Date < DateTime.Now.Date)
+			if (startDate.Date < DateTime.Now.ToLocalTime().Date)
 			{
 				return "Vui lòng chọn thời gian trong tương lai!";
 			}
@@ -327,7 +327,7 @@ namespace API.Validation
 			TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
 			TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
 
-			if (bookingDate < DateTime.Now)
+			if (bookingDate < DateTime.Now.ToLocalTime())
 			{
 				return "Vui lòng chọn thời gian trong tương lai!";
 			}
@@ -345,7 +345,7 @@ namespace API.Validation
             {
                 return "Vui lòng chọn ngày!";
             }
-			if(startDate < DateTime.Now || endDate < DateTime.Now)
+			if(startDate < DateTime.Now.ToLocalTime() || endDate < DateTime.Now.ToLocalTime())
 			{
                 return "Vui lòng chọn thời gian trong tương lai!";
             }
@@ -435,7 +435,7 @@ namespace API.Validation
                 return "Số chứng nhận đăng ký xe không hợp lệ!";
             }
 
-            if (motorRegisterDTO.Year > DateTime.Now)
+            if (motorRegisterDTO.Year > DateTime.Now.ToLocalTime())
             {
                 return "Năm đăng ký không được lớn hơn năm hiện tại!";
             }

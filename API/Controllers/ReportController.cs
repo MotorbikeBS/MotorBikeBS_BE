@@ -59,7 +59,7 @@ namespace API.Controllers
                 {
                     SenderId = userId,
                     ReceiverId = 1,
-                    Time = DateTime.Now,
+                    Time = DateTime.Now.ToLocalTime(),
                     RequestTypeId = SD.Request_Report_Id,
                     Status = SD.Request_Pending
                 };

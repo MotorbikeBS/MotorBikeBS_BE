@@ -63,7 +63,7 @@ namespace API.Controllers
                 Request request = new()
                 {
                     SenderId = userId,
-                    Time = DateTime.Now,
+                    Time = DateTime.Now.ToLocalTime(),
                     RequestTypeId = SD.Request_Add_Point_Id,
                     Status = SD.Payment_Unpaid,
                 };
@@ -73,7 +73,7 @@ namespace API.Controllers
                 {
                     RequestId = request.RequestId,
                     Content = $"Nạp {model.Amount}VNĐ",
-                    DateCreated = DateTime.Now,
+                    DateCreated = DateTime.Now.ToLocalTime(),
                     PaymentType = "Nạp điểm"
                 };
                 await _unitOfWork.PaymentService.Add(payment);
@@ -131,7 +131,7 @@ namespace API.Controllers
                         await _unitOfWork.RequestService.Update(request);
 
                         var payment = await _unitOfWork.PaymentService.GetFirst(x => x.RequestId == request.RequestId);
-                        payment.PaymentTime = DateTime.Now;
+                        payment.PaymentTime = DateTime.Now.ToLocalTime();
                         payment.VnpayOrderId = response.OrderId;
                         payment.Amount = response.Amount / 100;
                         payment.Point = response.Amount / 100000;
