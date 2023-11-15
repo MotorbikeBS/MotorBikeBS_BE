@@ -353,7 +353,7 @@ namespace SignalRNotifications.Controllers
                     newComment.Status = SD.Request_Accept;
                     newComment.UserId = userId;
                     newComment.CreateAt = DateTime.Now;
-                    newComment.UpdateAt = null;
+                    newComment.UpdateAt = DateTime.Now;
                     newComment.Status = SD.Request_Accept;
                     newComment.ReplyId = obj.ReplyId;
                     await _unitOfWork.CommentService.Add(newComment);

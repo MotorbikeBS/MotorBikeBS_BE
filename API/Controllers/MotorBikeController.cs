@@ -1,6 +1,7 @@
 ﻿using API.DTO;
 using API.DTO.FilterDTO;
 using API.DTO.MotorbikeDTO;
+using API.DTO.PostBoostingDTO;
 using API.DTO.UserDTO;
 using API.Utility;
 using API.Validation;
@@ -91,8 +92,33 @@ namespace API.Controllers
                 var route = Request.Path.Value;
                 var validFilter = new PaginationFilter(paginationFilter.PageNumber, paginationFilter.PageSize);
                 //----------------------
+                var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept 
+                                                                                && x.StartTime < DateTime.Now && x.EndTime > DateTime.Now);
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId != SD.Status_Storage && e.StoreId != null, SD.GetMotorArray);
+                if (listDatabase == null || listDatabase.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    return NotFound(_response);
+                }
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                // (Boosting) Iterate through each MotorBike in listDatabase
+                foreach (var motor in listResponse)
+                {
+                    // Check if the MotorBike is in the list of PostBoosting
+                    var matchingPostBoosting = listPostBoosting.FirstOrDefault(p => p.MotorId == motor.MotorId);
+
+                    //If yes, assign the PostBoosting object to the MotorBike
+                    if (matchingPostBoosting != null)
+                    {
+                        var boostingInfor = _mapper.Map<PostBoostingCreateDTO>(matchingPostBoosting);
+                        motor.Boosting = boostingInfor;
+                    }
+                }
+                // Sort listDatabase by Level in descending order
+                listResponse = listResponse.OrderByDescending(motor => motor.Boosting?.Level ?? 0).ToList();
+                //---------------------------
                 foreach (var r in listResponse)
                 {
                     r.Owner = null;
@@ -104,24 +130,14 @@ namespace API.Controllers
                         if (request != null) { r.PostingAt = request?.Time; }
                     }                    
                 }
-                if (listDatabase == null || listDatabase.Count() <= 0)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    return NotFound(_response);
-                }
-                else
-                {
-                    // Paging
-                    var pagedData = listResponse.ToList().Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize);
-                    var totalRecords = listDatabase.Count();
-                    var pagedReponse = PaginationHelper.CreatePagedReponse<MotorResponseDTO>(pagedData.ToList(), validFilter, totalRecords, _uriService, route);
-                    //-------------------
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = pagedReponse;
-                }
+                // Paging
+                var pagedData = listResponse.ToList().Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize);
+                var totalRecords = listDatabase.Count();
+                var pagedReponse = PaginationHelper.CreatePagedReponse<MotorResponseDTO>(pagedData.ToList(), validFilter, totalRecords, _uriService, route);
+                //-------------------
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Result = pagedReponse;
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -154,7 +170,33 @@ namespace API.Controllers
                     expression: e => (e.MotorStatusId == SD.Status_Consignment || e.MotorStatusId == SD.Status_nonConsignment) && e.StoreId == null,
                     includeProperties: SD.GetMotorArray
                 );
+                if (listDatabase == null || listDatabase.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                // (Boosting) 
+                var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
+                                                                                && x.StartTime < DateTime.Now && x.EndTime > DateTime.Now);
+                // (Boosting) Iterate through each MotorBike in listDatabase
+                foreach (var motor in listResponse)
+                {
+                    // Check if the MotorBike is in the list of PostBoosting
+                    var matchingPostBoosting = listPostBoosting.FirstOrDefault(p => p.MotorId == motor.MotorId);
+
+                    //If yes, assign the PostBoosting object to the MotorBike
+                    if (matchingPostBoosting != null)
+                    {
+                        var boostingInfor = _mapper.Map<PostBoostingCreateDTO>(matchingPostBoosting);
+                        motor.Boosting = boostingInfor;
+                    }
+                }
+                // (Boosting) Sort listDatabase by Level in descending order
+                listResponse = listResponse.OrderByDescending(motor => motor.Boosting?.Level ?? 0).ToList();
+                //---------------------------
                 foreach (var r in listResponse)
                 {
                     r.Store = null;
@@ -165,25 +207,15 @@ namespace API.Controllers
                         );
                         if (request != null) { r.PostingAt = request?.Time; }
                     }
-                }
-                if (listDatabase == null || listDatabase.Count() <= 0)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(_response);
-                }
-                else
-                {
-                    // Paging
-                    var pagedData = listResponse.ToList().Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize);
-                    var totalRecords = listDatabase.Count();
-                    var pagedReponse = PaginationHelper.CreatePagedReponse<MotorResponseDTO>(pagedData.ToList(), validFilter, totalRecords, _uriService, route);
-                    //-------------------
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = pagedReponse;
-                }
+                }                
+                // Paging
+                var pagedData = listResponse.ToList().Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize);
+                var totalRecords = listDatabase.Count();
+                var pagedReponse = PaginationHelper.CreatePagedReponse<MotorResponseDTO>(pagedData.ToList(), validFilter, totalRecords, _uriService, route);
+                //-------------------
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Result = pagedReponse;
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -205,7 +237,33 @@ namespace API.Controllers
             try
             {
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.StoreId == StoreID,SD.GetMotorArray);
+                if (listDatabase == null || listDatabase.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
+                // (Boosting) 
+                var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
+                                                                                && x.StartTime < DateTime.Now && x.EndTime > DateTime.Now);
+                // (Boosting) Iterate through each MotorBike in listDatabase
+                foreach (var motor in listResponse)
+                {
+                    // Check if the MotorBike is in the list of PostBoosting
+                    var matchingPostBoosting = listPostBoosting.FirstOrDefault(p => p.MotorId == motor.MotorId);
+
+                    //If yes, assign the PostBoosting object to the MotorBike
+                    if (matchingPostBoosting != null)
+                    {
+                        var boostingInfor = _mapper.Map<PostBoostingCreateDTO>(matchingPostBoosting);
+                        motor.Boosting = boostingInfor;
+                    }
+                }
+                // (Boosting) Sort listDatabase by Level in descending order
+                listResponse = listResponse.OrderByDescending(motor => motor.Boosting?.Level ?? 0).ToList();
+                //---------------------------
                 foreach (var r in listResponse)
                 {
                     foreach (var PostingType in SD.RequestPostingTypeArray)
@@ -216,19 +274,9 @@ namespace API.Controllers
                         if (request != null) { r.PostingAt = request?.Time; }
                     }
                 }
-                if (listDatabase == null || listDatabase.Count() <= 0)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy xe nào!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(_response);
-                }
-                else
-                {
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = listResponse;
-                }
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Result = listResponse;
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -250,17 +298,7 @@ namespace API.Controllers
             try
             {
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.OwnerId == OwnerID,SD.GetMotorArray);
-                var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
-                foreach (var r in listResponse)
-                {
-                    foreach (var PostingType in SD.RequestPostingTypeArray)
-                    {
-                        var request = await _unitOfWork.RequestService.GetLast(
-                                e => e.MotorId == r.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
-                        );
-                        if (request != null) { r.PostingAt = request?.Time; }
-                    }
-                }
+                var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);                
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -270,6 +308,35 @@ namespace API.Controllers
                 }
                 else
                 {
+                    // (Boosting) 
+                    var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
+                                                                                    && x.StartTime < DateTime.Now && x.EndTime > DateTime.Now);
+                    // (Boosting) Iterate through each MotorBike in listDatabase
+                    foreach (var motor in listResponse)
+                    {
+                        // Check if the MotorBike is in the list of PostBoosting
+                        var matchingPostBoosting = listPostBoosting.FirstOrDefault(p => p.MotorId == motor.MotorId);
+
+                        //If yes, assign the PostBoosting object to the MotorBike
+                        if (matchingPostBoosting != null)
+                        {
+                            var boostingInfor = _mapper.Map<PostBoostingCreateDTO>(matchingPostBoosting);
+                            motor.Boosting = boostingInfor;
+                        }
+                    }
+                    // (Boosting) Sort listDatabase by Level in descending order
+                    listResponse = listResponse.OrderByDescending(motor => motor.Boosting?.Level ?? 0).ToList();
+                    //---------------------------
+                    foreach (var r in listResponse)
+                    {
+                        foreach (var PostingType in SD.RequestPostingTypeArray)
+                        {
+                            var request = await _unitOfWork.RequestService.GetLast(
+                                    e => e.MotorId == r.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                            );
+                            if (request != null) { r.PostingAt = request?.Time; }
+                        }
+                    }
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = listResponse;
@@ -295,14 +362,6 @@ namespace API.Controllers
             try
             {
                 var listDatabase = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == id,SD.GetMotorArray);
-                var listResponse = _mapper.Map<MotorResponseDTO>(listDatabase);
-                foreach (var PostingType in SD.RequestPostingTypeArray)
-                {
-                    var request = await _unitOfWork.RequestService.GetLast(
-                            e => e.MotorId == listResponse.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
-                    );
-                    if (request != null) { listResponse.PostingAt = request?.Time; }
-                }
                 if (listDatabase == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy xe nào!");
@@ -310,12 +369,28 @@ namespace API.Controllers
                     _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
-                else
+                var listResponse = _mapper.Map<MotorResponseDTO>(listDatabase);
+                // (Boosting) 
+                var listPostBoosting = await _unitOfWork.PostBoostingService.GetFirst(x => x.Status == SD.Request_Accept
+                                                                                && x.MotorId == id
+                                                                                && x.StartTime < DateTime.Now && x.EndTime > DateTime.Now);
+                // (Boosting) Iterate through each MotorBike in listDatabase
+                if (listPostBoosting != null)
                 {
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = listResponse;
+                    var boostingInfor = _mapper.Map<PostBoostingCreateDTO>(listPostBoosting);
+                    listResponse.Boosting = boostingInfor;
                 }
+                // (Boosting) Sort listDatabase by Level in descending order
+                foreach (var PostingType in SD.RequestPostingTypeArray)
+                {
+                    var request = await _unitOfWork.RequestService.GetLast(
+                            e => e.MotorId == listResponse.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                    );
+                    if (request != null) { listResponse.PostingAt = request?.Time; }
+                }
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Result = listResponse;
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -360,6 +435,25 @@ namespace API.Controllers
                 }
 
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
+                // (Boosting) 
+                var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
+                                                                                && x.StartTime < DateTime.Now && x.EndTime > DateTime.Now);
+                // (Boosting) Iterate through each MotorBike in listDatabase
+                foreach (var motor in listResponse)
+                {
+                    // Check if the MotorBike is in the list of PostBoosting
+                    var matchingPostBoosting = listPostBoosting.FirstOrDefault(p => p.MotorId == motor.MotorId);
+
+                    //If yes, assign the PostBoosting object to the MotorBike
+                    if (matchingPostBoosting != null)
+                    {
+                        var boostingInfor = _mapper.Map<PostBoostingCreateDTO>(matchingPostBoosting);
+                        motor.Boosting = boostingInfor;
+                    }
+                }
+                // (Boosting) Sort listDatabase by Level in descending order
+                listResponse = listResponse.OrderByDescending(motor => motor.Boosting?.Level ?? 0).ToList();
+                //---------------------------
                 foreach (var r in listResponse)
                 {
                     foreach (var PostingType in SD.RequestPostingTypeArray)
@@ -454,6 +548,25 @@ namespace API.Controllers
                 }
 
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
+                // (Boosting) 
+                var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
+                                                                                && x.StartTime < DateTime.Now && x.EndTime > DateTime.Now);
+                // (Boosting) Iterate through each MotorBike in listDatabase
+                foreach (var motor in listResponse)
+                {
+                    // Check if the MotorBike is in the list of PostBoosting
+                    var matchingPostBoosting = listPostBoosting.FirstOrDefault(p => p.MotorId == motor.MotorId);
+
+                    //If yes, assign the PostBoosting object to the MotorBike
+                    if (matchingPostBoosting != null)
+                    {
+                        var boostingInfor = _mapper.Map<PostBoostingCreateDTO>(matchingPostBoosting);
+                        motor.Boosting = boostingInfor;
+                    }
+                }
+                // (Boosting) Sort listDatabase by Level in descending order
+                listResponse = listResponse.OrderByDescending(motor => motor.Boosting?.Level ?? 0).ToList();
+                //---------------------------
                 foreach (var r in listResponse)
                 {
                     foreach (var PostingType in SD.RequestPostingTypeArray)
