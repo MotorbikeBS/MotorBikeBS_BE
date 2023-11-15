@@ -7,6 +7,7 @@ using API.DTO.MotorbikeDTO;
 using API.DTO.NegotiationDTO;
 using API.DTO.OwnerDTO;
 using API.DTO.PaymentDTO;
+using API.DTO.PostBoostingDTO;
 using API.DTO.RequestDTO;
 using API.DTO.Role;
 using API.DTO.StoreDTO;
@@ -97,7 +98,11 @@ namespace API.AutoMapper
 																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
 																					   .ForMember(source => source.Receiver, opt => opt.MapFrom(src => src.Receiver));
 
-				config.CreateMap<Request, PaymentRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments));
+                config.CreateMap<PostBoosting, PostBoostingResponseDTO>().ReverseMap();
+                config.CreateMap<PointHistory, PointHistoryBoostingResponseDTO>().ReverseMap().ForMember(dest => dest.PostBoostings, opt => opt.MapFrom(src => src.PostBoostings));
+                config.CreateMap<Request, BoostingRequestResponseDTO>().ReverseMap().ForMember(dest => dest.PointHistories, opt => opt.MapFrom(src => src.PointHistories));
+
+                config.CreateMap<Request, PaymentRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments));
 
                 config.CreateMap<Request, RequestRegisterDTO>().ReverseMap();
 				config.CreateMap<Request, RequestResponseDTO>().ReverseMap()
