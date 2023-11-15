@@ -76,8 +76,8 @@ namespace API.Controllers
                 && x.RequestTypeId == SD.Request_Post_Boosting_Id
                 && x.PointHistories
                 .Any(y => y.PostBoostings
-                .Any(z => z.StartTime < DateTime.Now
-                && z.EndTime > DateTime.Now)));
+                .Any(z => z.StartTime < DateTime.Now.ToLocalTime()
+                && z.EndTime > DateTime.Now.ToLocalTime())));
 
                 if (checkDuplicate.Count() > 0)
                 {
@@ -117,7 +117,7 @@ namespace API.Controllers
                 {
                     MotorId = motorId,
                     SenderId = userId,
-                    Time = DateTime.Now,
+                    Time = DateTime.Now.ToLocalTime(),
                     RequestTypeId = SD.Request_Post_Boosting_Id,
                     Status = SD.Request_Accept
                 };
@@ -128,7 +128,7 @@ namespace API.Controllers
                 {
                     RequestId = request.RequestId,
                     Qty = totalCost,
-                    PointUpdatedAt = DateTime.Now,
+                    PointUpdatedAt = DateTime.Now.ToLocalTime(),
                     Description = "Đẩy bài đăng",
                     //Action
                     StoreId = motor.StoreId.Value
@@ -210,8 +210,8 @@ namespace API.Controllers
                 && x.Status == SD.Request_Accept
                 && x.PointHistories
                 .Any(y => y.PostBoostings
-                .Any(z => z.StartTime < DateTime.Now
-                && z.EndTime > DateTime.Now)));
+                .Any(z => z.StartTime < DateTime.Now.ToLocalTime()
+                && z.EndTime > DateTime.Now.ToLocalTime())));
 
                 if (result == null)
                 {

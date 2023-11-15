@@ -105,7 +105,7 @@ namespace API.Controllers
                 var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
                 var newNego = _mapper.Map<Negotiation>(dto);
                 newNego.StoreId = store.StoreId;
-                newNego.CreatedAt = DateTime.Now;
+                newNego.CreatedAt = DateTime.Now.ToLocalTime();
                 newNego.MotorId = motor.MotorId;
                 newNego.Status = SD.Request_Pending;
                 newNego.ValuationId = valuationId;

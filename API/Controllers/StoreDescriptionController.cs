@@ -191,7 +191,7 @@ namespace API.Controllers
 					{
 						var newStore = _mapper.Map(store, storeInDb);
 						newStore.Status = SD.not_verify;
-						newStore.StoreCreatedAt = DateTime.Now;
+						newStore.StoreCreatedAt = DateTime.Now.ToLocalTime();
 
 						var oldLisenceImg = storeInDb.BusinessLicense.Split('/').Last();
 						await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
@@ -226,7 +226,7 @@ namespace API.Controllers
 						var newStore = _mapper.Map<StoreDesciption>(store);
 						newStore.Status = SD.not_verify;
 						newStore.UserId = userId;
-						newStore.StoreCreatedAt = DateTime.Now;
+						newStore.StoreCreatedAt = DateTime.Now.ToLocalTime();
 
 						string fileLicense = $"{Guid.NewGuid()}{Path.GetExtension(store.License.FileName)}";
 						var imgLicense = await _blobService.UploadBlob(fileLicense, SD.Storage_Container, store.License);

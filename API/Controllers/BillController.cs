@@ -206,7 +206,7 @@ namespace API.Controllers
                         MotorId = MotorID,
                         ReceiverId = newUser,
                         SenderId = userId,
-                        Time = DateTime.Now,
+                        Time = DateTime.Now.ToLocalTime(),
                         RequestTypeId = SD.Request_MotorTranfer_Id,
                         Status = SD.Request_Pending
                     };
@@ -229,7 +229,7 @@ namespace API.Controllers
                         UserId = userId,
                         StoreId = (int)obj.StoreId,
                         Price = obj.Price,
-                        CreateAt = DateTime.Now,
+                        CreateAt = DateTime.Now.ToLocalTime(),
                         Status = SD.Request_Accept,
                         RequestId = requestCus.RequestId
                     };
@@ -254,7 +254,7 @@ namespace API.Controllers
                         Title = "Thông tin xe mới được vào kho",
                         Content = "Xe " + obj.MotorName + " đã được thêm vào kho xe của bạn.",
                         NotificationTypeId = SD.NotificationType_TranferOwnership,
-                        Time = DateTime.Now,
+                        Time = DateTime.Now.ToLocalTime(),
                         IsRead = false
                     };
                     await _unitOfWork.NotificationService.Add(newUserNoti);
@@ -362,7 +362,7 @@ namespace API.Controllers
                         MotorId = NegoRequest.MotorId,
                         ReceiverId = newUser,
                         SenderId = userId,
-                        Time = DateTime.Now,
+                        Time = DateTime.Now.ToLocalTime(),
                         RequestTypeId = SD.Request_MotorTranfer_Id,
                         Status = SD.Request_Pending
                     };
@@ -384,7 +384,7 @@ namespace API.Controllers
                         UserId = newUser,
                         StoreId = (int)obj.StoreId,
                         Price = obj.Price,
-                        CreateAt = DateTime.Now,
+                        CreateAt = DateTime.Now.ToLocalTime(),
                         Status = SD.Request_Accept,
                         RequestId = requestTranfer.RequestId
                     };
@@ -411,7 +411,7 @@ namespace API.Controllers
                         UserId = obj.OwnerId,
                         StoreId = (int)obj.StoreId,
                         Price = Negotiation.FinalPrice,
-                        CreateAt = DateTime.Now,
+                        CreateAt = DateTime.Now.ToLocalTime(),
                         Status = SD.Request_Accept,
                         RequestId = NegoRequest.RequestId
                     };
@@ -436,7 +436,7 @@ namespace API.Controllers
                         Title = "Thông tin xe mới được vào kho",
                         Content = "Xe " + obj.MotorName + " đã được thêm vào kho xe của bạn.",
                         NotificationTypeId = SD.NotificationType_TranferOwnership,
-                        Time = DateTime.Now,
+                        Time = DateTime.Now.ToLocalTime(),
                         IsRead = false
                     };
                     await _unitOfWork.NotificationService.Add(newUserNoti);
@@ -448,7 +448,7 @@ namespace API.Controllers
                         Title = "Thông tin hóa đơn mới được thêm",
                         Content = "Xe " + obj.MotorName + " đã bán. Thông tin hóa đơn được thêm vào lịch sử của bạn.",
                         NotificationTypeId = SD.NotificationType_OwnerSoldOut,
-                        Time = DateTime.Now,
+                        Time = DateTime.Now.ToLocalTime(),
                         IsRead = false
                     };
                     await _unitOfWork.NotificationService.Add(ownerNoti);
@@ -589,7 +589,7 @@ namespace API.Controllers
                             MotorId = NegoRequest.MotorId,
                             ReceiverId = newUser,
                             SenderId = userId,
-                            Time = DateTime.Now,
+                            Time = DateTime.Now.ToLocalTime(),
                             RequestTypeId = SD.Request_MotorTranfer_Id,
                             Status = SD.Request_Pending
                         };
@@ -611,7 +611,7 @@ namespace API.Controllers
                             UserId = (int) newUser,
                             StoreId = (int) obj.StoreId,
                             Price = obj.Price,
-                            CreateAt = DateTime.Now,
+                            CreateAt = DateTime.Now.ToLocalTime(),
                             Status = SD.Request_Accept,
                             RequestId = requestCus.RequestId
                         };
@@ -638,7 +638,7 @@ namespace API.Controllers
                             UserId = obj.OwnerId,
                             StoreId = (int)obj.StoreId,
                             Price = Negotiation.FinalPrice,
-                            CreateAt = DateTime.Now,
+                            CreateAt = DateTime.Now.ToLocalTime(),
                             Status = SD.Request_Accept,
                             RequestId = NegoRequest.RequestId
                         };
@@ -663,7 +663,7 @@ namespace API.Controllers
                             Title = "Thông tin xe mới được vào kho",
                             Content = "Xe " + obj.MotorName + " đã được thêm vào kho xe của bạn.",
                             NotificationTypeId = SD.NotificationType_TranferOwnership,
-                            Time = DateTime.Now,
+                            Time = DateTime.Now.ToLocalTime(),
                             IsRead = false
                         };
                         await _unitOfWork.NotificationService.Add(newUserNoti);
@@ -675,7 +675,7 @@ namespace API.Controllers
                             Title = "Thông tin hóa đơn mới được thêm",
                             Content = "Xe " + obj.MotorName + " đã bán. Thông tin hóa đơn được thêm vào lịch sử của bạn.",
                             NotificationTypeId = SD.NotificationType_OwnerSoldOut,
-                            Time = DateTime.Now,
+                            Time = DateTime.Now.ToLocalTime(),
                             IsRead = false
                         };
                         await _unitOfWork.NotificationService.Add(ownerNoti);
