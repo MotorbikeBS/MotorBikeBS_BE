@@ -207,11 +207,11 @@ namespace SignalRNotifications.Controllers
         [HttpPost]
         [Authorize]
         [Route("CommentRegister")]
-        public async Task<IActionResult> CommentRegister(CommentRegisterDTO comment)
+        public async Task<IActionResult> CommentRegister( int RequestID, [FromForm] CommentRegisterDTO comment)
         {
             try
             {
-                var rs = InputValidation.CommentValidation(comment); 
+                var rs = InputValidation.CommentValidation(comment, 0); 
                 if (rs != "")
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -221,7 +221,7 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
-                    var request = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == comment.RequestId);
+                    var request = await _unitOfWork.RequestService.GetFirst(e => e.RequestId == RequestID);
                     if (request == null)
                     {
                         _response.StatusCode = HttpStatusCode.BadRequest;
@@ -231,6 +231,7 @@ namespace SignalRNotifications.Controllers
                     }
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
                     var newComment = _mapper.Map<Comment>(comment);
+                    newComment.RequestId = RequestID;
                     newComment.Status = SD.Request_Accept;
                     newComment.UserId = userId;
                     newComment.CreateAt = DateTime.Now;
@@ -258,11 +259,11 @@ namespace SignalRNotifications.Controllers
         [HttpPost]
         [Authorize]
         [Route("ReplyComment")]
-        public async Task<IActionResult> ReplyComment(CommentRegisterDTO comment)
+        public async Task<IActionResult> ReplyComment([FromForm] CommentRegisterDTO comment, int ReplyId)
         {
             try
             {
-                var rs = InputValidation.CommentValidation(comment);
+                var rs = InputValidation.CommentValidation(comment, ReplyId);
                 if (rs != "")
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -270,7 +271,7 @@ namespace SignalRNotifications.Controllers
                     _response.ErrorMessages.Add(rs);
                     return BadRequest(_response);
                 }
-                var commentReply = await _unitOfWork.CommentService.GetFirst(e => e.ReplyId == comment.ReplyId);
+                var commentReply = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == ReplyId);
                 if(commentReply == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -317,19 +318,11 @@ namespace SignalRNotifications.Controllers
         [HttpPut]
         [Authorize]
         [Route("UpdateComment")]
-        public async Task<IActionResult> UpdateComment([FromQuery] int id, CommentRegisterDTO comment)
+        public async Task<IActionResult> UpdateComment(int CommentID, [FromForm] CommentRegisterDTO comment)
         {
             try
-            {
-                var rs = InputValidation.CommentValidation(comment);
-                if (rs != "")
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Result = false;
-                    _response.ErrorMessages.Add(rs);
-                    return BadRequest(_response);
-                }
-                var obj = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == id);
+            {                
+                var obj = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == CommentID);
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy bình luận này!");
@@ -339,6 +332,15 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
+
+                    var rs = InputValidation.CommentValidation(comment, obj.ReplyId);
+                    if (rs != "")
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.Result = false;
+                        _response.ErrorMessages.Add(rs);
+                        return BadRequest(_response);
+                    }
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
                     obj.Status = "UPDATE";
                     obj.UpdateAt = DateTime.Now;
@@ -355,7 +357,7 @@ namespace SignalRNotifications.Controllers
                     await _unitOfWork.CommentService.Add(newComment);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = obj;
+                    _response.Result = newComment;
                 }
                 return Ok(_response);
             }
@@ -374,19 +376,11 @@ namespace SignalRNotifications.Controllers
         [HttpPut]
         [Authorize]
         [Route("DeleteComment")]
-        public async Task<IActionResult> DeleteComment([FromQuery] int id, CommentRegisterDTO comment)
+        public async Task<IActionResult> DeleteComment(int CommentID)
         {
             try
             {
-                var rs = InputValidation.CommentValidation(comment);
-                if (rs != "")
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Result = false;
-                    _response.ErrorMessages.Add(rs);
-                    return BadRequest(_response);
-                }
-                var obj = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == id);
+                var obj = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == CommentID);
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy bình luận này!");
@@ -401,15 +395,6 @@ namespace SignalRNotifications.Controllers
                     obj.UpdateAt = DateTime.Now;
                     //Set oldComment to Delete and create new Comment
                     await _unitOfWork.CommentService.Update(obj);
-                    var newComment = _mapper.Map<Comment>(comment);
-                    newComment.RequestId = obj.RequestId;
-                    newComment.Status = SD.Request_Accept;
-                    newComment.UserId = userId;
-                    newComment.CreateAt = DateTime.Now;
-                    newComment.UpdateAt = null;
-                    newComment.Status = SD.Request_Accept;
-                    newComment.ReplyId = obj.ReplyId;
-                    await _unitOfWork.CommentService.Add(newComment);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
