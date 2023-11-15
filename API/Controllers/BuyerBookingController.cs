@@ -21,8 +21,9 @@ namespace API.Controllers
 		private readonly IUnitOfWork _unitOfWork;
 		private ApiResponse _response;
 		private readonly IMapper _mapper;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
-		public BuyerBookingController(IUnitOfWork unitOfWork, IMapper mapper)
+        public BuyerBookingController(IUnitOfWork unitOfWork, IMapper mapper)
 		{
 			_unitOfWork = unitOfWork;
 			_response = new ApiResponse();
@@ -59,7 +60,7 @@ namespace API.Controllers
 				&& x.RequestTypeId == SD.Request_Booking_Id
 				&& x.MotorId == motorId
 				&& x.Status == SD.Request_Pending
-				&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now.ToLocalTime()));
+				&& x.BuyerBookings.Any(y => y.BookingDate > VnDate));
 
 				if (list.Count() > 0)
 				{
@@ -84,7 +85,7 @@ namespace API.Controllers
 						MotorId = motorId,
 						ReceiverId = userIdStore.UserId,
 						SenderId = userId,
-						Time = DateTime.Now.ToLocalTime(),
+						Time = VnDate,
 						RequestTypeId = SD.Request_Booking_Id,
 						Status = SD.Request_Pending
 					};
@@ -92,7 +93,7 @@ namespace API.Controllers
 
 					var bookingCreate = _mapper.Map<BuyerBooking>(dto);
 					bookingCreate.RequestId = request.RequestId;
-					bookingCreate.DateCreate = DateTime.Now.ToLocalTime();
+					bookingCreate.DateCreate = VnDate;
 					bookingCreate.Status = SD.Request_Pending;
 
 					await _unitOfWork.BuyerBookingService.Add(bookingCreate);
@@ -139,7 +140,7 @@ namespace API.Controllers
 				{
 					requestBooking = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
 					&& x.RequestTypeId == SD.Request_Booking_Id
-					&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now.ToLocalTime())
+					&& x.BuyerBookings.Any(y => y.BookingDate > VnDate)
 					&& x.Status != SD.Request_Cancel 
 					&& x.Status != SD.Request_Reject,
 					includeProperties: new string[] { "BuyerBookings", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Sender" });
@@ -149,7 +150,7 @@ namespace API.Controllers
 					requestBooking = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
 					&& x.RequestTypeId == SD.Request_Booking_Id
 					&& x.Status != SD.Request_Cancel
-					&& x.BuyerBookings.Any(y => y.BookingDate > DateTime.Now.ToLocalTime()),
+					&& x.BuyerBookings.Any(y => y.BookingDate > VnDate),
 					includeProperties: new string[] { "BuyerBookings", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver", "Receiver.StoreDesciptions" });
 				}
 
@@ -163,7 +164,7 @@ namespace API.Controllers
 				//	if (bookingResponse.BuyerBookings != null)
 				//	{
 				//		var filteredBookings = bookingResponse.BuyerBookings
-				//			.Where(b => b.BookingDate.HasValue && b.BookingDate.Value > DateTime.Now.ToLocalTime())
+				//			.Where(b => b.BookingDate.HasValue && b.BookingDate.Value > VnDate)
 				//			.ToList();
 
 				//		if (filteredBookings.Any())

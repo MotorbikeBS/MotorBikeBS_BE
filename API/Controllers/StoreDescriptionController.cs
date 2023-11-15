@@ -21,8 +21,9 @@ namespace API.Controllers
 		private readonly IMapper _mapper;
 		private ApiResponse _response;
 		private readonly IBlobService _blobService;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
-		public StoreDescriptionController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService)
+        public StoreDescriptionController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService)
 		{
 			_unitOfWork = unitOfWork;
 			_mapper = mapper;
@@ -191,7 +192,7 @@ namespace API.Controllers
 					{
 						var newStore = _mapper.Map(store, storeInDb);
 						newStore.Status = SD.not_verify;
-						newStore.StoreCreatedAt = DateTime.Now.ToLocalTime();
+						newStore.StoreCreatedAt = VnDate;
 
 						var oldLisenceImg = storeInDb.BusinessLicense.Split('/').Last();
 						await _blobService.DeleteBlob(oldLisenceImg, SD.Storage_Container);
@@ -226,7 +227,7 @@ namespace API.Controllers
 						var newStore = _mapper.Map<StoreDesciption>(store);
 						newStore.Status = SD.not_verify;
 						newStore.UserId = userId;
-						newStore.StoreCreatedAt = DateTime.Now.ToLocalTime();
+						newStore.StoreCreatedAt = VnDate;
 
 						string fileLicense = $"{Guid.NewGuid()}{Path.GetExtension(store.License.FileName)}";
 						var imgLicense = await _blobService.UploadBlob(fileLicense, SD.Storage_Container, store.License);

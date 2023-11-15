@@ -32,6 +32,7 @@ namespace API.Controllers
         private readonly IEmailSender _emailSender;
         private ApiResponse _response;
         private readonly IMapper _mapper;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
         public AuthController(IConfiguration configuration, IUnitOfWork unitOfWork, IMapper mapper, IEmailSender emailSender)
         {
@@ -66,7 +67,7 @@ namespace API.Controllers
 					newUser.Status = SD.not_verify;
 					newUser.PasswordHash = passwordHash;
 					newUser.PasswordSalt = passwordSalt;
-					newUser.VerifycationTokenExpires = DateTime.Now.ToLocalTime().AddHours(3);
+					newUser.VerifycationTokenExpires = VnDate.AddHours(3);
 					newUser.RoleId = 4;
 					//newUser.UserName = newUser.UserName.ToString().;
 					newUser.VerifycationToken = CreateRandomToken();
@@ -219,7 +220,7 @@ namespace API.Controllers
 				}
 				else
 				{
-					if (user.VerifycationTokenExpires < DateTime.Now.ToLocalTime())
+					if (user.VerifycationTokenExpires < VnDate)
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
@@ -289,7 +290,7 @@ namespace API.Controllers
 					else
 					{
 						user.PasswordResetToken = CreateRandomToken();
-						user.ResetTokenExpires = DateTime.Now.ToLocalTime().AddHours(3);
+						user.ResetTokenExpires = VnDate.AddHours(3);
 						await _unitOfWork.UserService.Update(user);
 
 						var subject = "Thay đổi mật khẩu";
@@ -340,7 +341,7 @@ namespace API.Controllers
 					_response.ErrorMessages.Add("Mã xác minh không lợp lệ!");
 					return BadRequest(_response);
 				}
-				else if (user.ResetTokenExpires < DateTime.Now.ToLocalTime())
+				else if (user.ResetTokenExpires < VnDate)
 				{
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.BadRequest;

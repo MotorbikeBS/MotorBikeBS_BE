@@ -21,6 +21,7 @@ namespace API.Controllers
         private readonly IMapper _mapper;
         private ApiResponse _response;
         private readonly IBlobService _blobService;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
         public ReportController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService)
         {
@@ -59,7 +60,7 @@ namespace API.Controllers
                 {
                     SenderId = userId,
                     ReceiverId = 1,
-                    Time = DateTime.Now.ToLocalTime(),
+                    Time = VnDate,
                     RequestTypeId = SD.Request_Report_Id,
                     Status = SD.Request_Pending
                 };
