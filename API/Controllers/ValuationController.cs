@@ -25,6 +25,7 @@ namespace API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
         private readonly IMapper _mapper;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
         public ValuationController(IUnitOfWork unitOfWork, IMapper mapper, IEmailSender emailSender)
         {
@@ -80,7 +81,7 @@ namespace API.Controllers
                         MotorId = motorId,
                         ReceiverId = motor.OwnerId,
                         SenderId = userId,
-                        Time = DateTime.Now.ToLocalTime(),
+                        Time = VnDate,
                         RequestTypeId = SD.Request_Negotiation_Id,
                         Status = SD.Request_Pending
                     };
@@ -155,7 +156,7 @@ namespace API.Controllers
         //				MotorId = motorId,
         //				ReceiverId = motor.OwnerId,
         //				SenderId = userId,
-        //				Time = DateTime.Now.ToLocalTime(),
+        //				Time = VnDate,
         //				RequestTypeId = SD.Request_Negotiation_Id,
         //				Status = SD.Request_Pending
         //			};
@@ -164,8 +165,8 @@ namespace API.Controllers
         //			var negotiationCreate = new Negotiation()
         //			{
         //				RequestId = request.RequestId,
-        //				StartTime = DateTime.Now.ToLocalTime(),
-        //				EndTime = DateTime.Now.ToLocalTime(),
+        //				StartTime = VnDate,
+        //				EndTime = VnDate,
         //				Status = SD.Request_Accept,
         //			};
 
@@ -303,7 +304,7 @@ namespace API.Controllers
         //			_response.StatusCode = HttpStatusCode.BadRequest;
         //			return BadRequest(_response);
         //		}
-        //		if(negotiationInDb.ExpiredTime < DateTime.Now.ToLocalTime())
+        //		if(negotiationInDb.ExpiredTime < VnDate)
         //		{
         //			_response.IsSuccess = false;
         //			_response.ErrorMessages.Add("Không thể thương lượng, đã quá thời gian thương lượng, vui lòng hủy yêu cầu!");
@@ -407,7 +408,7 @@ namespace API.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                //if (negotiationInDb.ExpiredTime < DateTime.Now.ToLocalTime())
+                //if (negotiationInDb.ExpiredTime < VnDate)
                 //{
                 //	_response.IsSuccess = false;
                 //	_response.ErrorMessages.Add("Không thể đồng ý, đã quá thời gian thương lượng, vui lòng hủy yêu cầu!");
@@ -423,7 +424,7 @@ namespace API.Controllers
                 }
 
                 valuationInDb.Status = SD.Request_Accept;
-                //negotiationInDb.EndTime = DateTime.Now.ToLocalTime();
+                //negotiationInDb.EndTime = VnDate;
                 await _unitOfWork.ValuationService.Update(valuationInDb);
 
                 _response.IsSuccess = true;

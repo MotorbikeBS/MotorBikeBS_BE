@@ -1,7 +1,7 @@
 ﻿namespace API.Utility
 {
-	public static class SD
-	{
+    public static class SD
+	{        
         public const int AdminID = 1;
 
         public const int Role_Admin_Id = 1;

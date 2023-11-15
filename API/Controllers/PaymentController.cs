@@ -27,6 +27,7 @@ namespace API.Controllers
         private ApiResponse _response;
         private readonly IMapper _mapper;
         private readonly IVnPayService _vnPayService;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
         public PaymentController(IUnitOfWork unitOfWork, IMapper mapper, IVnPayService vnPayService)
         {
@@ -63,7 +64,7 @@ namespace API.Controllers
                 Request request = new()
                 {
                     SenderId = userId,
-                    Time = DateTime.Now.ToLocalTime(),
+                    Time = VnDate,
                     RequestTypeId = SD.Request_Add_Point_Id,
                     Status = SD.Payment_Unpaid,
                 };
@@ -73,7 +74,7 @@ namespace API.Controllers
                 {
                     RequestId = request.RequestId,
                     Content = $"Nạp {model.Amount}VNĐ",
-                    DateCreated = DateTime.Now.ToLocalTime(),
+                    DateCreated = VnDate,
                     PaymentType = "Nạp điểm"
                 };
                 await _unitOfWork.PaymentService.Add(payment);
@@ -131,7 +132,7 @@ namespace API.Controllers
                         await _unitOfWork.RequestService.Update(request);
 
                         var payment = await _unitOfWork.PaymentService.GetFirst(x => x.RequestId == request.RequestId);
-                        payment.PaymentTime = DateTime.Now.ToLocalTime();
+                        payment.PaymentTime = VnDate;
                         payment.VnpayOrderId = response.OrderId;
                         payment.Amount = response.Amount / 100;
                         payment.Point = response.Amount / 100000;

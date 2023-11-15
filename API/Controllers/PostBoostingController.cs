@@ -21,6 +21,7 @@ namespace API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
         private readonly IMapper _mapper;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
         public PostBoostingController(IUnitOfWork unitOfWork, IMapper mapper)
         {
@@ -76,8 +77,8 @@ namespace API.Controllers
                 && x.RequestTypeId == SD.Request_Post_Boosting_Id
                 && x.PointHistories
                 .Any(y => y.PostBoostings
-                .Any(z => z.StartTime < DateTime.Now.ToLocalTime()
-                && z.EndTime > DateTime.Now.ToLocalTime())));
+                .Any(z => z.StartTime < VnDate
+                && z.EndTime > VnDate)));
 
                 if (checkDuplicate.Count() > 0)
                 {
@@ -117,7 +118,7 @@ namespace API.Controllers
                 {
                     MotorId = motorId,
                     SenderId = userId,
-                    Time = DateTime.Now.ToLocalTime(),
+                    Time = VnDate,
                     RequestTypeId = SD.Request_Post_Boosting_Id,
                     Status = SD.Request_Accept
                 };
@@ -128,7 +129,7 @@ namespace API.Controllers
                 {
                     RequestId = request.RequestId,
                     Qty = totalCost,
-                    PointUpdatedAt = DateTime.Now.ToLocalTime(),
+                    PointUpdatedAt = VnDate,
                     Description = "Đẩy bài đăng",
                     //Action
                     StoreId = motor.StoreId.Value
@@ -210,8 +211,8 @@ namespace API.Controllers
                 && x.Status == SD.Request_Accept
                 && x.PointHistories
                 .Any(y => y.PostBoostings
-                .Any(z => z.StartTime < DateTime.Now.ToLocalTime()
-                && z.EndTime > DateTime.Now.ToLocalTime())));
+                .Any(z => z.StartTime < VnDate
+                && z.EndTime > VnDate)));
 
                 if (result == null)
                 {

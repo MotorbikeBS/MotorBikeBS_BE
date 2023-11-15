@@ -25,6 +25,7 @@ namespace SignalRNotifications.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
         private readonly IMapper _mapper;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
         public CommentController(IHubContext<NotificationHub> notificationContext, IUnitOfWork unitOfWork, IMapper mapper, IEmailSender emailSender)
         {
@@ -236,7 +237,7 @@ namespace SignalRNotifications.Controllers
                     newComment.RequestId = RequestID;
                     newComment.Status = SD.Request_Accept;
                     newComment.UserId = userId;
-                    newComment.CreateAt = DateTime.Now.ToLocalTime();
+                    newComment.CreateAt = VnDate;
                     newComment.UpdateAt = null;
                     if (newComment.ReplyId == 0) newComment.ReplyId = null;
                     await _unitOfWork.CommentService.Add(newComment);
@@ -296,7 +297,7 @@ namespace SignalRNotifications.Controllers
                     newComment.RequestId = commentReply.RequestId;
                     newComment.Status = SD.Request_Accept;
                     newComment.UserId = userId;
-                    newComment.CreateAt = DateTime.Now.ToLocalTime();
+                    newComment.CreateAt = VnDate;
                     newComment.UpdateAt = null;
                     await _unitOfWork.CommentService.Add(newComment);
                     _response.IsSuccess = true;
@@ -345,15 +346,15 @@ namespace SignalRNotifications.Controllers
                     }
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
                     obj.Status = "UPDATE";
-                    obj.UpdateAt = DateTime.Now.ToLocalTime();
+                    obj.UpdateAt = VnDate;
                     //Set oldComment to Delete and create new Comment
                     await _unitOfWork.CommentService.Update(obj);
                     var newComment = _mapper.Map<Comment>(comment);
                     newComment.RequestId = obj.RequestId;
                     newComment.Status = SD.Request_Accept;
                     newComment.UserId = userId;
-                    newComment.CreateAt = DateTime.Now.ToLocalTime();
-                    newComment.UpdateAt = DateTime.Now.ToLocalTime();
+                    newComment.CreateAt = VnDate;
+                    newComment.UpdateAt = VnDate;
                     newComment.Status = SD.Request_Accept;
                     newComment.ReplyId = obj.ReplyId;
                     await _unitOfWork.CommentService.Add(newComment);
@@ -394,7 +395,7 @@ namespace SignalRNotifications.Controllers
                 {
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
                     obj.Status = "DELETE";
-                    obj.UpdateAt = DateTime.Now.ToLocalTime();
+                    obj.UpdateAt = VnDate;
                     //Set oldComment to Delete and create new Comment
                     await _unitOfWork.CommentService.Update(obj);
                     _response.IsSuccess = true;

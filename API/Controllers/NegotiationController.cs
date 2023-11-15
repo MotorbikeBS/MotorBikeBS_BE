@@ -23,7 +23,7 @@ namespace API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private ApiResponse _response;
         private readonly IMapper _mapper;
-
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
         public NegotiationController(IUnitOfWork unitOfWork, IMapper mapper)
         {
@@ -105,7 +105,7 @@ namespace API.Controllers
                 var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
                 var newNego = _mapper.Map<Negotiation>(dto);
                 newNego.StoreId = store.StoreId;
-                newNego.CreatedAt = DateTime.Now.ToLocalTime();
+                newNego.CreatedAt = VnDate;
                 newNego.MotorId = motor.MotorId;
                 newNego.Status = SD.Request_Pending;
                 newNego.ValuationId = valuationId;

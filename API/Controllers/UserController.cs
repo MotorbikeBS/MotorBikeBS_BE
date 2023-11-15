@@ -20,8 +20,9 @@ namespace API.Controllers
 		private readonly IUnitOfWork _unitOfWork;
 		private ApiResponse _response;
 		private readonly IMapper _mapper;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
-		public UserController(IUnitOfWork unitOfWork, IMapper mapper)
+        public UserController(IUnitOfWork unitOfWork, IMapper mapper)
 		{
 			_unitOfWork = unitOfWork;
 			_response = new ApiResponse();
@@ -160,7 +161,7 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 				var userUpdate = _mapper.Map(userUpdateDTO, user);
-				userUpdate.UserUpdatedAt = DateTime.Now.ToLocalTime();
+				userUpdate.UserUpdatedAt = VnDate;
 				await _unitOfWork.UserService.Update(userUpdate);
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;

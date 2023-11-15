@@ -33,6 +33,7 @@ namespace API.Controllers
         private readonly IMapper _mapper;
         private readonly IBlobService _blobService;
         private readonly IPagingUriService _uriService;
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
 
         public MotorBikeController(IUnitOfWork unitOfWork, IMapper mapper, IBlobService blobService, IPagingUriService pagingUriService)
         {
@@ -93,7 +94,7 @@ namespace API.Controllers
                 var validFilter = new PaginationFilter(paginationFilter.PageNumber, paginationFilter.PageSize);
                 //----------------------
                 var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept 
-                                                                                && x.StartTime < DateTime.Now.ToLocalTime() && x.EndTime > DateTime.Now.ToLocalTime());
+                                                                                && x.StartTime < VnDate && x.EndTime > VnDate);
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.MotorStatusId != SD.Status_Storage && e.StoreId != null, SD.GetMotorArray);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
@@ -180,7 +181,7 @@ namespace API.Controllers
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 // (Boosting) 
                 var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
-                                                                                && x.StartTime < DateTime.Now.ToLocalTime() && x.EndTime > DateTime.Now.ToLocalTime());
+                                                                                && x.StartTime < VnDate && x.EndTime > VnDate);
                 // (Boosting) Iterate through each MotorBike in listDatabase
                 foreach (var motor in listResponse)
                 {
@@ -247,7 +248,7 @@ namespace API.Controllers
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);
                 // (Boosting) 
                 var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
-                                                                                && x.StartTime < DateTime.Now.ToLocalTime() && x.EndTime > DateTime.Now.ToLocalTime());
+                                                                                && x.StartTime < VnDate && x.EndTime > VnDate);
                 // (Boosting) Iterate through each MotorBike in listDatabase
                 foreach (var motor in listResponse)
                 {
@@ -310,7 +311,7 @@ namespace API.Controllers
                 {
                     // (Boosting) 
                     var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
-                                                                                    && x.StartTime < DateTime.Now.ToLocalTime() && x.EndTime > DateTime.Now.ToLocalTime());
+                                                                                    && x.StartTime < VnDate && x.EndTime > VnDate);
                     // (Boosting) Iterate through each MotorBike in listDatabase
                     foreach (var motor in listResponse)
                     {
@@ -373,7 +374,7 @@ namespace API.Controllers
                 // (Boosting) 
                 var listPostBoosting = await _unitOfWork.PostBoostingService.GetFirst(x => x.Status == SD.Request_Accept
                                                                                 && x.MotorId == id
-                                                                                && x.StartTime < DateTime.Now.ToLocalTime() && x.EndTime > DateTime.Now.ToLocalTime());
+                                                                                && x.StartTime < VnDate && x.EndTime > VnDate);
                 // (Boosting) Iterate through each MotorBike in listDatabase
                 if (listPostBoosting != null)
                 {
@@ -437,7 +438,7 @@ namespace API.Controllers
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
                 // (Boosting) 
                 var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
-                                                                                && x.StartTime < DateTime.Now.ToLocalTime() && x.EndTime > DateTime.Now.ToLocalTime());
+                                                                                && x.StartTime < VnDate && x.EndTime > VnDate);
                 // (Boosting) Iterate through each MotorBike in listDatabase
                 foreach (var motor in listResponse)
                 {
@@ -550,7 +551,7 @@ namespace API.Controllers
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(motorbikes);
                 // (Boosting) 
                 var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
-                                                                                && x.StartTime < DateTime.Now.ToLocalTime() && x.EndTime > DateTime.Now.ToLocalTime());
+                                                                                && x.StartTime < VnDate && x.EndTime > VnDate);
                 // (Boosting) Iterate through each MotorBike in listDatabase
                 foreach (var motor in listResponse)
                 {
@@ -634,7 +635,7 @@ namespace API.Controllers
         //                    MotorId = MotorID,
         //                    ReceiverId = motor.OwnerId,
         //                    SenderId = newUserID,
-        //                    Time = DateTime.Now.ToLocalTime(),
+        //                    Time = VnDate,
         //                    RequestTypeId = SD.Request_MotorTranfer_Id,
         //                    Status = SD.Request_Accept
         //                };
@@ -741,7 +742,7 @@ namespace API.Controllers
                             MotorId = MotorID,
                             ReceiverId = SD.AdminID,
                             SenderId = userId,
-                            Time = DateTime.Now.ToLocalTime(),
+                            Time = VnDate,
                             RequestTypeId = null,
                             Status = SD.Request_Accept
                         };
@@ -1120,7 +1121,7 @@ namespace API.Controllers
                         MotorId = motorInDb.MotorId,
                         ReceiverId = SD.AdminID,
                         SenderId = userID,
-                        Time = DateTime.Now.ToLocalTime(),
+                        Time = VnDate,
                         RequestTypeId = SD.Request_Motor_Register,
                         Status = SD.Request_Accept
                     };
