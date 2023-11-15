@@ -446,7 +446,7 @@ namespace API.Validation
             }
             return "";
         }
-        public static string CommentValidation(CommentRegisterDTO comment)
+        public static string CommentValidation(CommentRegisterDTO comment, int? ReplyID)
         {
             if (comment.Content == null || comment.Rating == null)
             {
@@ -458,9 +458,13 @@ namespace API.Validation
                 return "Nội dung phải từ 6 ký tự trở lên!";
             }
 
-            if (comment.ReplyId == 0 && (comment.Rating < 1 || comment.Rating > 5))
+            if (ReplyID == 0 && (comment.Rating < 1 || comment.Rating > 5))
             {
                 return "Vui lòng đánh giá từ 1 - 5 sao!";
+            }
+			else if ( ReplyID != 0 && (comment.Rating < 0 || comment.Rating > 5))
+			{
+                return "Vui lòng đánh giá từ 0 - 5 sao!";
             }
             return "";
         }
