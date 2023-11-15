@@ -143,6 +143,7 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
+                    allComments = allComments.OrderByDescending(c => c.CommentId).ToList();
                     var listResponse = _mapper.Map<List<CommentResponseDTO>>(allComments);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
@@ -185,6 +186,7 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
+                    allComments = allComments.OrderByDescending(c => c.CommentId).ToList();
                     var listResponse = _mapper.Map<List<CommentResponseDTO>>(allComments);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
@@ -357,7 +359,7 @@ namespace SignalRNotifications.Controllers
                     await _unitOfWork.CommentService.Add(newComment);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = newComment;
+                    _response.Result = obj;
                 }
                 return Ok(_response);
             }
