@@ -127,7 +127,7 @@ namespace API.Controllers
                 PointHistory point = new()
                 {
                     RequestId = request.RequestId,
-                    Qty = 1,
+                    Qty = totalCost,
                     PointUpdatedAt = DateTime.Now,
                     Description = "Đẩy bài đăng",
                     //Action
@@ -144,7 +144,6 @@ namespace API.Controllers
                     MotorId = motorId,
                     HistoryId = point.PHistoryId,
                     Status = SD.Request_Accept,
-                    TotalPoint = totalCost
                 };
 
                 await _unitOfWork.PostBoostingService.Add(postBoosting);
@@ -265,8 +264,10 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
 
+                pointHistory.Qty = pointHistory.Qty + totalCost;
+                await _unitOfWork.PointHistoryService.Update(pointHistory);
+
                 boosting.EndTime = dto.EndTime;
-                boosting.TotalPoint = boosting.TotalPoint + totalCost;
                 await _unitOfWork.PostBoostingService.Update(boosting);
 
                 store.Point = store.Point - totalCost;
