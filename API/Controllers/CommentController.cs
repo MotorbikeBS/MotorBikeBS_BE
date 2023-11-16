@@ -299,6 +299,7 @@ namespace SignalRNotifications.Controllers
                     newComment.UserId = userId;
                     newComment.CreateAt = VnDate;
                     newComment.UpdateAt = null;
+                    newComment.ReplyId = ReplyId;
                     await _unitOfWork.CommentService.Add(newComment);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
