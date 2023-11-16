@@ -41,7 +41,7 @@ namespace SignalRNotifications.Controllers
         {
             try
             {
-                var obj = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == CommentID && e.Status == SD.Request_Accept, includeProperties: "Reply");
+                var obj = await _unitOfWork.CommentService.GetFirst(e => e.CommentId == CommentID && e.Status == SD.Request_Accept, includeProperties: SD.GetCommentArray);
                 if (obj == null)
                 {
                     _response.ErrorMessages.Add("Không tìm thấy bình luận nào!");
@@ -51,9 +51,10 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
+                    var objResponse = _mapper.Map<CommentResponseDTO>(obj);
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = obj;
+                    _response.Result = objResponse;
                 }
                 return Ok(_response);
             }
