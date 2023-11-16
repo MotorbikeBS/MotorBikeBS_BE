@@ -349,7 +349,7 @@ namespace API.Validation
 			{
                 return "Vui lòng chọn thời gian trong tương lai!";
             }
-			if(startDate > endDate)
+			if(startDate.Date > endDate.Date)
 			{
 				return "Vui lòng chọn ngày kết thúc sau ngày bắt đầu";
 			}
