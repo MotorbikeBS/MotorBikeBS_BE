@@ -233,7 +233,7 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
 
-                if (dto.EndTime.Date < boosting.EndTime.Value.Date)
+                if (dto.EndTime.Date <= boosting.EndTime.Value.Date)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;

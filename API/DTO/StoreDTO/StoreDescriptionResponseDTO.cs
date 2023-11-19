@@ -12,7 +12,7 @@
 		public DateTime? StoreUpdatedAt { get; set; }
 		public int? Point { get; set; }
 		public string? Address { get; set; }
-		public int? LocalId { get; set; }
+		//public int? LocalId { get; set; }
 		public string? Status { get; set; }
 		public string? TaxCode { get; set; }
 	}
