@@ -233,7 +233,7 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
 
-                if (dto.EndTime < boosting.EndTime)
+                if (dto.EndTime.Date < boosting.EndTime.Value.Date)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -278,6 +278,155 @@ namespace API.Controllers
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.Message = "Đẩy bài thành công!";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                        {
+                            ex.ToString()
+                        };
+                return BadRequest();
+            }
+        }
+
+        [Authorize(Roles = "Store")]
+        [Route("ChangeLevel")]
+        [HttpPut]
+        public async Task<IActionResult> ChangeLevel(int motorId, PostBoostingChangeDTO dto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                if (dto.EndTime == default(DateTime))
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Vui lòng chọn ngày kết thúc");
+                    return BadRequest(_response);
+                }
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == motorId);
+
+                if (motor == null || motor.StoreId == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Không tìm thấy xe máy!");
+                    return BadRequest(_response);
+                }
+
+                var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
+
+                if (store == null || motor.StoreId != store.StoreId)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Đây không phải xe của cửa hàng này!");
+                    return BadRequest(_response);
+                }
+
+                var result = await _unitOfWork.RequestService.GetFirst(x => x.SenderId == userId
+                && x.MotorId == motorId
+                && x.RequestTypeId == SD.Request_Post_Boosting_Id
+                && x.Status == SD.Request_Accept
+                && x.PointHistories
+                .Any(y => y.PostBoostings
+                .Any(z => z.StartTime < VnDate
+                && z.EndTime > VnDate)));
+
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Không thể đổi gói đẩy bài!");
+                    return BadRequest(_response);
+                }
+
+                var pointHistory = await _unitOfWork.PointHistoryService.GetFirst(x => x.RequestId == result.RequestId);
+
+                var boosting = await _unitOfWork.PostBoostingService.GetFirst(x => x.HistoryId == pointHistory.PHistoryId);
+                if (boosting == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Không thể gia hạn!");
+                    return BadRequest(_response);
+                }
+
+                if (dto.EndTime.Date < boosting.EndTime.Value.Date)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Ngày kết thúc không được trước ngày cũ!");
+                    return BadRequest(_response);
+                }
+
+                if(boosting.Level == 1)
+                {
+                    if(dto.Level == 1)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Bạn phải chọn gói cao hơn!");
+                        return BadRequest(_response);
+                    }
+                }
+                else if (boosting.Level == 2)
+                {
+                    if (dto.Level == 1 || dto.Level == 2)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Bạn phải chọn gói cao hơn!");
+                        return BadRequest(_response);
+                    }
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Bạn đang sử dụng gói cao cấp nhất!");
+                    return BadRequest(_response);
+                }
+
+
+                int totalDay = (dto.EndTime - boosting.StartTime.Value).Days;
+
+                int pointPerDay;
+                if (dto.Level == 2)
+                {
+                    pointPerDay = 2;
+                }
+                else
+                    pointPerDay = 3;
+
+                var totalCost = pointPerDay * totalDay;
+
+                var extendCost = totalCost - pointHistory.Qty;
+
+                if (extendCost > store.Point)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Bạn không đủ điểm, vui lòng nạp thêm!");
+                    return BadRequest(_response);
+                }
+
+                pointHistory.Qty = pointHistory.Qty + extendCost;
+                await _unitOfWork.PointHistoryService.Update(pointHistory);
+
+                boosting.EndTime = dto.EndTime;
+                await _unitOfWork.PostBoostingService.Update(boosting);
+
+                store.Point = store.Point - extendCost;
+
+                await _unitOfWork.StoreDescriptionService.Update(store);
+
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Message = "Đổi gói đẩy bài thành công!";
                 return Ok(_response);
             }
             catch (Exception ex)
