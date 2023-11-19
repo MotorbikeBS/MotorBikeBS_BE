@@ -52,6 +52,10 @@ namespace SignalRNotifications.Controllers
                 else
                 {
                     var objResponse = _mapper.Map<CommentResponseDTO>(obj);
+                    if (objResponse.InverseReply != null)
+                    {
+                        objResponse.InverseReply = objResponse.InverseReply.Where(reply => reply.Status == "ACCEPT").ToList();
+                    }
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = objResponse;
@@ -147,6 +151,13 @@ namespace SignalRNotifications.Controllers
                 {
                     allComments = allComments.OrderByDescending(c => c.CommentId).ToList();
                     var listResponse = _mapper.Map<List<CommentResponseDTO>>(allComments);
+                    foreach (var comment in listResponse)
+                    {
+                        if (comment.InverseReply != null)
+                        {
+                            comment.InverseReply = comment.InverseReply.Where(reply => reply.Status == "ACCEPT").ToList();
+                        }
+                    }
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = listResponse;
@@ -233,12 +244,13 @@ namespace SignalRNotifications.Controllers
                         _response.ErrorMessages.Add("Chỉ được bình luận khi trải nghiệm chức năng hệ thống");
                         return BadRequest(_response);
                     }
+                    DateTime localDate = DateTime.Now.ToLocalTime();
                     var userId = int.Parse(User.FindFirst("UserId")?.Value);
                     var newComment = _mapper.Map<Comment>(comment);
                     newComment.RequestId = RequestID;
                     newComment.Status = SD.Request_Accept;
                     newComment.UserId = userId;
-                    newComment.CreateAt = VnDate;
+                    newComment.CreateAt = localDate;
                     newComment.UpdateAt = null;
                     if (newComment.ReplyId == 0) newComment.ReplyId = null;
                     await _unitOfWork.CommentService.Add(newComment);
