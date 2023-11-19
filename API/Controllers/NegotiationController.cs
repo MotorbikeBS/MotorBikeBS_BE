@@ -113,7 +113,7 @@ namespace API.Controllers
                 await _unitOfWork.NegotiationService.Add(newNego);
 
                 _response.IsSuccess = true;
-                _response.Message = "Tạo thông tin thương lượng thành công, vui lòng chờ người bán xác nhận!";
+                _response.Message = "Tạo thông tin biên nhận thành công, vui lòng chờ người bán xác nhận!";
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }

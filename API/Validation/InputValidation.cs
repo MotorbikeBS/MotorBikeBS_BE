@@ -388,17 +388,21 @@ namespace API.Validation
 			{
 				return "Vui lòng nhập id cửa hàng";
 			}
-			if(title.Length <= 0 || des.Length <=0)
-			{
-				return "Vui lòng nhập đủ thông tin!";
-			}
-			if(title.Length > 200 || des.Length > 500)
+            if (title.Length <= 0)
+            {
+                return "Vui lòng nhập tiêu đề!";
+            }
+            if (des.Length <= 0)
+            {
+                return "Vui lòng nhập nội dung!";
+            }
+            if (title.Length > 200 || des.Length > 500)
 			{
 				return "Nội dung quá dài!";
 			}
             if (images.Count() < 1)
             {
-                return "Vui lòng chọn hình ảnh hợp đồng!";
+                return "Vui lòng chọn ảnh!";
             }
             if (images.Count() > 5)
             {

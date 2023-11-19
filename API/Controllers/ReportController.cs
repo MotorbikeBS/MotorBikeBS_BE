@@ -90,7 +90,7 @@ namespace API.Controllers
                 }
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
-                _response.Message = ("Báo cáo thành công, vui lòng chờ Admin xác thực!");
+                _response.Message = ("Báo cáo cửa hàng thành công!");
                 return Ok(_response);
             }
             catch (Exception ex)
