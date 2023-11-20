@@ -173,7 +173,7 @@ namespace API.Controllers
         [Authorize(Roles = "Store")]
         [Route("ExtendBoosting")]
         [HttpPut]
-        public async Task<IActionResult> ExtendBoosting(int motorId, PostBoostingUpdateDTO dto)
+        public async Task<IActionResult> ExtendBoosting(int boostingId, PostBoostingUpdateDTO dto)
         {
             try
             {
@@ -185,7 +185,26 @@ namespace API.Controllers
                     _response.ErrorMessages.Add("Vui lòng chọn ngày kết thúc");
                     return BadRequest(_response);
                 }
-                var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == motorId);
+                
+                var boosting = await _unitOfWork.PostBoostingService.GetFirst(x => x.BoostId == boostingId);
+                if (boosting == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin!");
+                    return BadRequest(_response);
+                }
+                if(boosting.EndTime < VnDate)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Không thể gia hạn!");
+                    return BadRequest(_response);
+                }
+
+                var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
+
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == boosting.MotorId);
 
                 if (motor == null || motor.StoreId == null)
                 {
@@ -195,8 +214,6 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
 
-                var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId);
-
                 if (store == null || motor.StoreId != store.StoreId)
                 {
                     _response.IsSuccess = false;
@@ -205,35 +222,35 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
 
-                var result = await _unitOfWork.RequestService.GetFirst(x => x.SenderId == userId
-                && x.MotorId == motorId
-                && x.RequestTypeId == SD.Request_Post_Boosting_Id
-                && x.Status == SD.Request_Accept
-                && x.PointHistories
-                .Any(y => y.PostBoostings
-                .Any(z => z.StartTime < VnDate
-                && z.EndTime > VnDate)));
+                //var result = await _unitOfWork.RequestService.GetFirst(x => x.SenderId == userId
+                //&& x.MotorId == boosting.MotorId
+                //&& x.RequestTypeId == SD.Request_Post_Boosting_Id
+                //&& x.Status == SD.Request_Accept
+                //&& x.PointHistories
+                //.Any(y => y.PostBoostings
+                //.Any(z => z.StartTime < VnDate
+                //&& z.EndTime > VnDate && z.BoostId == boostingId)));
 
-                if (result == null)
-                {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Không thể gia hạn!");
-                    return BadRequest(_response);
-                }
+                //if (result == null)
+                //{
+                //    _response.IsSuccess = false;
+                //    _response.StatusCode = HttpStatusCode.BadRequest;
+                //    _response.ErrorMessages.Add("Không thể gia hạn!");
+                //    return BadRequest(_response);
+                //}
 
-                var pointHistory = await _unitOfWork.PointHistoryService.GetFirst(x => x.RequestId == result.RequestId);
+                var pointHistory = await _unitOfWork.PointHistoryService.GetFirst(x => x.PHistoryId == boosting.HistoryId);
 
-                var boosting = await _unitOfWork.PostBoostingService.GetFirst(x => x.HistoryId == pointHistory.PHistoryId);
-                if (boosting == null)
-                {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Không thể gia hạn!");
-                    return BadRequest(_response);
-                }
+                //var boosting = await _unitOfWork.PostBoostingService.GetFirst(x => x.HistoryId == pointHistory.PHistoryId);
+                //if (boosting == null)
+                //{
+                //    _response.IsSuccess = false;
+                //    _response.StatusCode = HttpStatusCode.BadRequest;
+                //    _response.ErrorMessages.Add("Không thể gia hạn!");
+                //    return BadRequest(_response);
+                //}
 
-                if (dto.EndTime.Date < boosting.EndTime.Value.Date)
+                if (dto.EndTime.Date <= boosting.EndTime.Value.Date)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -277,7 +294,7 @@ namespace API.Controllers
 
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
-                _response.Message = "Đẩy bài thành công!";
+                _response.Message = "Gia hạn thành công!";
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -454,7 +471,23 @@ namespace API.Controllers
                 && x.PointHistories.Any(y => y.PostBoostings.Any(z => z.MotorId != null)),
                 includeProperties: new string[] { "PointHistories", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "PointHistories.PostBoostings" });
 
-                if(request.Count()  > 0 )
+                var expired = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+                && x.RequestTypeId == SD.Request_Post_Boosting_Id
+                && x.PointHistories.Any(y => y.PostBoostings.Any(z => z.EndTime < VnDate 
+                && z.Status == SD.Request_Accept)));
+
+                if (expired.Count() > 0)
+                {
+                    foreach(var item in expired)
+                    {
+                        var point = _mapper.Map<PointHistory>(item);
+                        var boosting = _mapper.Map<PostBoosting>(point.PostBoostings);
+                        boosting.Status = SD.Request_Cancel;
+                        await _unitOfWork.PostBoostingService.Update(boosting);
+                    }
+                }
+
+                if (request.Count()  > 0 )
                 {
                     var response = _mapper.Map<List<BoostingRequestResponseDTO>>(request);
                     response.ForEach(item => item.Motor.MotorStatus.Motorbikes = null);

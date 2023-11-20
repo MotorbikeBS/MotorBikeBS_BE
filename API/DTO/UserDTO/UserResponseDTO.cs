@@ -14,7 +14,7 @@ namespace API.DTO.UserDTO
 		public DateTime? Dob { get; set; }
 		public string? IdCard { get; set; }
 		public string? Address { get; set; }
-		public int? LocalId { get; set; }
+		//public int? LocalId { get; set; }
 		public int? RoleId { get; set; }
 		public DateTime? UserVerifyAt { get; set; }
 		public DateTime? UserUpdatedAt { get; set; }
