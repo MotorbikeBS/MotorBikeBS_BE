@@ -236,7 +236,7 @@ namespace API.Controllers
                         && x.RequestTypeId == SD.Request_Negotiation_Id
                         && x.Status != SD.Request_Cancel
                         && x.Valuations.Any(m => m.Negotiations.Any(s => s.Status == SD.Request_Pending
-                        || s.Status == SD.Request_Accept)),
+                        || s.Status == SD.Request_Accept || s.Status == SD.Request_Done)),
                         includeProperties: new string[]
                         { "Valuations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages",
                       "Sender", "Sender.StoreDesciptions", "Valuations.Negotiations"});
@@ -444,7 +444,7 @@ namespace API.Controllers
                 motor.StoreId = nego.StoreId;
                 motor.Price = negotiation.FinalPrice;
                 await _unitOfWork.MotorBikeService.Update(motor);
-                request.Status = SD.Request_Accept;
+                request.Status = SD.Request_Done;
                 await _unitOfWork.RequestService.Update(request);
 
                 IEnumerable<Request> requestList = await _unitOfWork.RequestService.Get(x => x.MotorId == motor.MotorId

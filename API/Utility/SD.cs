@@ -35,6 +35,7 @@
 		public const string Request_Accept = "ACCEPT";
 		public const string Request_Reject = "REJECT";
 		public const string Request_Cancel = "CANCEL";
+        public const string Request_Done = "DONE";
 
         public const string Payment_Unpaid = "UNPAID";
         public const string Payment_Error= "ERROR";
