@@ -1,8 +1,10 @@
 ﻿using API.DTO;
+using API.DTO.PostBoostingDTO;
 using API.DTO.ReportDTO;
 using API.Utility;
 using API.Validation;
 using AutoMapper;
+using Azure.Core;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -56,7 +58,18 @@ namespace API.Controllers
                     return NotFound(_response);
                 }
 
-                Request request = new()
+                var isValid = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+                && x.ReceiverId == store.UserId);
+
+                if(isValid.Count() < 1)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Bạn chưa thực hiện giao dịch với cửa hàng này, không thể báo cáo");
+                    return BadRequest(_response);
+                }
+
+                Core.Models.Request request = new()
                 {
                     SenderId = userId,
                     ReceiverId = 1,
@@ -92,6 +105,45 @@ namespace API.Controllers
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.Message = ("Báo cáo cửa hàng thành công!");
                 return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                        {
+                            ex.ToString()
+                        };
+                return BadRequest();
+            }
+        }
+
+        [Authorize(Roles ="Admin")]
+        [HttpGet]
+        [Route("GetReportList")]
+        public async Task<IActionResult>GetReportList()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var report = await _unitOfWork.RequestService.Get(x => x.ReceiverId == 1
+                && x.RequestTypeId == SD.Request_Report_Id);
+
+                if (report.Count() < 1)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Không có báo cáo nào!");
+                    return BadRequest(_response);
+                }
+                else
+                {
+                    var response = _mapper.Map<List<ReportRequestResponseDTO>>(report);
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = response;
+                    return Ok(_response);
+                }
             }
             catch (Exception ex)
             {

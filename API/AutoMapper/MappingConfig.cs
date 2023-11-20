@@ -125,6 +125,8 @@ namespace API.AutoMapper
 
                 config.CreateMap<BillConfirm, BillResponseDTO>().ReverseMap()
                     .ForMember(dest => dest.Request, opt => opt.MapFrom(src => src.Request));
+				config.CreateMap<BillConfirm, IncomeBillResponseDTO>().ReverseMap()
+					.ForMember(dest => dest.Request, opt => opt.MapFrom(src => src.Request));
 
 				config.CreateMap<Comment, CommentRegisterDTO>().ReverseMap();
                 config.CreateMap<Comment, CommentResponseDTO>().ReverseMap()
