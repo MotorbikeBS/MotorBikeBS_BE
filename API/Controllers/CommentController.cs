@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Service.Service;
 using Service.UnitOfWork;
+using System.Linq;
 using System.Net;
 
 namespace SignalRNotifications.Controllers
@@ -117,6 +118,63 @@ namespace SignalRNotifications.Controllers
         //        return BadRequest(_response);
         //    }
         //}
+
+        [Authorize]
+        [HttpGet("AverageStar")]
+        public async Task<IActionResult> AverageStar(int StoreID)
+        {
+            try
+            {
+                int? total = 0;
+                var store = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.StoreId == StoreID);
+
+                if (store == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin cửa hàng nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    var request = await _unitOfWork.RequestService.Get(e => e.ReceiverId == store.UserId || e.SenderId == store.UserId);
+                    List<Comment> allComments = new List<Comment>();
+                    foreach (Request p in request)
+                    {
+                        var comments = await _unitOfWork.CommentService.Get(e => e.RequestId == p.RequestId && e.Status == SD.Request_Accept 
+                                                                                && e.UserId != store.UserId && e.ReplyId == null);
+                        allComments.AddRange(comments);
+                    }
+                    if (allComments == null || allComments.Count == 0)
+                    {
+                        _response.ErrorMessages.Add("Không tìm thấy thông báo nào!");
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.NotFound;
+                        return NotFound(_response);
+                    }
+                    else
+                    {
+                        foreach (var comment in allComments)
+                        {
+                            total += comment.Rating;
+                        }
+                        double? Avg = allComments.Count > 0 ? (double)total / allComments.Count : 0;
+                        _response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.OK;
+                        _response.Result = new { AverageRating = Avg };
+                        return Ok(_response);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>() { ex.ToString() };
+                return BadRequest(_response);
+            }
+        }
+
 
         [Authorize]
         [HttpGet("GetByStoreId_Receiver")]
