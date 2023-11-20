@@ -8,6 +8,7 @@ using API.DTO.NegotiationDTO;
 using API.DTO.OwnerDTO;
 using API.DTO.PaymentDTO;
 using API.DTO.PostBoostingDTO;
+using API.DTO.ReportDTO;
 using API.DTO.RequestDTO;
 using API.DTO.Role;
 using API.DTO.StoreDTO;
@@ -97,6 +98,10 @@ namespace API.AutoMapper
 																					   .ForMember(dest => dest.Valuations, opt => opt.MapFrom(src => src.Valuations))
 																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
 																					   .ForMember(source => source.Receiver, opt => opt.MapFrom(src => src.Receiver));
+
+                config.CreateMap<Request, ReportRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Reports, opt => opt.MapFrom(src => src.Reports));
+                config.CreateMap<Report, ReportResponseDTO>().ReverseMap().ForMember(dest => dest.ReportImages, opt => opt.MapFrom(src => src.ReportImages));
+                config.CreateMap<ReportImage, ReportImageResponseDTO>().ReverseMap();
 
                 config.CreateMap<PostBoosting, PostBoostingResponseDTO>().ReverseMap();
                 config.CreateMap<PostBoosting, PostBoostingCreateDTO>().ReverseMap();
