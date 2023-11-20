@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.DTO.BillDTO;
+using API.DTO.BillDTO.API.DTO.BillDTO;
 using API.DTO.BookingDTO;
 using API.DTO.MotorbikeDTO;
 using API.DTO.UserDTO;
@@ -139,6 +140,138 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
+        [Authorize(Roles = "Store")]
+        [HttpGet("GetIncome_MonthYear")]
+        public async Task<IActionResult> GetIncome_MonthYear(DateTime startDate, DateTime endDate, string IncomeType)
+        {
+            try
+            {
+                if (!IncomeType.Equals("Month", StringComparison.OrdinalIgnoreCase) && !IncomeType.Equals("Year", StringComparison.OrdinalIgnoreCase))
+                {
+                    _response.ErrorMessages.Add("Vui lòng chọn kiểu tính thu nhập dựa trên Tháng hoặc Năm!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    return NotFound(_response);
+                }
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var storeInfor = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.UserId == userId);
+                if (storeInfor == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin cửa hàng!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    return NotFound(_response);
+                }
+                var listDatabase = await _unitOfWork.BillService.Get(e => e.StoreId == storeInfor.StoreId, includeProperties: "Request");
+                var listResponse = _mapper.Map<List<IncomeBillResponseDTO>>(listDatabase);
+
+                if (listDatabase == null || listDatabase.Count() <= 0)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy hóa đơn nào!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    return NotFound(_response);
+                }
+                else
+                {
+                    decimal? TotalIncome = 0, TotalExpense = 0;
+                    List<IncomeDTO> incomeList = new List<IncomeDTO>();
+
+                    if (IncomeType.Equals("Month", StringComparison.OrdinalIgnoreCase))
+                    {
+                        for (DateTime currentMonth = startDate; currentMonth <= endDate; currentMonth = currentMonth.AddMonths(1))
+                        {
+                            decimal? Income = 0, Expense = 0;
+                            var monthBills = listResponse.Where(bill => bill.CreateAt.HasValue
+                                && bill.CreateAt.Value.Month == currentMonth.Month && bill.CreateAt.Value.Year == currentMonth.Year).ToList();
+                            foreach (var bill in monthBills)
+                            {
+                                if (bill.Price != null)
+                                {
+                                    if (bill.Request.RequestTypeId == SD.Request_Negotiation_Id)
+                                    {
+                                        Expense += bill.Price;
+                                        TotalExpense += bill.Price;
+                                    }
+                                    else
+                                    {
+                                        Income += bill.Price;
+                                        TotalIncome += bill.Price;
+                                    }
+                                }
+                            }
+                            var income_clone = new IncomeDTO
+                            {
+                                IncomeTime = $"{currentMonth:MM/yyyy}",
+                                Income = Income,
+                                Expense = Expense,
+                                Total = Income - Expense,
+                                IncomeType = IncomeType
+                            };
+                            incomeList.Add(income_clone);
+                        }
+                    }
+                    else if (IncomeType.Equals("Year", StringComparison.OrdinalIgnoreCase))
+                    {
+                        for (int year = startDate.Year; year <= endDate.Year; year++)
+                        {
+                            decimal? Income = 0, Expense = 0;
+                            var yearBills = listResponse.Where(bill => bill.CreateAt.HasValue
+                                && bill.CreateAt.Value.Year == year).ToList();
+
+                            foreach (var bill in yearBills)
+                            {
+                                if (bill.Price != null)
+                                {
+                                    if (bill.Request.RequestTypeId == SD.Request_Negotiation_Id)
+                                    {
+                                        Expense += bill.Price;
+                                        TotalExpense += bill.Price;
+                                    }
+                                    else
+                                    {
+                                        Income += bill.Price;
+                                        TotalIncome += bill.Price;
+                                    }
+                                }
+                            }
+                            var income_clone = new IncomeDTO
+                            {
+                                IncomeTime = $"{year}",
+                                Income = Income,
+                                Expense = Expense,
+                                Total = Income - Expense,
+                                IncomeType = IncomeType
+                            };
+                            incomeList.Add(income_clone);
+                        }
+                    }
+                    var incomeTotal = new IncomeDTO
+                    {
+                        IncomeTime = IncomeType.Equals("Month", StringComparison.OrdinalIgnoreCase)
+                                        ? $"From {startDate.Month} to {endDate.Month}"
+                                        : $"From {startDate.Year} to {endDate.Year}",
+                        Income = TotalIncome,
+                        Expense = TotalExpense,
+                        Total = TotalIncome - TotalExpense,
+                        IncomeType = IncomeType
+                    };
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = new { IncomeType, storeInfor.StoreId, storeInfor.StoreName, Bills = incomeList , Total = incomeTotal };
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>() { ex.ToString() };
+                return BadRequest(_response);
+            }
+        }
+
 
         [HttpPost]
         [Authorize(Roles = "Store")]
