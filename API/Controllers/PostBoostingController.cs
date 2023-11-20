@@ -480,8 +480,8 @@ namespace API.Controllers
                 {
                     foreach(var item in expired)
                     {
-                        var point = _mapper.Map<PointHistory>(item);
-                        var boosting = _mapper.Map<PostBoosting>(point.PostBoostings);
+                        var point = await _unitOfWork.PointHistoryService.GetFirst(x => x.RequestId == item.RequestId);
+                        var boosting = await _unitOfWork.PostBoostingService.GetFirst(x => x.HistoryId == point.PHistoryId);
                         boosting.Status = SD.Request_Cancel;
                         await _unitOfWork.PostBoostingService.Update(boosting);
                     }
