@@ -161,7 +161,7 @@ namespace SignalRNotifications.Controllers
                         double? Avg = allComments.Count > 0 ? (double)total / allComments.Count : 0;
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
-                        _response.Result = new { AverageRating = Avg };
+                        _response.Result = new { TotalComment = allComments.Count, AverageRating = Avg };
                         return Ok(_response);
                     }
                 }
