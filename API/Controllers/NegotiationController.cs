@@ -444,8 +444,12 @@ namespace API.Controllers
                 motor.StoreId = nego.StoreId;
                 motor.Price = negotiation.FinalPrice;
                 await _unitOfWork.MotorBikeService.Update(motor);
-                request.Status = SD.Request_Done;
+                request.Status = SD.Request_Accept;
                 await _unitOfWork.RequestService.Update(request);
+
+                var valuation = await _unitOfWork.ValuationService.GetFirst(x => x.ValuationId == nego.ValuationId);
+                valuation.Status = SD.Request_Done;
+                await _unitOfWork.ValuationService.Update(valuation);
 
                 IEnumerable<Request> requestList = await _unitOfWork.RequestService.Get(x => x.MotorId == motor.MotorId
                 && x.SenderId != userId
