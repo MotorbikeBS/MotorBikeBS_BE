@@ -364,9 +364,9 @@ namespace API.Validation
 			return "";
         }
 
-		public static string PaymentValidate(int amount)
+		public static string PaymentValidate(decimal amount)
 		{
-            if(amount == default(int))
+            if(amount == default)
 			{
 				return "Vui lòng nhập số tiền!";
 			}
