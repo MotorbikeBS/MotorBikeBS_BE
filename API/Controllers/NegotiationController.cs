@@ -113,7 +113,7 @@ namespace API.Controllers
                 await _unitOfWork.NegotiationService.Add(newNego);
 
                 _response.IsSuccess = true;
-                _response.Message = "Tạo thông tin thương lượng thành công, vui lòng chờ người bán xác nhận!";
+                _response.Message = "Tạo thông tin biên nhận thành công, vui lòng chờ người bán xác nhận!";
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -236,7 +236,7 @@ namespace API.Controllers
                         && x.RequestTypeId == SD.Request_Negotiation_Id
                         && x.Status != SD.Request_Cancel
                         && x.Valuations.Any(m => m.Negotiations.Any(s => s.Status == SD.Request_Pending
-                        || s.Status == SD.Request_Accept)),
+                        || s.Status == SD.Request_Accept || s.Status == SD.Request_Done)),
                         includeProperties: new string[]
                         { "Valuations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages",
                       "Sender", "Sender.StoreDesciptions", "Valuations.Negotiations"});
@@ -446,6 +446,10 @@ namespace API.Controllers
                 await _unitOfWork.MotorBikeService.Update(motor);
                 request.Status = SD.Request_Accept;
                 await _unitOfWork.RequestService.Update(request);
+
+                var valuation = await _unitOfWork.ValuationService.GetFirst(x => x.ValuationId == nego.ValuationId);
+                valuation.Status = SD.Request_Done;
+                await _unitOfWork.ValuationService.Update(valuation);
 
                 IEnumerable<Request> requestList = await _unitOfWork.RequestService.Get(x => x.MotorId == motor.MotorId
                 && x.SenderId != userId
