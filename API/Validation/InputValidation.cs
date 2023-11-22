@@ -281,11 +281,11 @@ namespace API.Validation
 
         public static string NegoBookingTimeValidation(DateTime startDate, DateTime endDate, decimal price)
 		{
-			if (startDate == default(DateTime))
+			if(startDate == default)
 			{
 				return "Vui lòng chọn ngày nhận xe!";
 			}
-			if(startDate == default(DateTime))
+			if(endDate == default)
 			{
                 return "Vui lòng chọn ngày kết thúc!";
             }
@@ -304,11 +304,11 @@ namespace API.Validation
 			//TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
 			//TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
 
-			if (startDate.Date < DateTime.Now.ToLocalTime().Date)
+			if (startDate.Day < DateTime.Now.ToLocalTime().Day)
 			{
 				return "Vui lòng chọn thời gian trong tương lai!";
 			}
-			if(startDate.Date >= endDate.Date)
+			if(startDate.Day >= endDate.Day)
 			{
 				return "Vui lòng chọn thời gian kết thúc sau thời gian bắt đầu";
 			}
