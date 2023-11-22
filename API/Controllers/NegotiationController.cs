@@ -83,14 +83,14 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Bạn đã tạo thương lượng!");
+                    _response.ErrorMessages.Add("Bạn đã tạo biên nhận rồi!");
                     return BadRequest(_response);
                 }
                 if (valuationInDb.Status == SD.Request_Cancel || request.Status == SD.Request_Cancel)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessages.Add("Định giá chưa được xác nhận, chưa thể tạo thương lượng!");
+                    _response.ErrorMessages.Add("Định giá chưa được xác nhận, chưa thể tạo biên nhận!");
                     return NotFound(_response);
                 }
 
@@ -113,7 +113,7 @@ namespace API.Controllers
                 await _unitOfWork.NegotiationService.Add(newNego);
 
                 _response.IsSuccess = true;
-                _response.Message = "Tạo thông tin biên nhận thành công, vui lòng chờ người bán xác nhận!";
+                _response.Message = "Tạo thông tin biên nhận thành công!";
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
