@@ -439,6 +439,11 @@ namespace API.Validation
                 return "Số chứng nhận đăng ký xe không hợp lệ!";
             }
 
+			if (motorRegisterDTO.Odo < 0 || motorRegisterDTO.Odo > 999999)
+            {
+                return "Giá trị đồng hồ không hợp lệ!";
+            }
+
             if (motorRegisterDTO.Year > DateTime.Now.ToLocalTime())
             {
                 return "Năm đăng ký không được lớn hơn năm hiện tại!";
@@ -452,17 +457,17 @@ namespace API.Validation
         }
         public static string CommentValidation(CommentRegisterDTO comment, int? ReplyID)
         {
-            if (comment.Content == null || comment.Rating == null)
+            if (comment.Content == null)
             {
                 return "Bình luận không được để trống!";
             }
 
             if (comment.Content.Length < 6)
             {
-                return "Nội dung phải từ 6 ký tự trở lên!";
+                return "Nội dung bình luận phải từ 6 ký tự trở lên!";
             }
 
-            if (ReplyID == 0 && (comment.Rating < 1 || comment.Rating > 5))
+            if ((ReplyID == 0 || ReplyID == null) && (comment.Rating < 1 || comment.Rating > 5))
             {
                 return "Vui lòng đánh giá từ 1 - 5 sao!";
             }
