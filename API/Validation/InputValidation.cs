@@ -339,32 +339,32 @@ namespace API.Validation
 			return "";
 		}
 
-		public static string PostBoostingValidation(DateTime startDate, DateTime endDate, int level)
-		{
+        public static string PostBoostingValidation(DateTime startDate, DateTime endDate, int level)
+        {
             if (startDate == default(DateTime) || endDate == default(DateTime))
             {
                 return "Vui lòng chọn ngày!";
             }
-			if(startDate.Date < DateTime.Now.ToLocalTime().Date || endDate.Date < DateTime.Now.ToLocalTime().Date)
-			{
+            if (startDate.Day < DateTime.Now.ToLocalTime().Day || endDate.Day < DateTime.Now.ToLocalTime().Day)
+            {
                 return "Vui lòng chọn thời gian trong tương lai!";
             }
-			if(startDate.Date > endDate.Date)
-			{
-				return "Vui lòng chọn ngày kết thúc sau ngày bắt đầu";
-			}
-			if(level == default(int))
-			{
-				return "Vui lòng chọn gói đẩy bài";
-			}
-			if(level <1 || level >3)
-			{
-				return "Gói đẩy bài phải từ 1 đến 3!";
-			}
-			return "";
+            if (startDate.Day > endDate.Day || startDate.Day == endDate.Day)
+            {
+                return "Vui lòng chọn ngày kết thúc sau ngày bắt đầu";
+            }
+            if (level == default(int))
+            {
+                return "Vui lòng chọn gói đẩy bài";
+            }
+            if (level < 1 || level > 3)
+            {
+                return "Gói đẩy bài phải từ 1 đến 3!";
+            }
+            return "";
         }
 
-		public static string PaymentValidate(decimal amount)
+        public static string PaymentValidate(decimal amount)
 		{
             if(amount == default)
 			{
