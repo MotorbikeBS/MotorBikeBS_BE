@@ -477,6 +477,31 @@ namespace API.Validation
             }
             return "";
         }
+        public static string IncomeDateValidation(DateTime? startDate, DateTime? endDate)
+        {
+            if (!startDate.HasValue)
+            {
+                return "Thời gian bắt đầu không được để trống!";
+            }
+
+            if (!endDate.HasValue)
+            {
+                return "Thời gian kết thúc không được để trống!";
+            }
+
+            if (startDate > endDate)
+            {
+                return "Thời gian bắt đầu không được lớn thời gian ngày kết thúc!";
+            }
+
+            if (endDate > DateTime.Now)
+            {
+                return "Ngày kết thúc không được lớn hơn ngày hiện tại!";
+            }
+
+            return "";
+        }
+
         public static string ValidateTitle<TEntity>(TEntity entity, string entityName = "", int minLength = 4)
         {
             PropertyInfo titleProperty = entity.GetType().GetProperty("Title") ?? entity.GetType().GetProperty("BrandName") ?? entity.GetType().GetProperty("ModelName");

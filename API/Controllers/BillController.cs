@@ -147,6 +147,14 @@ namespace API.Controllers
         {
             try
             {
+                var rs = InputValidation.IncomeDateValidation(startDate, endDate);
+                if (rs != "")
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add(rs);
+                    return BadRequest(_response);
+                }
                 if (!IncomeType.Equals("Month", StringComparison.OrdinalIgnoreCase) && !IncomeType.Equals("Year", StringComparison.OrdinalIgnoreCase))
                 {
                     _response.ErrorMessages.Add("Vui lòng chọn kiểu tính thu nhập dựa trên Tháng hoặc Năm!");
