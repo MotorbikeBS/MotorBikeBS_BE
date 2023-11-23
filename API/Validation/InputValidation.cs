@@ -388,11 +388,11 @@ namespace API.Validation
 			{
 				return "Vui lòng nhập id cửa hàng";
 			}
-            if (title.Length <= 0)
+            if (title  == null)
             {
                 return "Vui lòng nhập tiêu đề!";
             }
-            if (des.Length <= 0)
+            if (des == null)
             {
                 return "Vui lòng nhập nội dung!";
             }
