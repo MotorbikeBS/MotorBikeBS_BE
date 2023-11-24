@@ -30,12 +30,14 @@
 
         public const int NotificationType_TranferOwnership = 1;
         public const int NotificationType_OwnerSoldOut = 2;
+        public const int NotificationType_NegotiationExpired = 3;
 
         public const string Request_Pending = "PENDING";
 		public const string Request_Accept = "ACCEPT";
 		public const string Request_Reject = "REJECT";
 		public const string Request_Cancel = "CANCEL";
         public const string Request_Done = "DONE";
+        public const string Request_Expired = "EXPIRED";
 
         public const string Payment_Unpaid = "UNPAID";
         public const string Payment_Error= "ERROR";
