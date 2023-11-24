@@ -10,6 +10,7 @@ using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Hosting;
 using Service.BlobImageService;
 using Service.PagingUriGenerator;
@@ -230,6 +231,118 @@ namespace API.Controllers
                 return BadRequest(_response);
             }
         }
+
+        [Authorize(Roles = "Store, Owner")]
+        [HttpGet("DetermineNegotiation_ReturnMotor")]
+        public async Task<IActionResult> DetermineNegotiation_ReturnMotor()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                IEnumerable<Request> listDatabase = null;
+
+                switch (roleId)
+                {
+                    case SD.Role_Store_Id:
+                        listDatabase = await _unitOfWork.RequestService.Get(e => e.SenderId == userId
+                                            && e.RequestTypeId == SD.Request_Negotiation_Id && e.Status == SD.Request_Accept);
+                        break;
+                    case SD.Role_Owner_Id:
+                        listDatabase = await _unitOfWork.RequestService.Get(e => e.ReceiverId == userId
+                                            && e.RequestTypeId == SD.Request_Negotiation_Id && e.Status == SD.Request_Accept);
+                        break;
+                }
+
+                if (listDatabase != null && listDatabase.Any()) // Check if there are negotiations
+                {
+                    foreach (var request in listDatabase)
+                    {
+                        var nego = await _unitOfWork.NegotiationService.GetLast(e => e.BaseRequestId == request.RequestId && e.Status == SD.Request_Accept);
+
+                        if (nego != null && nego.EndTime < DateTime.Now)
+                        {
+                            Request requestPost;
+                            var motor = await _unitOfWork.MotorBikeService.GetFirst(e => e.MotorId == nego.MotorId);
+
+                            if (motor != null)
+                            {
+                                // Cancel Store Posting
+                                foreach (var postingType in SD.RequestPostingTypeArray)
+                                {
+                                    var requestP = await _unitOfWork.RequestService.GetLast(e => e.MotorId == nego.MotorId && e.RequestTypeId == postingType
+                                                                                                        && e.SenderId != motor.OwnerId && e.Status == SD.Request_Accept
+                                    );
+
+                                    if (requestP != null)
+                                    {
+                                        // Get requestPost to cancel Posting
+                                        requestP.Status = SD.Request_Cancel;
+                                        await _unitOfWork.RequestService.Update(requestP);
+                                    }
+                                }
+
+                                // Update Negotiation & Request
+                                nego.Status = SD.Request_Expired;
+                                await _unitOfWork.NegotiationService.Update(nego);
+                                request.Status = SD.Request_Expired;
+                                await _unitOfWork.RequestService.Update(request);
+
+                                // Return Motor to Owner
+                                motor.StoreId = null;
+                                motor.MotorStatusId = SD.Status_Storage;
+                                await _unitOfWork.MotorBikeService.Update(motor);
+
+                                // Create Notification to Owner
+                                Notification newOwnerNoti = new()
+                                {
+                                    RequestId = request.RequestId,
+                                    UserId = request.ReceiverId,
+                                    Title = "Biên nhận ký gửi đã hết hạn",
+                                    Content = "Xe " + motor.MotorName + " đã được trả về kho xe của bạn. Vui lòng trao đổi chi tiết với cửa hàng",
+                                    NotificationTypeId = SD.NotificationType_NegotiationExpired,
+                                    Time = VnDate,
+                                    IsRead = false
+                                };
+                                await _unitOfWork.NotificationService.Add(newOwnerNoti);
+
+                                // Create Notification to Store
+                                Notification newStoreNoti = new()
+                                {
+                                    RequestId = request.RequestId,
+                                    UserId = request.SenderId,
+                                    Title = "Biên nhận ký gửi đã hết hạn",
+                                    Content = "Xe " + motor.MotorName + " đã được trả về kho xe của chủ xe. Vui lòng trao đổi chi tiết với chủ xe",
+                                    NotificationTypeId = SD.NotificationType_NegotiationExpired,
+                                    Time = VnDate,
+                                    IsRead = false
+                                };
+                                await _unitOfWork.NotificationService.Add(newStoreNoti);
+                            }
+                        }
+                    }
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    return Ok(_response);
+                }
+
+                _response.ErrorMessages.Add("Không tìm thấy biên nhận ký gửi nào!");
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.NotFound;
+                return NotFound(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages = new List<string>()
+                {
+                    ex.ToString()
+                };
+                return BadRequest(_response);
+            }
+        }
+
 
         [Authorize]
         [HttpGet("GetMotorByStoreId")]
