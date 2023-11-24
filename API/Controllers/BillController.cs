@@ -185,14 +185,24 @@ namespace API.Controllers
                 {
                     decimal? TotalIncome = 0, TotalExpense = 0;
                     List<IncomeDTO> incomeList = new List<IncomeDTO>();
-
+                    endDate = endDate.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
                     if (IncomeType.Equals("Month", StringComparison.OrdinalIgnoreCase))
                     {
-                        for (DateTime currentMonth = startDate; currentMonth <= endDate; currentMonth = currentMonth.AddMonths(1))
+                        for (DateTime currentMonth = startDate; (currentMonth <= endDate || (currentMonth.Month == endDate.Month)); currentMonth = currentMonth.AddMonths(1))
                         {
                             decimal? Income = 0, Expense = 0;
+                            DateTime startFrom = new DateTime(currentMonth.Year, currentMonth.Month, 1);
+                            DateTime endFrom = new DateTime(currentMonth.Year, currentMonth.Month, DateTime.DaysInMonth(currentMonth.Year, currentMonth.Month), 23, 59, 59);
+                            if (currentMonth.Month == startDate.Month)
+                            {
+                                startFrom = startDate;
+                            }
+                            if (currentMonth.Month == endDate.Month)
+                            { 
+                                endFrom = endDate;
+                            }
                             var monthBills = listResponse.Where(bill => bill.CreateAt.HasValue
-                                && bill.CreateAt.Value.Month == currentMonth.Month && bill.CreateAt.Value.Year == currentMonth.Year).ToList();
+                                && bill.CreateAt >= startFrom && bill.CreateAt.Value <= endFrom).ToList();
                             foreach (var bill in monthBills)
                             {
                                 if (bill.Price != null)
@@ -225,8 +235,18 @@ namespace API.Controllers
                         for (int year = startDate.Year; year <= endDate.Year; year++)
                         {
                             decimal? Income = 0, Expense = 0;
+                            DateTime startFrom = new DateTime(year, 1, 1);
+                            DateTime endFrom = new DateTime(year, 12, 31, 23, 59, 59);
+                            if(year == startDate.Year)
+                            {
+                                startFrom = startDate;
+                            }
+                            if (year == endDate.Year)
+                            {
+                                endFrom = endDate;
+                            }
                             var yearBills = listResponse.Where(bill => bill.CreateAt.HasValue
-                                && bill.CreateAt.Value.Year == year).ToList();
+                               && bill.CreateAt >= startFrom && bill.CreateAt.Value <= endFrom).ToList();
 
                             foreach (var bill in yearBills)
                             {
