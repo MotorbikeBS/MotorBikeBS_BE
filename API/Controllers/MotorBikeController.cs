@@ -281,7 +281,20 @@ namespace API.Controllers
                                         await _unitOfWork.RequestService.Update(requestP);
                                     }
                                 }
+                                // Cancel Owner Posting
+                                foreach (var postingType in SD.RequestPostingTypeArray)
+                                {
+                                    var requestP = await _unitOfWork.RequestService.GetLast(e => e.MotorId == nego.MotorId && e.RequestTypeId == postingType
+                                                                                                        && e.SenderId == motor.OwnerId && e.Status == SD.Request_Accept
+                                    );
 
+                                    if (requestP != null)
+                                    {
+                                        // Get requestPost to cancel Posting
+                                        requestP.Status = SD.Request_Cancel;
+                                        await _unitOfWork.RequestService.Update(requestP);
+                                    }
+                                }
                                 // Update Negotiation & Request
                                 nego.Status = SD.Request_Expired;
                                 await _unitOfWork.NegotiationService.Update(nego);
