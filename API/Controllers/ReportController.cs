@@ -33,15 +33,15 @@ namespace API.Controllers
             _blobService = blobService;
         }
 
-        [Authorize(Roles =("Customer, Owner"))]
+        [Authorize(Roles = ("Customer, Owner"))]
         [HttpPost]
         [Route("CreateReport")]
-        public async Task<IActionResult>CreateReport(int storeId, [FromForm] ReportCreateDTO dto, List<IFormFile> images)
+        public async Task<IActionResult> CreateReport(int storeId, [FromForm] ReportCreateDTO dto, List<IFormFile> images)
         {
             try
             {
                 var rs = InputValidation.ReportValidation(storeId, dto.Title, dto.Description, images);
-                if(!string.IsNullOrEmpty(rs))
+                if (!string.IsNullOrEmpty(rs))
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -50,23 +50,37 @@ namespace API.Controllers
                 }
                 var userId = int.Parse(User.FindFirst("UserId")?.Value);
                 var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
-                if(store == null)
+                if (store == null)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
                     return NotFound(_response);
                 }
-
-                var isValid = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
-                && x.ReceiverId == store.UserId);
-
-                if(isValid.Count() < 1)
+                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                if (roleId == SD.Role_Customer_Id)
                 {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Bạn chưa thực hiện giao dịch với cửa hàng này, không thể báo cáo");
-                    return BadRequest(_response);
+                    var isValid = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
+                    && x.ReceiverId == store.UserId);
+                    if (isValid.Count() < 1)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Bạn chưa thực hiện giao dịch với cửa hàng này, không thể báo cáo");
+                        return BadRequest(_response);
+                    }
+                }
+                else
+                {
+                    var isValid = await _unitOfWork.RequestService.Get(x => x.ReceiverId == userId
+                    && x.SenderId == store.UserId);
+                    if (isValid.Count() < 1)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Bạn chưa thực hiện giao dịch với cửa hàng này, không thể báo cáo");
+                        return BadRequest(_response);
+                    }
                 }
 
                 Core.Models.Request request = new()
@@ -90,7 +104,7 @@ namespace API.Controllers
 
                 await _unitOfWork.ReportService.Add(report);
 
-                foreach(var item in images)
+                foreach (var item in images)
                 {
                     string file = $"{Guid.NewGuid()}{Path.GetExtension(item.FileName)}";
                     var img = await _blobService.UploadBlob(file, SD.Storage_Container, item);
@@ -118,10 +132,10 @@ namespace API.Controllers
             }
         }
 
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("GetReportList")]
-        public async Task<IActionResult>GetReportList()
+        public async Task<IActionResult> GetReportList()
         {
             try
             {
