@@ -258,7 +258,7 @@ namespace API.Controllers
                     var incomeTotal = new IncomeDTO
                     {
                         IncomeTime = IncomeType.Equals("Month", StringComparison.OrdinalIgnoreCase)
-                                        ? $"From {startDate.Month} to {endDate.Month}"
+                                        ? $"From {startDate.Month}/{startDate.Year} to {endDate.Month}/{endDate.Year}"
                                         : $"From {startDate.Year} to {endDate.Year}",
                         Income = TotalIncome,
                         Expense = TotalExpense,

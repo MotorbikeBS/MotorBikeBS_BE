@@ -34,14 +34,22 @@ namespace API.Controllers
         {
             try
             {
-                if(year < 2023 || year > DateTime.Now.Year || year == default)
+                if (year == default)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Vui lòng nhập thông tin hợp lệ!");
+                    _response.ErrorMessages.Add("Vui lòng nhập năm!");
                     return BadRequest(_response);
                 }
-                if(storeId != default)
+                if (year < 2023 || year > DateTime.Now.Year)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Chưa có dữ liệu!");
+                    return BadRequest(_response);
+                }
+                
+                if (storeId != default)
                 {
                     var store = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == storeId);
                     if (store == null)

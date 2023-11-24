@@ -83,14 +83,14 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Bạn đã tạo thương lượng!");
+                    _response.ErrorMessages.Add("Bạn đã tạo biên nhận rồi!");
                     return BadRequest(_response);
                 }
                 if (valuationInDb.Status == SD.Request_Cancel || request.Status == SD.Request_Cancel)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessages.Add("Định giá chưa được xác nhận, chưa thể tạo thương lượng!");
+                    _response.ErrorMessages.Add("Định giá chưa được xác nhận, chưa thể tạo biên nhận!");
                     return NotFound(_response);
                 }
 
@@ -113,7 +113,7 @@ namespace API.Controllers
                 await _unitOfWork.NegotiationService.Add(newNego);
 
                 _response.IsSuccess = true;
-                _response.Message = "Tạo thông tin biên nhận thành công, vui lòng chờ người bán xác nhận!";
+                _response.Message = "Tạo thông tin biên nhận thành công!";
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -159,7 +159,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessages.Add("Không thể tải lại thông tin thương lượng!");
+                    _response.ErrorMessages.Add("Không thể tải lại thông tin biên nhận!");
                     return NotFound(_response);
                 }
 
@@ -194,7 +194,7 @@ namespace API.Controllers
                 await _unitOfWork.NegotiationService.Update(newNego);
 
                 _response.IsSuccess = true;
-                _response.Message = "Tải lại thông tin thương lượng thành công, vui lòng chờ người bán xác nhận!";
+                _response.Message = "Tải lại thông tin biên nhận thành công, vui lòng chờ chủ xe xác nhận!";
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -253,7 +253,7 @@ namespace API.Controllers
                 }
                 _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.NotFound;
-                _response.ErrorMessages.Add("Không có kết quả thương lượng nào đang chờ!");
+                _response.ErrorMessages.Add("Không có biên nhận nào đang chờ!");
                 return NotFound(_response);
             }
             catch (Exception ex)
@@ -282,7 +282,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessages.Add("Không tìm thấy kết quả thương lượng nào!");
+                    _response.ErrorMessages.Add("Không tìm thấy biên nhận nào!");
                     return NotFound(_response);
                 }
                 var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == nego.BaseRequestId);
@@ -344,7 +344,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessages.Add("Không tìm thấy kết quả thương lượng nào!");
+                    _response.ErrorMessages.Add("Không tìm thấy biên nhận nào!");
                     return NotFound(_response);
                 }
                 var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == nego.BaseRequestId);
@@ -409,7 +409,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessages.Add("Không tìm thấy yêu cầu thương lượng nào!");
+                    _response.ErrorMessages.Add("Không tìm thấy biên nhận nào!");
                     return NotFound(_response);
                 }
                 var request = await _unitOfWork.RequestService.GetFirst(x => x.RequestId == nego.BaseRequestId);

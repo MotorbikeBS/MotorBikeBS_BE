@@ -77,8 +77,8 @@ namespace API.Controllers
                 && x.RequestTypeId == SD.Request_Post_Boosting_Id
                 && x.PointHistories
                 .Any(y => y.PostBoostings
-                .Any(z => z.StartTime < VnDate
-                && z.EndTime > VnDate)));
+                .Any(z => z.StartTime.Value.Day < VnDate.Day
+                && z.EndTime.Value.Day > VnDate.Day)));
 
                 if (checkDuplicate.Count() > 0)
                 {
@@ -194,7 +194,7 @@ namespace API.Controllers
                     _response.ErrorMessages.Add("Không tìm thấy thông tin!");
                     return BadRequest(_response);
                 }
-                if(boosting.EndTime < VnDate)
+                if(boosting.EndTime.Value.Day < VnDate.Day)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -258,7 +258,7 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
 
-                int extendDay = (dto.EndTime - boosting.EndTime.Value).Days;
+                int extendDay = dto.EndTime.Day - boosting.EndTime.Value.Day;
 
                 int pointPerDay;
                 if (boosting.Level == 1)

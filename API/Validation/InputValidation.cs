@@ -281,11 +281,11 @@ namespace API.Validation
 
         public static string NegoBookingTimeValidation(DateTime startDate, DateTime endDate, decimal price)
 		{
-			if (startDate == default(DateTime))
+			if(startDate == default)
 			{
 				return "Vui lòng chọn ngày nhận xe!";
 			}
-			if(startDate == default(DateTime))
+			if(endDate == default)
 			{
                 return "Vui lòng chọn ngày kết thúc!";
             }
@@ -304,11 +304,11 @@ namespace API.Validation
 			//TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
 			//TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
 
-			if (startDate.Date < DateTime.Now.ToLocalTime().Date)
+			if (startDate.Day < DateTime.Now.ToLocalTime().Day)
 			{
 				return "Vui lòng chọn thời gian trong tương lai!";
 			}
-			if(startDate.Date >= endDate.Date)
+			if(startDate.Day >= endDate.Day)
 			{
 				return "Vui lòng chọn thời gian kết thúc sau thời gian bắt đầu";
 			}
@@ -339,32 +339,32 @@ namespace API.Validation
 			return "";
 		}
 
-		public static string PostBoostingValidation(DateTime startDate, DateTime endDate, int level)
-		{
+        public static string PostBoostingValidation(DateTime startDate, DateTime endDate, int level)
+        {
             if (startDate == default(DateTime) || endDate == default(DateTime))
             {
                 return "Vui lòng chọn ngày!";
             }
-			if(startDate.Date < DateTime.Now.ToLocalTime().Date || endDate.Date < DateTime.Now.ToLocalTime().Date)
-			{
+            if (startDate.Day < DateTime.Now.ToLocalTime().Day || endDate.Day < DateTime.Now.ToLocalTime().Day)
+            {
                 return "Vui lòng chọn thời gian trong tương lai!";
             }
-			if(startDate.Date > endDate.Date)
-			{
-				return "Vui lòng chọn ngày kết thúc sau ngày bắt đầu";
-			}
-			if(level == default(int))
-			{
-				return "Vui lòng chọn gói đẩy bài";
-			}
-			if(level <1 || level >3)
-			{
-				return "Gói đẩy bài phải từ 1 đến 3!";
-			}
-			return "";
+            if (startDate.Day > endDate.Day || startDate.Day == endDate.Day)
+            {
+                return "Vui lòng chọn ngày kết thúc sau ngày bắt đầu";
+            }
+            if (level == default(int))
+            {
+                return "Vui lòng chọn gói đẩy bài";
+            }
+            if (level < 1 || level > 3)
+            {
+                return "Gói đẩy bài phải từ 1 đến 3!";
+            }
+            return "";
         }
 
-		public static string PaymentValidate(decimal amount)
+        public static string PaymentValidate(decimal amount)
 		{
             if(amount == default)
 			{
@@ -388,11 +388,11 @@ namespace API.Validation
 			{
 				return "Vui lòng nhập id cửa hàng";
 			}
-            if (title.Length <= 0)
+            if (title  == null)
             {
                 return "Vui lòng nhập tiêu đề!";
             }
-            if (des.Length <= 0)
+            if (des == null)
             {
                 return "Vui lòng nhập nội dung!";
             }
