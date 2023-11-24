@@ -345,11 +345,11 @@ namespace API.Validation
             {
                 return "Vui lòng chọn ngày!";
             }
-            if (startDate.Day < DateTime.Now.ToLocalTime().Day || endDate.Day < DateTime.Now.ToLocalTime().Day)
+            if (startDate.Date < DateTime.Now.ToLocalTime().Date || endDate.Date < DateTime.Now.ToLocalTime().Date)
             {
                 return "Vui lòng chọn thời gian trong tương lai!";
             }
-            if (startDate.Day > endDate.Day || startDate.Day == endDate.Day)
+            if (startDate.Date > endDate.Date || startDate.Date == endDate.Date)
             {
                 return "Vui lòng chọn ngày kết thúc sau ngày bắt đầu";
             }
