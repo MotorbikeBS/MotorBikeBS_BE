@@ -363,6 +363,14 @@ namespace API.Controllers
         {
             try
             {
+                var storeInfor = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.StoreId == StoreID);
+                if(storeInfor == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin cửa hàng!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.StoreId == StoreID,SD.GetMotorArray);
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
@@ -424,6 +432,14 @@ namespace API.Controllers
         {
             try
             {
+                var UserInfor = await _unitOfWork.UserService.GetFirst(e => e.UserId == OwnerID);
+                if (UserInfor == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin người dùng!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 var listDatabase = await _unitOfWork.MotorBikeService.Get(e => e.OwnerId == OwnerID,SD.GetMotorArray);
                 var listResponse = _mapper.Map<List<MotorResponseDTO>>(listDatabase);                
                 if (listDatabase == null || listDatabase.Count() <= 0)
