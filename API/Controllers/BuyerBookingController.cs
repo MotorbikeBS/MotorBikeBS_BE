@@ -247,6 +247,18 @@ namespace API.Controllers
 				await _unitOfWork.RequestService.Update(request);
 				await _unitOfWork.BuyerBookingService.Update(booking);
 
+				Notification newUserNoti = new()
+				{
+					RequestId = request.RequestId,
+					UserId = request.SenderId,
+					Title = "Lịch xem xe đã được chấp nhận",
+					Content = "Lịch xem xe " + motor.MotorName + " đã được xác nhận, vui lòng đến cửa hàng đúng hẹn.",
+					NotificationTypeId = SD.NotificationType_TranferOwnership,
+					Time = VnDate,
+					IsRead = false
+				};
+				await _unitOfWork.NotificationService.Add(newUserNoti);
+
 				_response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Message = "Đồng ý lịch hẹn thành công!";
@@ -300,7 +312,21 @@ namespace API.Controllers
 				await _unitOfWork.RequestService.Update(request);
 				await _unitOfWork.BuyerBookingService.Update(booking);
 
-				_response.IsSuccess = true;
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == request.MotorId);
+
+                Notification newUserNoti = new()
+                {
+                    RequestId = request.RequestId,
+                    UserId = request.SenderId,
+                    Title = "Lịch xem xe đã bị từ chối",
+                    Content = "Lịch xem xe " + motor.MotorName + " đã bị từ chối, vui lòng liên hệ lại.",
+                    NotificationTypeId = SD.NotificationType_TranferOwnership,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
+
+                _response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Message = "Từ chối lịch hẹn thành công!";
 				return Ok(_response);
@@ -353,7 +379,22 @@ namespace API.Controllers
 				await _unitOfWork.RequestService.Update(request);
 				await _unitOfWork.BuyerBookingService.Update(booking);
 
-				_response.IsSuccess = true;
+
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == request.MotorId);
+
+                Notification newUserNoti = new()
+                {
+                    RequestId = request.RequestId,
+                    UserId = request.SenderId,
+                    Title = "Lịch xem xe đã bị từ chối",
+                    Content = "Lịch xem xe " + motor.MotorName + " đã bị từ chối, vui lòng liên hệ lại.",
+                    NotificationTypeId = SD.NotificationType_TranferOwnership,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
+
+                _response.IsSuccess = true;
 				_response.StatusCode = HttpStatusCode.OK;
 				_response.Message = "Hủy lịch hẹn thành công!";
 				return Ok(_response);
