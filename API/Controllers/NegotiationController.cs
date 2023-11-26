@@ -313,6 +313,21 @@ namespace API.Controllers
                 //}
                 nego.Status = SD.Request_Cancel;
                 await _unitOfWork.NegotiationService.Update(nego);
+
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == request.MotorId);
+
+                Notification newUserNoti = new()
+                {
+                    RequestId = request.RequestId,
+                    UserId = request.SenderId,
+                    Title = "Biên nhận đã bị từ chối",
+                    Content = "Biên nhận cho xe " + motor.MotorName + " đã bị từ chối.",
+                    NotificationTypeId = SD.NotificationType_Negotiation,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
+
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.Message = "Từ chối thành công!";
@@ -378,6 +393,20 @@ namespace API.Controllers
 
                 request.Status = SD.Request_Cancel;
                 await _unitOfWork.RequestService.Update(request);
+
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == request.MotorId);
+
+                Notification newUserNoti = new()
+                {
+                    RequestId = request.RequestId,
+                    UserId = request.SenderId,
+                    Title = "Biên nhận đã bị từ chối",
+                    Content = "Biên nhận cho xe " + motor.MotorName + " đã bị từ chối.",
+                    NotificationTypeId = SD.NotificationType_Negotiation,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
 
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
@@ -469,6 +498,20 @@ namespace API.Controllers
                         }
                     }
                 }
+
+
+                Notification newUserNoti = new()
+                {
+                    RequestId = request.RequestId,
+                    UserId = request.SenderId,
+                    Title = "Biên nhận đã được xác nhận",
+                    Content = "Biên nhận cho xe " + motor.MotorName + " đã được xác nhận thành công.",
+                    NotificationTypeId = SD.NotificationType_Negotiation,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
+
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.Message = "Đồng ý thành công";

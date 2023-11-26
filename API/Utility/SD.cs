@@ -31,6 +31,8 @@
         public const int NotificationType_TranferOwnership = 1;
         public const int NotificationType_OwnerSoldOut = 2;
         public const int NotificationType_NegotiationExpired = 3;
+        public const int NotificationType_Valuation = 4;
+        public const int NotificationType_Negotiation = 5;
 
         public const string Request_Pending = "PENDING";
 		public const string Request_Accept = "ACCEPT";

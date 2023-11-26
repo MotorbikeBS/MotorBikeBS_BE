@@ -134,14 +134,25 @@ namespace API.Controllers
 			}
 		}
 
-		[Authorize(Roles = "Customer, Owner")]
+		[Authorize(Roles = "Customer")]
 		[HttpPost]
 		[Route("store-register")]
 		public async Task<IActionResult> StoreRegister([FromForm] StoreRegisterDTO store)
 		{
 			try
 			{
-				var rs = InputValidation.StoreRegisterValidation(store.StoreName, store.StorePhone, store.StoreEmail, store.Address, store.TaxCode);
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+
+				var request = await _unitOfWork.RequestService.Get(x => x.SenderId == userId && x.Status == SD.Request_Pending && x.RequestTypeId != SD.Request_Report_Id);
+				if(request.Count() > 0)
+				{
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add("Bạn vẫn còn trong quá trình làm việc với một số hoạt động khác, vui lòng kết thúc trước khi đăng ký cửa hàng!");
+                    return BadRequest(_response);
+                }
+
+                var rs = InputValidation.StoreRegisterValidation(store.StoreName, store.StorePhone, store.StoreEmail, store.Address, store.TaxCode);
 				if (rs != "")
 				{
 					_response.StatusCode = HttpStatusCode.BadRequest;
@@ -165,7 +176,7 @@ namespace API.Controllers
 					return BadRequest(_response);
 				}
 
-				var userId = int.Parse(User.FindFirst("UserId")?.Value);
+				
 				var storeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(c => c.UserId == userId);
 				var taxCodeInDb = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.TaxCode == store.TaxCode);
 

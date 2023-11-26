@@ -1,8 +1,10 @@
 ﻿using API.DTO;
 using API.DTO.OwnerDTO;
 using API.DTO.UserDTO;
+using API.Utility;
 using API.Validation;
 using AutoMapper;
+using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -34,10 +36,19 @@ namespace API.Controllers
 		[HttpPut]
 		[Route("OwnerRegister")]
 		public async Task<IActionResult> OwnerRegister(OwnerRegisterDTO owner)
-		{
-			try
+        {
+            try
 			{
-				var rs = InputValidation.OwnerRegisterValidation(owner.Phone, owner.IdCard, owner.Address);
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var request = await _unitOfWork.RequestService.Get(x => x.SenderId == userId && x.Status == SD.Request_Pending && x.RequestTypeId != SD.Request_Report_Id);
+                if (request.Count() > 0)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Result = false;
+                    _response.ErrorMessages.Add("Bạn vẫn còn trong quá trình làm việc với một số hoạt động khác, vui lòng kết thúc trước khi đăng ký trở thành chủ xe!");
+                    return BadRequest(_response);
+                }
+                var rs = InputValidation.OwnerRegisterValidation(owner.Phone, owner.IdCard, owner.Address);
 				if (rs != "")
 				{
 					_response.StatusCode = HttpStatusCode.BadRequest;
@@ -47,7 +58,7 @@ namespace API.Controllers
 				}
 				else
 				{
-					var userId = int.Parse(User.FindFirst("UserId")?.Value);
+					
 					var userInDb = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId);
 
 					if (userInDb == null)
