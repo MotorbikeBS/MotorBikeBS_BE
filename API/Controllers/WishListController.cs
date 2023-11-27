@@ -1,4 +1,5 @@
 ﻿using API.DTO;
+using API.DTO.PostBoostingDTO;
 using API.DTO.UserDTO;
 using API.DTO.WishlistDTO;
 using API.Utility;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.UnitOfWork;
 using System.Net;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace API.Controllers
 {
@@ -19,8 +21,8 @@ namespace API.Controllers
 		private readonly IUnitOfWork _unitOfWork;
 		private ApiResponse _response;
 		private readonly IMapper _mapper;
-
-		public WishListController(IUnitOfWork unitOfWork, IMapper mapper)
+        public DateTime VnDate = DateTime.Now.ToLocalTime();
+        public WishListController(IUnitOfWork unitOfWork, IMapper mapper)
 		{
 			_unitOfWork = unitOfWork;
 			_response = new ApiResponse();
@@ -46,7 +48,30 @@ namespace API.Controllers
 					return NotFound(_response);
 				}
 				var response = _mapper.Map<IEnumerable<WishlistResponseDTO>>(list);
-				_response.Message = list.Count().ToString();
+
+                var listPostBoosting = await _unitOfWork.PostBoostingService.Get(x => x.Status == SD.Request_Accept
+                                                                                && x.StartTime < VnDate && x.EndTime > VnDate);
+                foreach (var wishList in response)
+                {
+                    var matchingPostBoosting = listPostBoosting.FirstOrDefault(p => p.MotorId == wishList.MotorId);
+
+                    if (matchingPostBoosting != null)
+                    {
+                        var boostingInfor = _mapper.Map<PostBoostingCreateDTO>(matchingPostBoosting);
+                        wishList.Motor.Boosting = boostingInfor;
+                    }
+                }
+                foreach (var r in response)
+                {
+                    foreach (var PostingType in SD.RequestPostingTypeArray)
+                    {
+                        var request = await _unitOfWork.RequestService.GetLast(
+                                e => e.MotorId == r.MotorId && e.RequestTypeId == PostingType && e.Status == SD.Request_Accept
+                        );
+                        if (request != null) { r.Motor.PostingAt = request?.Time; }
+                    }
+                }
+                _response.Message = list.Count().ToString();
 				_response.IsSuccess = true;
 				_response.Result = response;
 				_response.StatusCode = HttpStatusCode.OK;
