@@ -63,8 +63,8 @@ namespace API.Controllers
                 IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
                 && x.RequestTypeId == SD.Request_Negotiation_Id
                 && x.MotorId == motorId
-                && x.Status != SD.Request_Cancel
-                && x.Valuations.Any(y => y.Status != SD.Request_Cancel));
+                && x.Status != SD.Request_Cancel && x.Status != SD.Request_Expired
+                && x.Valuations.Any(y => y.Status != SD.Request_Cancel && y.Status != SD.Request_Expired));
 
 
                 if (list.Count() > 0)

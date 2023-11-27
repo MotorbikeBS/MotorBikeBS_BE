@@ -76,7 +76,7 @@ namespace API.Controllers
                 var list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
                         && x.RequestTypeId == SD.Request_Negotiation_Id
                         && x.MotorId == request.MotorId
-                        && x.Status != SD.Request_Cancel
+                        && x.Status != SD.Request_Cancel && x.Status != SD.Request_Expired
                         && x.Valuations.Any(m => m.Negotiations.Any()));
 
                 if (list.Count() > 0)
