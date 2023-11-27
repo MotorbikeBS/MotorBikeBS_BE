@@ -231,7 +231,7 @@ namespace API.Controllers
 					{
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadRequest;
-						_response.ErrorMessages.Add("Mã xác minh không hợp lệ!");
+						_response.ErrorMessages.Add("Người dùng này đã xác minh rồi!");
 						return BadRequest(_response);
 					}
 					else
@@ -268,7 +268,7 @@ namespace API.Controllers
 					_response.IsSuccess = false;
 					_response.StatusCode = HttpStatusCode.NotFound;
 					_response.ErrorMessages.Add("Email không hợp lệ!");
-					return NotFound(_response);
+					return BadRequest(_response);
 				}
 				var user = await _unitOfWork.UserService.GetFirst(x => x.Email == email);
 				if (user == null)
@@ -285,7 +285,7 @@ namespace API.Controllers
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.NotFound;
 						_response.ErrorMessages.Add("Tài khoản chưa xác minh!");
-						return NotFound(_response);
+						return BadRequest(_response);
 					}
 					else
 					{
@@ -309,7 +309,7 @@ namespace API.Controllers
 				_response.IsSuccess = false;
 				_response.StatusCode = HttpStatusCode.BadRequest;
 				_response.ErrorMessages.Add("Lỗi hệ thống!");
-				return Ok(_response);
+				return BadRequest(_response);
 			}
 		}
 
