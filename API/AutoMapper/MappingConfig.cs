@@ -99,7 +99,9 @@ namespace API.AutoMapper
 																					   .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
 																					   .ForMember(source => source.Receiver, opt => opt.MapFrom(src => src.Receiver));
 
-                config.CreateMap<Request, ReportRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Reports, opt => opt.MapFrom(src => src.Reports));
+                config.CreateMap<Request, ReportRequestResponseDTO>().ReverseMap().ForMember(dest => dest.Reports, opt => opt.MapFrom(src => src.Reports))
+																				  .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
+																				  .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver));
                 config.CreateMap<Report, ReportResponseDTO>().ReverseMap().ForMember(dest => dest.ReportImages, opt => opt.MapFrom(src => src.ReportImages));
                 config.CreateMap<ReportImage, ReportImageResponseDTO>().ReverseMap();
 

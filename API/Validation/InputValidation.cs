@@ -267,9 +267,13 @@ namespace API.Validation
 		}
         public static string ValuationValidation(decimal price, string des)
         {
-            if(price == default(decimal) || des.Length == 0)
+            if(price == default)
 			{
-				return "Vui lòng nhập đầy đủ thông tin";
+				return "Vui lòng nhập giá tiền";
+			}
+			if(des.Length == 0)
+			{
+				return "Vui lòng nhập nội dung!";
 			}
 			if(price < 1000000 || price > 500000000)
 			{

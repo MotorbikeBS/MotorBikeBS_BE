@@ -228,7 +228,8 @@ namespace API.Controllers
 							StoreId = newStore.StoreId
 						};
 						await _unitOfWork.StoreImageService.Add(image);
-						_response.IsSuccess = true;
+
+                        _response.IsSuccess = true;
 						_response.StatusCode = HttpStatusCode.OK;
 						_response.Message = ("Đăng ký thành công, vui lòng chờ xác thực!");
 						return Ok(_response);
