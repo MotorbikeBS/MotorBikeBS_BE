@@ -176,7 +176,7 @@ namespace API.Controllers
 
                 if (listDatabase == null || listDatabase.Count() <= 0)
                 {
-                    _response.ErrorMessages.Add("Không tìm thấy hóa đơn nào!");
+                    _response.ErrorMessages.Add("Chưa có dữ liệu");
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return NotFound(_response);
