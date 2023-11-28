@@ -1,5 +1,6 @@
 ﻿using API.DTO;
 using API.Hubs;
+using API.Utility;
 using AutoMapper;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -47,73 +48,73 @@ namespace SignalRNotifications.Controllers
         //    return Request.CreateResponse(HttpStatusCode.OK);
         //}
 
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            try
-            {
-                var list = await _unitOfWork.NotificationService.Get(includeProperties: "NotificationType");
-                if (list == null || list.Count() <= 0)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy thông báo nào!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(_response);
-                }
-                else
-                {
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = list;
-                }
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessages = new List<string>()
-                {
-                    ex.ToString()
-                };
-                return BadRequest(_response);
-            }
-        }
+        //[Authorize]
+        //[HttpGet]
+        //public async Task<IActionResult> Get()
+        //{
+        //    try
+        //    {
+        //        var list = await _unitOfWork.NotificationService.Get(includeProperties: "NotificationType");
+        //        if (list == null || list.Count() <= 0)
+        //        {
+        //            _response.ErrorMessages.Add("Không tìm thấy thông báo nào!");
+        //            _response.IsSuccess = false;
+        //            _response.StatusCode = HttpStatusCode.NotFound;
+        //            return NotFound(_response);
+        //        }
+        //        else
+        //        {
+        //            _response.IsSuccess = true;
+        //            _response.StatusCode = HttpStatusCode.OK;
+        //            _response.Result = list;
+        //        }
+        //        return Ok(_response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _response.IsSuccess = false;
+        //        _response.StatusCode = HttpStatusCode.BadRequest;
+        //        _response.ErrorMessages = new List<string>()
+        //        {
+        //            ex.ToString()
+        //        };
+        //        return BadRequest(_response);
+        //    }
+        //}
 
-        [Authorize]
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetByNotificationId(int id)
-        {
-            try
-            {
-                var obj = await _unitOfWork.NotificationService.GetFirst(e => e.NotificationId == id, includeProperties: "NotificationType");
-                if (obj == null)
-                {
-                    _response.ErrorMessages.Add("Không tìm thấy thông báo nào!");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(_response);
-                }
-                else
-                {
-                    _response.IsSuccess = true;
-                    _response.StatusCode = HttpStatusCode.OK;
-                    _response.Result = obj;
-                }
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessages = new List<string>()
-                {
-                    ex.ToString()
-                };
-                return BadRequest(_response);
-            }
-        }
+        //[Authorize]
+        //[HttpGet("{id:int}")]
+        //public async Task<IActionResult> GetByNotificationId(int id)
+        //{
+        //    try
+        //    {
+        //        var obj = await _unitOfWork.NotificationService.GetFirst(e => e.NotificationId == id, includeProperties: "NotificationType");
+        //        if (obj == null)
+        //        {
+        //            _response.ErrorMessages.Add("Không tìm thấy thông báo nào!");
+        //            _response.IsSuccess = false;
+        //            _response.StatusCode = HttpStatusCode.NotFound;
+        //            return NotFound(_response);
+        //        }
+        //        else
+        //        {
+        //            _response.IsSuccess = true;
+        //            _response.StatusCode = HttpStatusCode.OK;
+        //            _response.Result = obj;
+        //        }
+        //        return Ok(_response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _response.IsSuccess = false;
+        //        _response.StatusCode = HttpStatusCode.BadRequest;
+        //        _response.ErrorMessages = new List<string>()
+        //        {
+        //            ex.ToString()
+        //        };
+        //        return BadRequest(_response);
+        //    }
+        //}
 
         [Authorize]
         [HttpGet("GetByUserID")]
@@ -121,6 +122,7 @@ namespace SignalRNotifications.Controllers
         {
             try
             {
+                var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
                 var obj = await _unitOfWork.NotificationService.Get(e => e.UserId == id, includeProperties: "NotificationType");
                 if (obj == null)
                 {
@@ -131,6 +133,11 @@ namespace SignalRNotifications.Controllers
                 }
                 else
                 {
+                    if (roleId == SD.Role_Admin_Id)
+                    {
+                        var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                        obj = obj.Where(m => m.UserId != userId).ToList();
+                    }
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
