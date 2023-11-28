@@ -86,7 +86,7 @@ namespace API.Controllers
                 Core.Models.Request request = new()
                 {
                     SenderId = userId,
-                    ReceiverId = 1,
+                    ReceiverId = store.UserId,
                     Time = VnDate,
                     RequestTypeId = SD.Request_Report_Id,
                     Status = SD.Request_Pending
@@ -140,9 +140,8 @@ namespace API.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                var report = await _unitOfWork.RequestService.Get(x => x.ReceiverId == 1
-                && x.RequestTypeId == SD.Request_Report_Id
-                ,includeProperties: new string[] { "Reports", "Reports.ReportImages"});
+                var report = await _unitOfWork.RequestService.Get(x => x.RequestTypeId == SD.Request_Report_Id
+                ,includeProperties: new string[] { "Reports", "Reports.ReportImages", "Sender" , "Receiver", "Receiver.StoreDesciptions" });
 
                 if (report.Count() < 1)
                 {

@@ -193,6 +193,18 @@ namespace API.Controllers
                 newNego.Status = SD.Request_Pending;
                 await _unitOfWork.NegotiationService.Update(newNego);
 
+                Notification newUserNoti = new()
+                {
+                    RequestId = request.RequestId,
+                    UserId = request.ReceiverId,
+                    Title = "Biên nhận đã được tải lại",
+                    Content = "Biên nhận cho xe " + motor.MotorName + " đã được tải lại.",
+                    NotificationTypeId = SD.NotificationType_Negotiation,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
+
                 _response.IsSuccess = true;
                 _response.Message = "Tải lại thông tin biên nhận thành công, vui lòng chờ chủ xe xác nhận!";
                 _response.StatusCode = HttpStatusCode.OK;
