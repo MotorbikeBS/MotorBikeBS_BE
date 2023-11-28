@@ -63,8 +63,8 @@ namespace API.Controllers
                 IEnumerable<Request> list = await _unitOfWork.RequestService.Get(x => x.SenderId == userId
                 && x.RequestTypeId == SD.Request_Negotiation_Id
                 && x.MotorId == motorId
-                && x.Status != SD.Request_Cancel
-                && x.Valuations.Any(y => y.Status != SD.Request_Cancel));
+                && x.Status != SD.Request_Cancel && x.Status != SD.Request_Expired
+                && x.Valuations.Any(y => y.Status != SD.Request_Cancel && y.Status != SD.Request_Expired));
 
 
                 if (list.Count() > 0)
@@ -427,6 +427,20 @@ namespace API.Controllers
                 //negotiationInDb.EndTime = VnDate;
                 await _unitOfWork.ValuationService.Update(valuationInDb);
 
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == baseRequest.MotorId);
+
+                Notification newUserNoti = new()
+                {
+                    RequestId = baseRequest.RequestId,
+                    UserId = baseRequest.SenderId,
+                    Title = "Chủ xe đã đồng ý thương lượng",
+                    Content = "Chủ xe " + motor.MotorName + " đã đồng ý thương lượng.",
+                    NotificationTypeId = SD.NotificationType_Valuation,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
+
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.Message = ("Bạn đã đồng ý cửa hàng này thành công!");
@@ -497,6 +511,21 @@ namespace API.Controllers
 
                 baseRequest.Status = SD.Request_Cancel;
                 await _unitOfWork.RequestService.Update(baseRequest);
+
+
+                var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == baseRequest.MotorId);
+
+                Notification newUserNoti = new()
+                {
+                    RequestId = baseRequest.RequestId,
+                    UserId = baseRequest.SenderId,
+                    Title = "Chủ xe đã từ chối thương lượng",
+                    Content = "Chủ xe " + motor.MotorName + " đã từ chối thương lượng.",
+                    NotificationTypeId = SD.NotificationType_Valuation,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
 
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;

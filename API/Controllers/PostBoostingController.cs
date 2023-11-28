@@ -102,7 +102,7 @@ namespace API.Controllers
                     pointPerDay = 3;
                 }
 
-                int dayOfBoost = dto.EndTime.Day - dto.StartTime.Day;
+                int dayOfBoost = (dto.EndTime.Date - dto.StartTime.Date).Days;
 
                 var totalCost = pointPerDay * dayOfBoost;
 
@@ -194,7 +194,7 @@ namespace API.Controllers
                     _response.ErrorMessages.Add("Không tìm thấy thông tin!");
                     return BadRequest(_response);
                 }
-                if(boosting.EndTime.Value.Day < VnDate.Day)
+                if(boosting.EndTime.Value.Date < VnDate.Date)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -258,7 +258,7 @@ namespace API.Controllers
                     return BadRequest(_response);
                 }
 
-                int extendDay = dto.EndTime.Day - boosting.EndTime.Value.Day;
+                int extendDay = (dto.EndTime.Date - boosting.EndTime.Value.Date).Days;
 
                 int pointPerDay;
                 if (boosting.Level == 1)

@@ -361,7 +361,7 @@ namespace Core.Models
                     .HasColumnName("created_at");
 
                 entity.Property(e => e.Deposit)
-                    .HasColumnType("money")
+                    .HasColumnType("decimal(15, 4)")
                     .HasColumnName("deposit");
 
                 entity.Property(e => e.EndTime)
@@ -369,7 +369,7 @@ namespace Core.Models
                     .HasColumnName("end_time");
 
                 entity.Property(e => e.FinalPrice)
-                    .HasColumnType("money")
+                    .HasColumnType("decimal(15, 4)")
                     .HasColumnName("final_price");
 
                 entity.Property(e => e.MotorId).HasColumnName("motor_id");
@@ -448,7 +448,7 @@ namespace Core.Models
                 entity.Property(e => e.PaymentId).HasColumnName("payment_id");
 
                 entity.Property(e => e.Amount)
-                    .HasColumnType("money")
+                    .HasColumnType("decimal(15, 4)")
                     .HasColumnName("amount");
 
                 entity.Property(e => e.Content)
