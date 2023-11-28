@@ -135,8 +135,7 @@ namespace SignalRNotifications.Controllers
                 {
                     if (roleId == SD.Role_Admin_Id)
                     {
-                        var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                        obj = obj.Where(m => m.UserId != userId).ToList();
+                        obj = obj.Where(m => m.NotificationTypeId != SD.NotificationType_TranferOwnership).ToList();
                     }
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
