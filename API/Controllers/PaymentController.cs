@@ -144,6 +144,18 @@ namespace API.Controllers
                             store.Point = store.Point + (response.Amount / 100000);
                         await _unitOfWork.StoreDescriptionService.Update(store);
 
+                        Notification newUserNoti = new()
+                        {
+                            RequestId = request.RequestId,
+                            UserId = 1,
+                            Title = "Cửa hàng nạp điểm thành công!",
+                            Content = $"Cửa hàng {store.StoreName} vừa nạp {payment.Point} điểm!",
+                            NotificationTypeId = SD.NotificationType_Payment,
+                            Time = VnDate,
+                            IsRead = false
+                        };
+                        await _unitOfWork.NotificationService.Add(newUserNoti);
+
                         return Redirect($"{paymentFeResponselink}" + "successfully");
                     }
                     else

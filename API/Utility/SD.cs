@@ -33,6 +33,8 @@
         public const int NotificationType_NegotiationExpired = 3;
         public const int NotificationType_Valuation = 4;
         public const int NotificationType_Negotiation = 5;
+        public const int NotificationType_Payment = 6;
+        public const int NotificationType_StoreRegister = 7;
 
         public const string Request_Pending = "PENDING";
 		public const string Request_Accept = "ACCEPT";

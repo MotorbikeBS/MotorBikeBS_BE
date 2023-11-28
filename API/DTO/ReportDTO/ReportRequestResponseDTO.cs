@@ -1,4 +1,5 @@
-﻿using Core.Models;
+﻿using API.DTO.UserDTO;
+using Core.Models;
 
 namespace API.DTO.ReportDTO
 {
@@ -13,5 +14,7 @@ namespace API.DTO.ReportDTO
         public string? Status { get; set; }
         
         public virtual ICollection<ReportResponseDTO> Reports { get; set; }
+        public virtual UserResponseDTO? Receiver { get; set; }
+        public virtual UserResponseDTO? Sender { get; set; }
     }
 }
