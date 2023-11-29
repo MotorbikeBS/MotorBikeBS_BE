@@ -308,11 +308,11 @@ namespace API.Validation
 			//TimeSpan startTime = TimeSpan.FromHours(7); // 7:00 AM
 			//TimeSpan endTime = TimeSpan.FromHours(21);  // 9:00 PM
 
-			if (startDate.Day < DateTime.Now.ToLocalTime().Day)
+			if (startDate.Date < DateTime.Now.ToLocalTime().Date)
 			{
 				return "Vui lòng chọn thời gian trong tương lai!";
 			}
-			if(startDate.Day >= endDate.Day)
+			if(startDate.Date >= endDate.Date)
 			{
 				return "Vui lòng chọn thời gian kết thúc sau thời gian bắt đầu";
 			}
