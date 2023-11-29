@@ -112,6 +112,18 @@ namespace API.Controllers
                 newNego.BaseRequestId = request.RequestId;
                 await _unitOfWork.NegotiationService.Add(newNego);
 
+                Notification newUserNoti = new()
+                {
+                    RequestId = request.RequestId,
+                    UserId = motor.OwnerId,
+                    Title = $"Cửa hàng đã tạo biên nhận cho xe {motor.MotorName}",
+                    Content = $"Cửa hàng {store.StoreName} đã tạo biên nhận cho xe " + motor.MotorName + " của bạn.",
+                    NotificationTypeId = SD.NotificationType_Negotiation,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
+
                 _response.IsSuccess = true;
                 _response.Message = "Tạo thông tin biên nhận thành công!";
                 _response.StatusCode = HttpStatusCode.OK;
