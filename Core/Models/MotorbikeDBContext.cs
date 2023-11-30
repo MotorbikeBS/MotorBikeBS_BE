@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 namespace Core.Models
 {
@@ -37,7 +36,7 @@ namespace Core.Models
         public virtual DbSet<Request> Requests { get; set; } = null!;
         public virtual DbSet<RequestType> RequestTypes { get; set; } = null!;
         public virtual DbSet<Role> Roles { get; set; } = null!;
-        public virtual DbSet<StoreDesciption> StoreDesciptions { get; set; } = null!;
+        public virtual DbSet<StoreDescription> StoreDescriptions { get; set; } = null!;
         public virtual DbSet<StoreImage> StoreImages { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
         public virtual DbSet<Valuation> Valuations { get; set; } = null!;
@@ -45,13 +44,11 @@ namespace Core.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            var d = Directory.GetCurrentDirectory();
-            IConfigurationRoot configuration = builder.Build();
-            string connectionString = configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseSqlServer(connectionString);
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=(local);Uid=sa;Pwd=1234567890;Database=MotorbikeDB");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -129,7 +126,7 @@ namespace Core.Models
                 entity.Property(e => e.CommentId).HasColumnName("comment_id");
 
                 entity.Property(e => e.Content)
-                    .HasMaxLength(100)
+                    .HasMaxLength(200)
                     .HasColumnName("content");
 
                 entity.Property(e => e.CreateAt)
@@ -177,9 +174,7 @@ namespace Core.Models
                     .HasColumnName("certificate_number")
                     .IsFixedLength();
 
-                entity.Property(e => e.Description)
-                    .HasMaxLength(255)
-                    .HasColumnName("description");
+                entity.Property(e => e.Description).HasColumnName("description");
 
                 entity.Property(e => e.ModelId).HasColumnName("model_id");
 
@@ -196,7 +191,7 @@ namespace Core.Models
                 entity.Property(e => e.OwnerId).HasColumnName("owner_id");
 
                 entity.Property(e => e.Price)
-                    .HasColumnType("money")
+                    .HasColumnType("decimal(15, 4)")
                     .HasColumnName("price");
 
                 entity.Property(e => e.RegistrationImage)
@@ -662,11 +657,12 @@ namespace Core.Models
                     .HasColumnName("title");
             });
 
-            modelBuilder.Entity<StoreDesciption>(entity =>
+            modelBuilder.Entity<StoreDescription>(entity =>
             {
-                entity.HasKey(e => e.StoreId);
+                entity.HasKey(e => e.StoreId)
+                    .HasName("PK_StoreDesciption");
 
-                entity.ToTable("StoreDesciption");
+                entity.ToTable("StoreDescription");
 
                 entity.Property(e => e.StoreId).HasColumnName("store_id");
 
@@ -720,7 +716,7 @@ namespace Core.Models
                     .HasColumnName("ward_id");
 
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.StoreDesciptions)
+                    .WithMany(p => p.StoreDescriptions)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_StoreDesciption_User1");

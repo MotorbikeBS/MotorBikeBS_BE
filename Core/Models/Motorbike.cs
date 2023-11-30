@@ -30,7 +30,7 @@ namespace Core.Models
         public virtual MotorbikeStatus? MotorStatus { get; set; }
         public virtual MotorbikeType? MotorType { get; set; }
         public virtual User Owner { get; set; } = null!;
-        public virtual StoreDesciption? Store { get; set; }
+        public virtual StoreDescription? Store { get; set; }
         public virtual ICollection<MotorbikeImage> MotorbikeImages { get; set; }
         public virtual ICollection<Request> Requests { get; set; }
         public virtual ICollection<Wishlist> Wishlists { get; set; }

@@ -5,7 +5,7 @@ using Service.UnitOfWork;
 
 namespace Service.Repository
 {
-    public class StoreDescriptionRepository : GenericRepository<StoreDesciption>, IStoreDescriptionService
+    public class StoreDescriptionRepository : GenericRepository<StoreDescription>, IStoreDescriptionService
     {
         public StoreDescriptionRepository(MotorbikeDBContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
         {

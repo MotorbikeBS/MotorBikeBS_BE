@@ -9,6 +9,6 @@ namespace Core.Models
         public string ImageLink { get; set; } = null!;
         public int StoreId { get; set; }
 
-        public virtual StoreDesciption Store { get; set; } = null!;
+        public virtual StoreDescription Store { get; set; } = null!;
     }
 }
