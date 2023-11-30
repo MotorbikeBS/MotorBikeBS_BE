@@ -10,7 +10,7 @@ namespace Core.Models
             Motorbikes = new HashSet<Motorbike>();
             RequestReceivers = new HashSet<Request>();
             RequestSenders = new HashSet<Request>();
-            StoreDesciptions = new HashSet<StoreDesciption>();
+            StoreDescriptions = new HashSet<StoreDescription>();
             Wishlists = new HashSet<Wishlist>();
         }
 
@@ -38,7 +38,7 @@ namespace Core.Models
         public virtual ICollection<Motorbike> Motorbikes { get; set; }
         public virtual ICollection<Request> RequestReceivers { get; set; }
         public virtual ICollection<Request> RequestSenders { get; set; }
-        public virtual ICollection<StoreDesciption> StoreDesciptions { get; set; }
+        public virtual ICollection<StoreDescription> StoreDescriptions { get; set; }
         public virtual ICollection<Wishlist> Wishlists { get; set; }
     }
 }

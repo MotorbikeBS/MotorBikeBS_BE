@@ -236,7 +236,7 @@ namespace API.Controllers
 					}
 					else
 					{
-						var newStore = _mapper.Map<StoreDesciption>(store);
+						var newStore = _mapper.Map<StoreDescription>(store);
 						newStore.Status = SD.not_verify;
 						newStore.UserId = userId;
 						newStore.StoreCreatedAt = VnDate;

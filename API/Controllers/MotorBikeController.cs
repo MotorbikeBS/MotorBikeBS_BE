@@ -1,4 +1,5 @@
 ﻿using API.DTO;
+using API.DTO.BookingDTO;
 using API.DTO.FilterDTO;
 using API.DTO.MotorbikeDTO;
 using API.DTO.PostBoostingDTO;
@@ -611,6 +612,7 @@ namespace API.Controllers
                 {
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
+                    _response.Message = $"Tìm thấy {motorbikes.Count()} xe";
                     _response.Result = listResponse;
                     return Ok(_response);
                 }
@@ -725,6 +727,7 @@ namespace API.Controllers
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = listResponse;
+                    _response.Message = $"Tìm thấy {motorbikes.Count()} xe";
                     return Ok(_response);
                 }
                 else
@@ -911,6 +914,7 @@ namespace API.Controllers
                         await _unitOfWork.MotorBikeService.Update(obj);
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
+                        _response.Message = $"Xe {obj.MotorName} đã được đăng lên sàn giao dịch";
                         _response.Result = obj;
                     }
                     return Ok(_response);
@@ -979,9 +983,10 @@ namespace API.Controllers
                         {
                             case SD.Role_Store_Id:
                                 requestEdit = await _unitOfWork.RequestService.Get(e => e.MotorId == MotorID
-                                                                           && e.RequestTypeId != SD.Request_Motor_Register
-                                                                           && e.RequestTypeId != SD.Request_Negotiation_Id
-                                                                           && e.SenderId == userId
+                                                                                    && ((e.RequestTypeId == SD.Request_Motor_Consignment && e.SenderId == userId)
+                                                                                    || (e.RequestTypeId == SD.Request_Motor_nonConsignment && e.SenderId == userId)
+                                                                                    || e.RequestTypeId == SD.Request_Motor_Posting
+                                                                                    || e.RequestTypeId == SD.Request_Booking_Id)
                                 );
                                 break;
                             case SD.Role_Owner_Id:
@@ -996,6 +1001,51 @@ namespace API.Controllers
                             {
                                 r.Status = SD.Request_Cancel;
                                 await _unitOfWork.RequestService.Update(r);
+                                if (r.RequestTypeId == SD.Request_Booking_Id)
+                                {
+                                    var BookingRes = await _unitOfWork.BuyerBookingService.GetFirst(e => e.RequestId == r.RequestId);
+                                    if (BookingRes != null)
+                                    {
+                                        BookingRes.Status = SD.Request_Cancel;
+                                        await _unitOfWork.BuyerBookingService.Update(BookingRes);
+                                        Notification newUserNoti = new()
+                                        {
+                                            RequestId = r.RequestId,
+                                            UserId = r.SenderId,
+                                            Title = "Lịch xem xe đã bị hủy",
+                                            Content = "Lịch xem xe " + obj.MotorName + " đã bị hủy.",
+                                            NotificationTypeId = SD.NotificationType_NegotiationExpired,
+                                            Time = VnDate,
+                                            IsRead = false
+                                        };
+                                        await _unitOfWork.NotificationService.Update(newUserNoti);
+                                    }
+                                }
+                                if(roleId == SD.Role_Owner_Id)
+                                {
+                                    if(r.RequestTypeId == SD.Request_Negotiation_Id)
+                                    {
+                                        var NegoRes = await _unitOfWork.NegotiationService.GetFirst(e => e.BaseRequestId == r.RequestId);
+                                        await _unitOfWork.NegotiationService.Update(NegoRes);
+                                        if(NegoRes != null)
+                                        {
+                                            NegoRes.Status = SD.Request_Reject;
+                                            await _unitOfWork.NegotiationService.Update(NegoRes);
+                                            Notification newUserNoti = new()
+                                            {
+                                                RequestId = r.RequestId,
+                                                UserId = r.SenderId,
+                                                Title = "Giao dịch thương lượng giá cả đã bị hủy",
+                                                Content = "Chủ xe đã hủy giao dịch thương lượng của xe " + obj.MotorName + ". Thông tin xe máy được thu hồi về kho của chủ xe",
+                                                NotificationTypeId = SD.NotificationType_NegotiationExpired,
+                                                Time = VnDate,
+                                                IsRead = false
+                                            };
+                                            await _unitOfWork.NotificationService.Update(newUserNoti);
+                                        }
+                                    }
+                                }
+                                
                             }
                         }
                         //Update Motor
@@ -1007,6 +1057,7 @@ namespace API.Controllers
                         await _unitOfWork.MotorBikeService.Update(obj);
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
+                        _response.Message = $"Xe {obj.MotorName} đã được gỡ khỏi sàn giao dịch";
                         _response.Result = obj;
                     }
                     return Ok(_response);
@@ -1163,6 +1214,7 @@ namespace API.Controllers
 
                         _response.IsSuccess = true;
                         _response.StatusCode = HttpStatusCode.OK;
+                        _response.Message = $"Thông tin xe {motor.MotorName} đã được chỉnh sửa";
                         _response.Result = obj;
                     }
                     return Ok(_response);
@@ -1271,6 +1323,7 @@ namespace API.Controllers
                     //-----------
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
+                    _response.Message = $"Thông tin xe {motor.MotorName} đã được thêm vào kho";
                     _response.Result = newMotor;
                 }
                 return Ok(_response);

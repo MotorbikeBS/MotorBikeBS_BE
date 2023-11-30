@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Core.Models
 {
-    public partial class StoreDesciption
+    public partial class StoreDescription
     {
-        public StoreDesciption()
+        public StoreDescription()
         {
             Motorbikes = new HashSet<Motorbike>();
             StoreImages = new HashSet<StoreImage>();
