@@ -91,7 +91,7 @@ namespace API.Controllers
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("Định giá chưa được xác nhận, chưa thể tạo biên nhận!");
-                    return NotFound(_response);
+                    return BadRequest(_response);
                 }
 
                 var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == request.MotorId);
