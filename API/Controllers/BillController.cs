@@ -188,16 +188,12 @@ namespace API.Controllers
                     endDate = endDate.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
                     if (IncomeType.Equals("Month", StringComparison.OrdinalIgnoreCase))
                     {
-                        for (DateTime currentMonth = startDate; (currentMonth <= endDate || (currentMonth.Month == endDate.Month)); currentMonth = currentMonth.AddMonths(1))
+                        for (DateTime currentMonth = startDate; (currentMonth <= endDate || currentMonth.Month == endDate.Month); currentMonth = currentMonth.AddMonths(1))
                         {
                             decimal? Income = 0, Expense = 0;
                             DateTime startFrom = new DateTime(currentMonth.Year, currentMonth.Month, 1);
                             DateTime endFrom = new DateTime(currentMonth.Year, currentMonth.Month, DateTime.DaysInMonth(currentMonth.Year, currentMonth.Month), 23, 59, 59);
-                            if (currentMonth.Month == startDate.Month)
-                            {
-                                startFrom = startDate;
-                            }
-                            if (currentMonth.Month == endDate.Month)
+                            if ((currentMonth.Month == endDate.Month) && (currentMonth.Year == endDate.Year))
                             { 
                                 endFrom = endDate;
                             }
