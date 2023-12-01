@@ -20,6 +20,6 @@ namespace API.DTO.UserDTO
 		public DateTime? UserUpdatedAt { get; set; }
 		public string Status { get; set; } = null!;
 		public virtual RoleResponseDTO Role { get; set; }
-		public virtual ICollection<StoreDescriptionResponseDTO> StoreDesciptions { get; set; }
+		public virtual ICollection<StoreDescriptionResponseDTO> StoreDescriptions { get; set; }
 	}
 }
