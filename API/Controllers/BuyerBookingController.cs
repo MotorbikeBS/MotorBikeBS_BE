@@ -151,7 +151,7 @@ namespace API.Controllers
 					&& x.RequestTypeId == SD.Request_Booking_Id
 					&& x.Status != SD.Request_Cancel
 					&& x.BuyerBookings.Any(y => y.BookingDate > VnDate),
-					includeProperties: new string[] { "BuyerBookings", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver", "Receiver.StoreDesciptions" });
+					includeProperties: new string[] { "BuyerBookings", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages", "Receiver", "Receiver.StoreDescriptions" });
 				}
 
 				//var response = new List<BookingResponseRequestDTO>();
