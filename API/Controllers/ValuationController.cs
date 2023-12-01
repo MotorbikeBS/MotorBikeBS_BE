@@ -95,6 +95,18 @@ namespace API.Controllers
 
                     await _unitOfWork.ValuationService.Add(valuationCreate);
 
+                    Notification newUserNoti = new()
+                    {
+                        RequestId = request.RequestId,
+                        UserId = motor.OwnerId,
+                        Title = $"Cửa hàng trả giá xe {motor.MotorName}",
+                        Content = "Có cửa hàng trả giá xe " + motor.MotorName + " của bạn.",
+                        NotificationTypeId = SD.NotificationType_Valuation,
+                        Time = VnDate,
+                        IsRead = false
+                    };
+                    await _unitOfWork.NotificationService.Add(newUserNoti);
+
                     _response.IsSuccess = true;
                     _response.Message = "Định giá thành công vui lòng chờ người bán xác nhận!";
                     _response.StatusCode = HttpStatusCode.OK;
@@ -217,7 +229,7 @@ namespace API.Controllers
                     && x.Motor.MotorStatusId != SD.Status_Storage
                     && x.Motor.MotorStatusId != SD.Status_Posting
                     && x.Valuations.Any(n => n.Status != SD.Request_Cancel),
-                    includeProperties: new string[] { "Valuations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
+                    includeProperties: new string[] { "Valuations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Sender.StoreDescriptions" });
                 }
 
                 if (roleId == SD.Role_Store_Id)

@@ -91,7 +91,7 @@ namespace API.Controllers
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("Định giá chưa được xác nhận, chưa thể tạo biên nhận!");
-                    return NotFound(_response);
+                    return BadRequest(_response);
                 }
 
                 var motor = await _unitOfWork.MotorBikeService.GetFirst(x => x.MotorId == request.MotorId);
@@ -111,6 +111,18 @@ namespace API.Controllers
                 newNego.ValuationId = valuationId;
                 newNego.BaseRequestId = request.RequestId;
                 await _unitOfWork.NegotiationService.Add(newNego);
+
+                Notification newUserNoti = new()
+                {
+                    RequestId = request.RequestId,
+                    UserId = motor.OwnerId,
+                    Title = $"Cửa hàng đã tạo biên nhận cho xe {motor.MotorName}",
+                    Content = $"Cửa hàng {store.StoreName} đã tạo biên nhận cho xe " + motor.MotorName + " của bạn.",
+                    NotificationTypeId = SD.NotificationType_Negotiation,
+                    Time = VnDate,
+                    IsRead = false
+                };
+                await _unitOfWork.NotificationService.Add(newUserNoti);
 
                 _response.IsSuccess = true;
                 _response.Message = "Tạo thông tin biên nhận thành công!";
@@ -251,7 +263,7 @@ namespace API.Controllers
                         || s.Status == SD.Request_Accept || s.Status == SD.Request_Done)),
                         includeProperties: new string[]
                         { "Valuations", "Motor", "Motor.MotorStatus", "Motor.MotorbikeImages",
-                      "Sender", "Sender.StoreDesciptions", "Valuations.Negotiations"});
+                      "Sender", "Sender.StoreDescriptions", "Valuations.Negotiations"});
                 }
                 if (list.Count() > 0)
                 {

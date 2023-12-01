@@ -106,7 +106,7 @@ namespace API.Controllers
 
                 var totalCost = pointPerDay * dayOfBoost;
 
-                if (totalCost > store.Point)
+                if (totalCost > store.Point || store.Point == default || store.Point == null)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
