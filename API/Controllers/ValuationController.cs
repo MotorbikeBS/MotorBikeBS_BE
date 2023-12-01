@@ -229,7 +229,7 @@ namespace API.Controllers
                     && x.Motor.MotorStatusId != SD.Status_Storage
                     && x.Motor.MotorStatusId != SD.Status_Posting
                     && x.Valuations.Any(n => n.Status != SD.Request_Cancel),
-                    includeProperties: new string[] { "Valuations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Sender.StoreDesciptions" });
+                    includeProperties: new string[] { "Valuations", "Motor", "Motor.MotorStatus", "Motor.MotorType", "Motor.MotorbikeImages", "Sender.StoreDescriptions" });
                 }
 
                 if (roleId == SD.Role_Store_Id)
