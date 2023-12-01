@@ -34,7 +34,7 @@ namespace API.AutoMapper
 				config.CreateMap<User, LoginResponseDTO>().ReverseMap().ForSourceMember(source => source.Token, opt => opt.DoNotValidate());
 				config.CreateMap<User, UserResponseDTO>().ReverseMap()
 					.ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
-					.ForMember(dest => dest.StoreDescriptions, opt => opt.MapFrom(src => src.StoreDesciptions));
+					.ForMember(dest => dest.StoreDescriptions, opt => opt.MapFrom(src => src.StoreDescriptions));
 				config.CreateMap<User, UserUpdateDTO>().ReverseMap();
 				config.CreateMap<User, OwnerRegisterDTO>().ReverseMap();
 

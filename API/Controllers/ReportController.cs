@@ -141,7 +141,7 @@ namespace API.Controllers
             {
                 var userId = int.Parse(User.FindFirst("UserId")?.Value);
                 var report = await _unitOfWork.RequestService.Get(x => x.RequestTypeId == SD.Request_Report_Id
-                ,includeProperties: new string[] { "Reports", "Reports.ReportImages", "Sender" , "Receiver", "Receiver.StoreDesciptions" });
+                ,includeProperties: new string[] { "Reports", "Reports.ReportImages", "Sender" , "Receiver", "Receiver.StoreDescriptions" });
 
                 if (report.Count() < 1)
                 {
