@@ -73,9 +73,9 @@
             "Request.Motor.Model.Brand",
             "Request.Motor.MotorbikeImages",
             "Request.Sender",
-            "Request.Sender.StoreDesciptions",
+            "Request.Sender.StoreDescriptions",
             "Request.Receiver",
-            "Request.Receiver.StoreDesciptions"
+            "Request.Receiver.StoreDescriptions"
         };
         public static readonly string[] GetRequestArray = new string[]
         {
@@ -100,9 +100,9 @@
             "Motor.Model.Brand",
             "Motor.MotorbikeImages",
             "Sender",
-            "Sender.StoreDesciptions",
+            "Sender.StoreDescriptions",
             "Receiver",
-            "Receiver.StoreDesciptions",
+            "Receiver.StoreDescriptions",
             "RequestType"
         };
     }
