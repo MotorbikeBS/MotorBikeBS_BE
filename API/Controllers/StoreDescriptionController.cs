@@ -93,15 +93,23 @@ namespace API.Controllers
 				var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
 				if (roleId == SD.Role_Store_Id)
 				{
-					if (userId != id)
+					
+					var storeOwner = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.UserId == userId, includeProperties: "StoreImages");
+                    if(storeOwner == null)
 					{
-						_response.IsSuccess = false;
-						_response.StatusCode = HttpStatusCode.BadGateway;
-						_response.ErrorMessages.Add("Bạn không có quyền thực hiện chức năng này!");
-						return NotFound(_response);
-					}
-					var storeOwner = await _unitOfWork.StoreDescriptionService.GetFirst(x => x.StoreId == userId, includeProperties: "StoreImages");
-					_response.IsSuccess = true;
+                        _response.StatusCode = HttpStatusCode.NotFound;
+                        _response.ErrorMessages.Add("Không tìm thấy cửa hàng!");
+                        _response.IsSuccess = false;
+                        return NotFound(_response);
+                    }
+					if (id != storeOwner.StoreId)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadGateway;
+                        _response.ErrorMessages.Add("Bạn không có quyền thực hiện chức năng này!");
+                        return NotFound(_response);
+                    }
+                    _response.IsSuccess = true;
 					_response.StatusCode = HttpStatusCode.OK;
 					_response.Result = storeOwner;
 					return Ok(_response);
