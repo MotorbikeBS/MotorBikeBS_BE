@@ -326,6 +326,13 @@ namespace API.Controllers
                 }
 
                 var boosting = await _unitOfWork.PostBoostingService.GetFirst(x => x.BoostId == boostingId);
+                if(boosting == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Không tìm thấy tin đẩy bài!");
+                    return BadRequest(_response);
+                }
                 if(boosting.EndTime.Value.Date < DateTime.Now.Date)
                 {
                     _response.IsSuccess = false;

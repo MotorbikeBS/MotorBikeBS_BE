@@ -81,7 +81,7 @@ namespace API.Controllers
 						_response.IsSuccess = false;
 						_response.StatusCode = HttpStatusCode.BadGateway;
 						_response.ErrorMessages.Add("Bạn không có quyền thực hiện chức năng này!");
-						return NotFound(_response);
+						return BadRequest(_response);
 					}
 					var c = await _unitOfWork.UserService.GetFirst(x => x.UserId == userId, includeProperties: new string[] { "Role", "StoreDescriptions" });
 					var userResponse = _mapper.Map<UserResponseDTO>(c);
