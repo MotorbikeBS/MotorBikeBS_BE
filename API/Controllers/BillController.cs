@@ -42,6 +42,14 @@ namespace API.Controllers
         {
             try
             {
+                var userInfo = await _unitOfWork.StoreDescriptionService.GetFirst(e => e.StoreId == ReceiverID);
+                if (userInfo == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin cửa hàng!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 var listDatabase = await _unitOfWork.BillService.Get(e => e.StoreId == ReceiverID, includeProperties: SD.GetBillArray);
                 var listResponse = _mapper.Map<List<BillResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
@@ -77,6 +85,14 @@ namespace API.Controllers
         {
             try
             {
+                var userInfo = await _unitOfWork.UserService.GetFirst(e => e.UserId == UserId);
+                if (userInfo == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin người dùng!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 var listDatabase = await _unitOfWork.BillService.Get(e => e.UserId == UserId, includeProperties: SD.GetBillArray);
                 var listResponse = _mapper.Map<List<BillResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)

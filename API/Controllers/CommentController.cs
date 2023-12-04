@@ -241,6 +241,13 @@ namespace SignalRNotifications.Controllers
             try
             {
                 var request = await _unitOfWork.RequestService.Get(e => e.RequestId == RequestID);
+                if (request == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy yêu cầu!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 List<Comment> allComments = new List<Comment>();
 
                 foreach (Request p in request)
