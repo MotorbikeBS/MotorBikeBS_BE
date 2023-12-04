@@ -139,7 +139,7 @@ namespace API.Controllers
                         await _unitOfWork.PaymentService.Update(payment);
 
                         if (store.Point == null)
-                            store.Point = response.Amount;
+                            store.Point = response.Amount/100000;
                         else
                             store.Point = store.Point + (response.Amount / 100000);
                         await _unitOfWork.StoreDescriptionService.Update(store);
