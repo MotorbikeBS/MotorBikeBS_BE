@@ -123,6 +123,14 @@ namespace SignalRNotifications.Controllers
             try
             {
                 var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
+                var userInfo = await _unitOfWork.UserService.GetFirst(e => e.UserId == id);
+                if(userInfo == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin người dùng!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 var obj = await _unitOfWork.NotificationService.Get(e => e.UserId == id, includeProperties: "NotificationType");
                 if (obj == null)
                 {
@@ -137,6 +145,7 @@ namespace SignalRNotifications.Controllers
                     {
                         obj = obj.Where(m => m.NotificationTypeId != SD.NotificationType_TranferOwnership).ToList();
                     }
+                    obj = obj.OrderByDescending(m => m.NotificationId).ToList();
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.OK;
                     _response.Result = obj;
@@ -154,6 +163,7 @@ namespace SignalRNotifications.Controllers
                 return BadRequest(_response);
             }
         }
+
         [Authorize]
         [HttpPut("markRead")]
         public async Task<IActionResult> markRead(int NotificationID)

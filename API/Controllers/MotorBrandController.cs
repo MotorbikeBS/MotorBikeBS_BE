@@ -151,6 +151,14 @@ namespace API.Controllers
                 }
                 else
                 {
+                    var CertNum = await _unitOfWork.MotorBrandService.GetFirst(c => c.BrandName == Brand.BrandName);
+                    if (CertNum != null)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Hãng xe \"" + Brand.BrandName + "\" đã tồn tại");
+                        return BadRequest(_response);
+                    }
                     _mapper.Map(Brand, obj);
                     var roleId = int.Parse(User.FindFirst("RoleId")?.Value);
                     InputValidation.StatusIfAdmin(Brand, roleId);

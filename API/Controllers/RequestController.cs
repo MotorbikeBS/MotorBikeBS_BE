@@ -67,6 +67,14 @@ namespace API.Controllers
         {
             try
             {
+                var userInfo = await _unitOfWork.UserService.GetFirst(e => e.UserId == SenderID);
+                if (userInfo == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin người dùng!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 var listDatabase = await _unitOfWork.RequestService.Get(e => e.SenderId == SenderID, includeProperties: SD.GetRequestArray);
                 var listResponse = _mapper.Map<List<RequestResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
@@ -102,6 +110,14 @@ namespace API.Controllers
         {
             try
             {
+                var userInfo = await _unitOfWork.UserService.GetFirst(e => e.UserId == ReceiverID);
+                if (userInfo == null)
+                {
+                    _response.ErrorMessages.Add("Không tìm thấy thông tin người dùng!");
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
                 var listDatabase = await _unitOfWork.RequestService.Get(e => e.ReceiverId == ReceiverID, includeProperties: SD.GetRequestArray);
                 var listResponse = _mapper.Map<List<RequestResponseDTO>>(listDatabase);
                 if (listDatabase == null || listDatabase.Count() <= 0)
