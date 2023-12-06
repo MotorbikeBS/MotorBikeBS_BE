@@ -22,7 +22,6 @@ namespace Core.Models
         public DateTime? Dob { get; set; }
         public string? IdCard { get; set; }
         public string? Address { get; set; }
-        public string? WardId { get; set; }
         public int? RoleId { get; set; }
         public DateTime? UserVerifyAt { get; set; }
         public DateTime? UserUpdatedAt { get; set; }

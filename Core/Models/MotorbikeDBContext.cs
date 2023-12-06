@@ -714,10 +714,6 @@ namespace Core.Models
 
                 entity.Property(e => e.UserId).HasColumnName("user_id");
 
-                entity.Property(e => e.WardId)
-                    .HasMaxLength(5)
-                    .HasColumnName("ward_id");
-
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.StoreDescriptions)
                     .HasForeignKey(d => d.UserId)
@@ -807,10 +803,6 @@ namespace Core.Models
                 entity.Property(e => e.VerifycationTokenExpires)
                     .HasColumnType("datetime")
                     .HasColumnName("verifycation_token_expires");
-
-                entity.Property(e => e.WardId)
-                    .HasMaxLength(5)
-                    .HasColumnName("ward_id");
 
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Users)
