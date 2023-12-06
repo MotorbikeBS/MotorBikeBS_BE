@@ -129,7 +129,7 @@ namespace Core.Models
                 entity.Property(e => e.CommentId).HasColumnName("comment_id");
 
                 entity.Property(e => e.Content)
-                    .HasMaxLength(200)
+                    .HasMaxLength(100)
                     .HasColumnName("content");
 
                 entity.Property(e => e.CreateAt)
@@ -177,7 +177,9 @@ namespace Core.Models
                     .HasColumnName("certificate_number")
                     .IsFixedLength();
 
-                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Description)
+                    .HasMaxLength(255)
+                    .HasColumnName("description");
 
                 entity.Property(e => e.ModelId).HasColumnName("model_id");
 
@@ -194,7 +196,7 @@ namespace Core.Models
                 entity.Property(e => e.OwnerId).HasColumnName("owner_id");
 
                 entity.Property(e => e.Price)
-                    .HasColumnType("decimal(15, 4)")
+                    .HasColumnType("money")
                     .HasColumnName("price");
 
                 entity.Property(e => e.RegistrationImage)
@@ -714,10 +716,6 @@ namespace Core.Models
 
                 entity.Property(e => e.UserId).HasColumnName("user_id");
 
-                entity.Property(e => e.WardId)
-                    .HasMaxLength(5)
-                    .HasColumnName("ward_id");
-
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.StoreDescriptions)
                     .HasForeignKey(d => d.UserId)
@@ -807,10 +805,6 @@ namespace Core.Models
                 entity.Property(e => e.VerifycationTokenExpires)
                     .HasColumnType("datetime")
                     .HasColumnName("verifycation_token_expires");
-
-                entity.Property(e => e.WardId)
-                    .HasMaxLength(5)
-                    .HasColumnName("ward_id");
 
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Users)
